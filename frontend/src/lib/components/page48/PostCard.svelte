@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page48Api, type Page48Post } from '$lib/api/page48';
-	import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-svelte';
+	import { Heart, MessageCircle, Bookmark, Share2, Lock } from 'lucide-svelte';
 	import PostMenu from '$lib/components/page48/PostMenu.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
 	import RepostMenu from '$lib/components/page48/RepostMenu.svelte';
@@ -191,6 +191,28 @@
 		}
 	}
 
+	let privating = $state(false);
+
+	// Private means only the author can read the post; for everyone else it looks
+	// deleted. A thread toggles as one unit, so this is offered on top-level posts.
+	async function handleTogglePrivate() {
+		if (privating) return;
+		privating = true;
+		try {
+			const updated = await page48Api.setPostPrivate(post.postId, !post.isPrivate);
+			post.isPrivate = updated.isPrivate;
+			showToast(
+				updated.isPrivate ? t('page48.private.made') : t('page48.private.madePublic'),
+				'success'
+			);
+		} catch (err: unknown) {
+			const e = err as { detail?: string; message?: string };
+			showToast(e?.detail || e?.message || t('page48.private.error'), 'error');
+		} finally {
+			privating = false;
+		}
+	}
+
 	// Quoting reuses the shared composer in a modal, prefilled with this post.
 	let showQuote = $state(false);
 	let quoteTarget = $state<Page48Post | null>(null);
@@ -301,6 +323,16 @@
 				<span class="truncate text-[14px] text-gray-500 dark:text-gray-400">@{post.username}</span>
 			</UserHoverCard>
 			<div class="relative z-[1] flex items-center gap-2 shrink-0">
+				<!-- Private post: only its author sees it, so only they get the reminder,
+				     kept on the timestamp line. -->
+				{#if post.isPrivate && isOwner && !isContinuation}
+					<span
+						class="pointer-events-none flex shrink-0 items-center gap-1 rounded-md border border-gray-200 px-1.5 py-0.5 text-[12px] font-medium text-gray-500 dark:border-zinc-700 dark:text-gray-400"
+					>
+						<Lock size={12} />
+						{t('page48.private.badge')}
+					</span>
+				{/if}
 				<span class="group/time relative text-[15px] text-gray-500 hover:underline">
 					{timeLabel}
 					{#if !fullTimestamp}
@@ -316,10 +348,12 @@
 					<PostMenu
 						{isOwner}
 						isPinned={post.isPinned}
+						isPrivate={post.isPrivate}
 						onEdit={() => (showEdit = true)}
 						onDelete={() => (showDelete = true)}
 						onReport={() => (showReport = true)}
 						onTogglePin={isOwner && !post.parentPostId ? handleTogglePin : undefined}
+						onTogglePrivate={isOwner && !post.parentPostId ? handleTogglePrivate : undefined}
 						onViewActivity={openActivity}
 					/>
 				{/if}

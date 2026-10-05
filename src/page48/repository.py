@@ -88,6 +88,48 @@ class Page48Repository:
             {"postId": post_id}, {"$set": {"pinnedAt": None}}
         )
 
+    async def set_post_private(self, post_id: str, user_id: str, is_private: bool):
+        """A private post is readable only by its author. A thread is toggled as
+        one unit, so the author's own continuations follow the first segment."""
+        return await self.posts.update_many(
+            {
+                "$or": [
+                    {"postId": post_id},
+                    {"rootPostId": post_id, "userId": user_id},
+                ]
+            },
+            {"$set": {"isPrivate": is_private}},
+        )
+
+    async def get_self_continuation(
+        self, post_id: str, user_id: str
+    ) -> Optional[dict]:
+        """The author's own next post in a thread, if this one has one."""
+        return await self.posts.find_one(
+            {"parentPostId": post_id, "userId": user_id},
+            sort=[("createdAt", 1)],
+        )
+
+    async def relink_continuation(
+        self, continuation_id: str, parent_post_id: Optional[str], depth: int = 0
+    ):
+        """Reattach a continuation after the post it answered was deleted."""
+        update = {"parentPostId": parent_post_id, "depth": depth}
+        if parent_post_id is None:
+            # The deleted post was the thread root, so the continuation takes over.
+            update["rootPostId"] = None
+        return await self.posts.update_one({"postId": continuation_id}, {"$set": update})
+
+    async def repoint_thread_root(
+        self, old_root_id: str, new_root_id: str, user_id: str
+    ):
+        """Move the author's descendants of a deleted root under the continuation
+        that replaced it, so the thread stays reachable from one root."""
+        return await self.posts.update_many(
+            {"rootPostId": old_root_id, "userId": user_id},
+            {"$set": {"rootPostId": new_root_id}},
+        )
+
     @staticmethod
     def _media_query(media: Optional[str]) -> dict:
         """Build a Mongo filter for a feed media type."""
@@ -330,13 +372,14 @@ class Page48Repository:
         if media_filter:
             conditions.append(media_filter)
 
-        if visibility:
-            conditions.append(visibility)
-
         if not conditions:
             # Nothing to match on. `$and: []` is an error, and an unfiltered list
-            # would be worse, so an empty filter simply matches nothing.
+            # would be worse, so an empty filter simply matches nothing. Checked
+            # before visibility so the viewer's own filter cannot mask this.
             return []
+
+        if visibility:
+            conditions.append(visibility)
 
         if cursor:
             conditions.append(

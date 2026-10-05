@@ -132,6 +132,7 @@ from src.page48.exceptions import (
     CannotFollowSelfError,
     CannotMuteSelfError,
     CannotPinReplyError,
+    CannotPrivateReplyError,
     CannotReportSelfError,
     InvalidPollOptionError,
     InvalidPollOptionsError,
@@ -163,6 +164,7 @@ from src.page48.http_exceptions import (
     CannotFollowSelf,
     CannotMuteSelf,
     CannotPinReply,
+    CannotPrivateReply,
     CannotReportSelf,
     InvalidPollOption,
     InvalidPollOptions,
@@ -582,6 +584,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, QuotePollConflict())
     if isinstance(exc, CannotPinReplyError):
         return await detailed_http_exception_handler(request, CannotPinReply())
+    if isinstance(exc, CannotPrivateReplyError):
+        return await detailed_http_exception_handler(request, CannotPrivateReply())
     if isinstance(exc, CannotFollowSelfError):
         return await detailed_http_exception_handler(request, CannotFollowSelf())
     if isinstance(exc, CannotBlockSelfError):

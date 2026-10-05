@@ -110,6 +110,10 @@ class CannotPinReplyError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.CANNOT_PIN_REPLY
 
 
+class CannotPrivateReplyError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.CANNOT_PRIVATE_REPLY
+
+
 class CannotFollowSelfError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.CANNOT_FOLLOW_SELF
 

@@ -2248,7 +2248,15 @@
 			"delete": "削除",
 			"report": "報告",
 			"pin": "プロフィールに固定",
-			"unpin": "固定を解除"
+			"unpin": "固定を解除",
+			"makePrivate": "非公開にする",
+			"makePublic": "公開にする"
+		},
+		"private": {
+			"badge": "自分のみ",
+			"made": "この投稿は自分のみ閲覧できます。",
+			"madePublic": "投稿を公開に戻しました。",
+			"error": "投稿の公開設定を変更できませんでした。"
 		},
 		"repostMenu": {
 			"repost": "リポスト",

@@ -2254,7 +2254,15 @@
 			"delete": "Hapus",
 			"report": "Laporkan",
 			"pin": "Sematkan ke profil",
-			"unpin": "Lepas sematan"
+			"unpin": "Lepas sematan",
+			"makePrivate": "Jadikan privat",
+			"makePublic": "Jadikan publik"
+		},
+		"private": {
+			"badge": "Hanya kamu",
+			"made": "Postingan sekarang hanya bisa dilihat kamu.",
+			"madePublic": "Postingan kembali publik.",
+			"error": "Gagal mengubah privasi postingan."
 		},
 		"repostMenu": {
 			"repost": "Repost",

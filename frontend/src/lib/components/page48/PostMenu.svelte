@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Pencil, Trash2, Flag, Pin, PinOff, Activity } from 'lucide-svelte';
+	import { Pencil, Trash2, Flag, Pin, PinOff, Activity, Lock, Unlock } from 'lucide-svelte';
 	import { portal } from '$lib/actions/portal';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -7,10 +7,14 @@
 		isOwner: boolean;
 		/** Only meaningful on the author's own post. */
 		isPinned?: boolean;
+		/** Whether the post is visible only to its author. */
+		isPrivate?: boolean;
 		onEdit?: () => void;
 		onDelete?: () => void;
 		onReport?: () => void;
 		onTogglePin?: () => void;
+		/** Toggles the post between private and public (top-level posts only). */
+		onTogglePrivate?: () => void;
 		/** Opens the post's activity page (quotes / reposts / likes). */
 		onViewActivity?: () => void;
 	}
@@ -18,10 +22,12 @@
 	let {
 		isOwner,
 		isPinned = false,
+		isPrivate = false,
 		onEdit,
 		onDelete,
 		onReport,
 		onTogglePin,
+		onTogglePrivate,
 		onViewActivity
 	}: Props = $props();
 
@@ -92,6 +98,20 @@
 				</button>
 			{/if}
 			{#if isOwner}
+				{#if onTogglePrivate}
+					<button
+						class="w-full flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+						onclick={() => run(onTogglePrivate)}
+					>
+						{#if isPrivate}
+							<Unlock size={15} />
+							{t('page48.menu.makePublic')}
+						{:else}
+							<Lock size={15} />
+							{t('page48.menu.makePrivate')}
+						{/if}
+					</button>
+				{/if}
 				{#if onTogglePin}
 					<button
 						class="w-full flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"

@@ -120,6 +120,10 @@ class CannotPinReply(BadRequest):
     DETAIL = ErrorCode.CANNOT_PIN_REPLY
 
 
+class CannotPrivateReply(BadRequest):
+    DETAIL = ErrorCode.CANNOT_PRIVATE_REPLY
+
+
 class CannotFollowSelf(BadRequest):
     DETAIL = ErrorCode.CANNOT_FOLLOW_SELF
 

@@ -2250,7 +2250,15 @@
 			"delete": "Delete",
 			"report": "Report",
 			"pin": "Pin to profile",
-			"unpin": "Unpin from profile"
+			"unpin": "Unpin from profile",
+			"makePrivate": "Make private",
+			"makePublic": "Make public"
+		},
+		"private": {
+			"badge": "Only you",
+			"made": "Only you can see this post now.",
+			"madePublic": "This post is public again.",
+			"error": "Could not change post privacy."
 		},
 		"repostMenu": {
 			"repost": "Repost",

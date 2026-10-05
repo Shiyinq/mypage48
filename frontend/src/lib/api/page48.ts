@@ -102,6 +102,9 @@ export interface Page48Post {
 	/** Set on a profile page when the author pinned this post (one per user). */
 	isPinned?: boolean;
 
+	/** True when only the author can read this post. */
+	isPrivate: boolean;
+
 	/** The post this one quotes, if any. Never nested more than one level. */
 	quotedPost?: Page48Post | null;
 	/** Kept even when the quoted post is gone, so the UI can detect a dangling quote. */
@@ -605,6 +608,13 @@ export const page48Api = {
 	unpinPost: async (postId: string): Promise<Page48Post> => {
 		clearListResponseCache();
 		return client<Page48Post>(`/page48/posts/${postId}/pin`, { method: 'DELETE' });
+	},
+
+	setPostPrivate: async (postId: string, isPrivate: boolean): Promise<Page48Post> => {
+		clearListResponseCache();
+		return client<Page48Post>(`/page48/posts/${postId}/private`, {
+			method: isPrivate ? 'POST' : 'DELETE'
+		});
 	},
 
 	getNotifications: async (

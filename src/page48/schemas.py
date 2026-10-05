@@ -143,6 +143,9 @@ class PostResponse(BaseModel):
     # Set only on a user's own profile when they pinned this post.
     isPinned: bool = False
 
+    # True when only the author can read this post (hidden from everyone else).
+    isPrivate: bool = False
+
     # Context for current user (optional, returned if user is logged in)
     isLiked: Optional[bool] = False
     isReposted: Optional[bool] = False

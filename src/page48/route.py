@@ -415,6 +415,26 @@ async def unpin_post(
     return await service.unpin_post(postId, current_user.userId)
 
 
+@router.post("/posts/{postId}/private", response_model=PostResponse)
+async def make_post_private(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.set_post_private(postId, current_user.userId, True)
+
+
+@router.delete("/posts/{postId}/private", response_model=PostResponse)
+async def make_post_public(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.set_post_private(postId, current_user.userId, False)
+
+
 @router.get("/me/bookmarks", response_model=PostPaginationResponse)
 async def get_my_bookmarks(
     limit: int = Query(20, le=50),

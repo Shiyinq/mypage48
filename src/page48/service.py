@@ -14,6 +14,7 @@ from src.page48.exceptions import (
     CannotFollowSelfError,
     CannotMuteSelfError,
     CannotPinReplyError,
+    CannotPrivateReplyError,
     CannotReportSelfError,
     InvalidPollOptionError,
     InvalidPollOptionsError,
@@ -225,11 +226,26 @@ class Page48Service:
         return author_id not in following
 
     async def _visibility(self, viewer_id: Optional[str]) -> Optional[dict]:
-        """Mongo condition for the posts a viewer may not see (None when none)."""
+        """Mongo condition for the posts a viewer may not see.
+
+        Two rules apply everywhere posts are read: authors hidden from the viewer
+        (blocks / locked accounts) are dropped, and a private post is dropped
+        unless the viewer wrote it.
+        """
         hidden = await self._hidden_author_ids(viewer_id)
-        if not hidden:
-            return None
-        return {"userId": {"$nin": hidden}}
+        conditions: List[dict] = []
+        if hidden:
+            conditions.append({"userId": {"$nin": hidden}})
+        if viewer_id:
+            conditions.append(
+                {"$or": [{"isPrivate": {"$ne": True}}, {"userId": viewer_id}]}
+            )
+        else:
+            conditions.append({"isPrivate": {"$ne": True}})
+
+        if len(conditions) == 1:
+            return conditions[0]
+        return {"$and": conditions}
 
     async def _assert_post_visible(
         self, post: dict, viewer_id: Optional[str]
@@ -237,6 +253,9 @@ class Page48Service:
         """A direct link has to respect visibility: hidden posts look missing."""
         hidden = await self._hidden_author_ids(viewer_id)
         if post.get("userId") in hidden:
+            raise PostNotFoundError()
+        # A private post is nobody else's to open, not even via its link.
+        if post.get("isPrivate") and post.get("userId") != viewer_id:
             raise PostNotFoundError()
 
     async def _muted_author_ids(self, viewer_id: Optional[str]) -> List[str]:
@@ -379,6 +398,7 @@ class Page48Service:
             createdAt=post["createdAt"],
             updatedAt=post["updatedAt"],
             isPinned=bool(post.get("pinnedAt")),
+            isPrivate=bool(post.get("isPrivate")),
             isLiked=interactions.get("isLiked", False),
             isReposted=interactions.get("isReposted", False),
             isBookmarked=interactions.get("isBookmarked", False),
@@ -1074,6 +1094,9 @@ class Page48Service:
 
         root_post_id = None
         depth = 0
+        # A reply inherits its parent's privacy, so continuing a private thread
+        # (or replying under a private post) never leaks the new post.
+        is_private = False
 
         if parent_post_id:
             parent = await self.repository.get_post_by_id(parent_post_id)
@@ -1082,6 +1105,7 @@ class Page48Service:
 
             root_post_id = parent.get("rootPostId") or parent_post_id
             depth = parent.get("depth", 0) + 1
+            is_private = bool(parent.get("isPrivate"))
 
             # Update reply count of parent
             await self.repository.increment_post_stats(parent_post_id, "replyCount", 1)
@@ -1156,6 +1180,7 @@ class Page48Service:
             "mentions": self._extract_mentions(data.content),
             "quotedPostId": quoted_post_id,
             "pinnedAt": None,
+            "isPrivate": is_private,
             "likesCount": 0,
             "repostCount": 0,
             "bookmarksCount": 0,
@@ -1873,6 +1898,26 @@ class Page48Service:
         post["pinnedAt"] = None
         return (await self._enrich_posts([post], user_id))[0]
 
+    async def set_post_private(
+        self, post_id: str, user_id: str, is_private: bool
+    ) -> PostResponse:
+        """Make a top-level post readable only by its author, or public again.
+
+        A thread is toggled as one unit so no continuation is left behind, and
+        replies are excluded because hiding one would break somebody else's chain.
+        """
+        post = await self.repository.get_post_by_id(post_id)
+        if not post:
+            raise PostNotFoundError()
+        if post["userId"] != user_id:
+            raise UnauthorizedActionError()
+        if post.get("parentPostId"):
+            raise CannotPrivateReplyError()
+
+        await self.repository.set_post_private(post_id, user_id, is_private)
+        post["isPrivate"] = is_private
+        return (await self._enrich_posts([post], user_id))[0]
+
     async def edit_post(
         self, post_id: str, data: EditPostRequest, user_id: str
     ) -> PostResponse:
@@ -2127,6 +2172,25 @@ class Page48Service:
 
         if not is_admin and post["userId"] != user_id:
             raise UnauthorizedActionError()
+
+        # Keep a thread connected when a middle segment is deleted: its own next
+        # segment takes its place, so the chain still reads 1..N without a gap.
+        continuation = await self.repository.get_self_continuation(
+            post_id, post["userId"]
+        )
+        if continuation:
+            parent_id = post.get("parentPostId")
+            await self.repository.relink_continuation(
+                continuation["postId"], parent_id, post.get("depth", 0)
+            )
+            if parent_id is None:
+                # The deleted post led the thread; the continuation leads it now.
+                await self.repository.repoint_thread_root(
+                    post_id, continuation["postId"], post["userId"]
+                )
+            else:
+                # The continuation now answers what the deleted post answered.
+                await self.repository.increment_post_stats(parent_id, "replyCount", 1)
 
         await self.repository.delete_post(post_id)
         await self.repository.delete_poll_votes(post_id)
