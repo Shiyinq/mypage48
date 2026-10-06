@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import { X } from 'lucide-svelte';
+	import { X, FileQuestion } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type ThreadResponse } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
@@ -38,6 +38,8 @@
 
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	/** The post does not exist (or is not visible to this viewer): a 404 page. */
+	let notFound = $state(false);
 	/** The focused post plus the author's own continuations — rendered connected. */
 	let chain = $state<Page48Post[]>([]);
 	/** Absolute position of `chain[0]` in the author's thread, and the thread's total size. */
@@ -94,8 +96,9 @@
 		try {
 			loading = true;
 			error = null;
+			notFound = false;
 			if (!id) {
-				error = t('page48.post.notFound');
+				notFound = true;
 				return;
 			}
 			const thread = await page48Api.getThread(id);
@@ -119,8 +122,15 @@
 			replyTree = toReplyTree(node, new Set(chain.map((post) => post.postId)));
 			replyTarget = node.post;
 		} catch (err: unknown) {
-			const e = err as { message?: string };
-			error = e?.message || t('page48.post.loadError');
+			const e = err as { status?: number; message?: string };
+			// A missing (or not-visible) post gets its own page, not a retry prompt;
+			// to everyone but the author a private post is simply gone too.
+			if (e?.status === 404) {
+				notFound = true;
+				focused = null;
+			} else {
+				error = e?.message || t('page48.post.loadError');
+			}
 		} finally {
 			loading = false;
 		}
@@ -364,6 +374,26 @@
 		<div class="border-t border-gray-200/60 dark:border-white/10"></div>
 		{@render postSkeleton(['w-full', 'w-1/2'])}
 		{@render postSkeleton(['w-11/12', 'w-3/5'])}
+	</div>
+{:else if notFound}
+	<div class="flex flex-col items-center justify-center px-6 py-16 text-center">
+		<div
+			class="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-red-100 bg-gradient-to-br from-red-50 to-pink-50 shadow-sm dark:border-red-900/30 dark:from-red-950/30 dark:to-pink-950/30"
+		>
+			<FileQuestion size={28} class="text-red-500/80" />
+		</div>
+		<h3 class="mb-1 text-lg font-bold text-gray-900 dark:text-gray-100">
+			{t('page48.post.notFoundTitle')}
+		</h3>
+		<p class="max-w-xs text-sm text-gray-500 dark:text-gray-400">
+			{t('page48.post.notFoundText')}
+		</p>
+		<a
+			href="/page48"
+			class="mt-6 rounded-full bg-red-600 px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-red-700"
+		>
+			{t('page48.backHome')}
+		</a>
 	</div>
 {:else if error}
 	<div class="p-6">

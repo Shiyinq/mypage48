@@ -2172,6 +2172,8 @@
 		"post": {
 			"loadError": "投稿の読み込みに失敗しました",
 			"notFound": "投稿が見つかりません",
+			"notFoundTitle": "投稿が見つかりません",
+			"notFoundText": "この投稿は削除されたか、あなたには表示できません。",
 			"replyingTo": "返信先",
 			"replySent": "返信を送信しました",
 			"replyError": "返信の送信に失敗しました",
@@ -2299,6 +2301,7 @@
 			"already": "すでに報告済みです。"
 		},
 		"reportUser": "ユーザーを報告",
+		"backHome": "ホームに戻る",
 		"settings": {
 			"title": "Page48",
 			"subtitle": "プライバシーと、ブロック・ミュートしたアカウント。",

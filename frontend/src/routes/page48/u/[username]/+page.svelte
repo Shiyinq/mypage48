@@ -451,6 +451,12 @@
 				{t('page48.userPage.notFoundTitle')}
 			</h3>
 			<p class="text-sm text-gray-500">{t('page48.userPage.notFoundText')}</p>
+			<a
+				href="/page48"
+				class="mt-6 rounded-full bg-red-600 px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-red-700"
+			>
+				{t('page48.backHome')}
+			</a>
 		</div>
 	{:else if profileError}
 		<div class="p-6">

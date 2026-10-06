@@ -2178,6 +2178,8 @@
 		"post": {
 			"loadError": "Gagal memuat postingan",
 			"notFound": "Postingan tidak ditemukan",
+			"notFoundTitle": "Postingan tidak ditemukan",
+			"notFoundText": "Postingan ini sudah dihapus, atau tidak tersedia untukmu.",
 			"replyingTo": "Membalas",
 			"replySent": "Balasan terkirim",
 			"replyError": "Gagal mengirim balasan",
@@ -2305,6 +2307,7 @@
 			"already": "Kamu sudah melaporkan ini."
 		},
 		"reportUser": "Laporkan Pengguna",
+		"backHome": "Kembali ke beranda",
 		"settings": {
 			"title": "Page48",
 			"subtitle": "Privasi dan daftar akun yang kamu blokir atau bisukan.",
