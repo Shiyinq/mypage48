@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Users } from 'lucide-svelte';
+	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
 	import { activeUsersStore } from '$lib/stores/page48.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -49,26 +50,35 @@
 	{:else}
 		<ul class="divide-y divide-gray-100 dark:divide-white/5">
 			{#each users as user (user.userId)}
-				<li>
-					<a
+				<li
+					class="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
+				>
+					<UserHoverCard
+						username={user.username}
 						href={`/page48/u/${user.username}`}
-						class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+						class="w-8 h-8 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0"
 					>
-						<div class="w-8 h-8 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0">
-							<img src={avatar(user)} alt={user.username} class="w-full h-full object-cover" />
-						</div>
-						<div class="flex-1 min-w-0">
-							<p class="font-semibold text-[14px] text-gray-900 dark:text-gray-100 truncate">
+						<img src={avatar(user)} alt={user.username} class="w-full h-full object-cover" />
+					</UserHoverCard>
+					<div class="flex-1 min-w-0">
+						<UserHoverCard
+							username={user.username}
+							href={`/page48/u/${user.username}`}
+							class="block cursor-pointer"
+						>
+							<span
+								class="block truncate font-semibold text-[14px] text-gray-900 dark:text-gray-100"
+							>
 								{user.name}
-							</p>
-							<p class="text-[12px] text-gray-400 dark:text-gray-500 truncate">
+							</span>
+							<span class="block truncate text-[12px] text-gray-400 dark:text-gray-500">
 								@{user.username}
-							</p>
-						</div>
-						<span class="text-[11px] font-semibold text-red-500 shrink-0 tabular-nums">
-							{t('page48.activeUsers.postCount', { count: user.postCount })}
-						</span>
-					</a>
+							</span>
+						</UserHoverCard>
+					</div>
+					<span class="shrink-0 text-[11px] font-semibold text-red-500 tabular-nums">
+						{t('page48.activeUsers.postCount', { count: user.postCount })}
+					</span>
 				</li>
 			{/each}
 		</ul>
