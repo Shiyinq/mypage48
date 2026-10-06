@@ -1531,7 +1531,7 @@ class Page48Service:
                 )
             )
 
-        items = await self._build_notifications(rows)
+        items = await self._build_notifications(rows, current_user_id)
         by_id = {item.notificationId: item for item in items}
 
         tabs: List[NotificationTabSummary] = []
