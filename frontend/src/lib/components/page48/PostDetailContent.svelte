@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import { X, FileQuestion } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type ThreadResponse } from '$lib/api/page48';
@@ -49,6 +48,12 @@
 	let parentContext = $state<Page48Post | null>(null);
 	/** Direct replies, each keeping its own replies nested (like a thread). */
 	let replyTree = $state<ThreadResponse[]>([]);
+	/**
+	 * Replies added in this session under a card that is not the focused post or one
+	 * of its listed replies — a thread segment, or the parent shown as context. They
+	 * are kept here so the answer shows up right where it was written.
+	 */
+	let localReplies = $state<Record<string, Page48Post[]>>({});
 	/** Flat view of `replyTree`, used for lookups and the emptiness check. */
 	let replies = $derived(flattenReplies(replyTree));
 	// The post the composer currently replies to (defaults to the focused post).
@@ -83,6 +88,12 @@
 	const NESTED_REPLY_LIMIT = 5;
 	// Nested replies stop indenting past this depth so the cards never get too narrow.
 	const MAX_INDENT_DEPTH = 3;
+	// The connector line for a nested reply, and the deeper indent used when the
+	// parent is a thread segment: it starts at the segment's avatar line (article
+	// px-5/px-6 + half of the 44px avatar) so the thread line reads as continuous.
+	const REPLY_LINE = 'border-l-2 border-gray-200/70 dark:border-zinc-800';
+	const NESTED_REPLY_INDENT = 'ml-5 sm:ml-6';
+	const SEGMENT_REPLY_INDENT = 'ml-[42px] sm:ml-[46px]';
 
 	// Reload whenever the post changes: the host reuses this component across
 	// navigations, so mounting alone would leave stale content.
@@ -120,6 +131,7 @@
 			parentContext = position < 0 && parent ? parent : null;
 
 			replyTree = toReplyTree(node, new Set(chain.map((post) => post.postId)));
+			localReplies = {};
 			replyTarget = node.post;
 		} catch (err: unknown) {
 			const e = err as { status?: number; message?: string };
@@ -190,6 +202,19 @@
 		return nodes.flatMap((node) => [node.post, ...flattenReplies(node.replies)]);
 	}
 
+	/** Append a fresh reply under `parentId`, rebuilding the path on the way down. */
+	function insertReply(
+		nodes: ThreadResponse[],
+		parentId: string,
+		created: Page48Post
+	): ThreadResponse[] {
+		return nodes.map((node) =>
+			node.post.postId === parentId
+				? { ...node, replies: [...node.replies, { post: created, replies: [] }] }
+				: { ...node, replies: insertReply(node.replies, parentId, created) }
+		);
+	}
+
 	function removeFromReplyTree(nodes: ThreadResponse[], id: string): ThreadResponse[] {
 		return nodes
 			.filter((node) => node.post.postId !== id)
@@ -224,6 +249,13 @@
 		}
 		chain = chain.filter((p) => p.postId !== postId);
 		replyTree = removeFromReplyTree(replyTree, postId);
+		const nextReplies: Record<string, Page48Post[]> = {};
+		for (const [parentId, list] of Object.entries(localReplies)) {
+			if (parentId === postId) continue;
+			const kept = list.filter((p) => p.postId !== postId);
+			if (kept.length > 0) nextReplies[parentId] = kept;
+		}
+		localReplies = nextReplies;
 	}
 
 	async function handleReply(
@@ -239,7 +271,7 @@
 			const images = files.length > 0 ? await uploadPage48Images(files) : [];
 			const videos = video ? [await uploadPage48Video(video)] : [];
 			// Replies can't carry a poll (server rule), so `poll` is always null here.
-			await page48Api.createPost(
+			const created = await page48Api.createPost(
 				content,
 				images,
 				videos,
@@ -248,16 +280,26 @@
 				quotedPostId ?? undefined
 			);
 			showToast(t('page48.post.replySent'), 'success');
-			// A reply only shows up here when it answers the focused post or one of the
-			// listed replies. Anything else — a chain continuation, or the parent post shown
-			// as context — lives on that post's own page, so follow it to keep it visible.
-			const shownHere =
-				target.postId === focused?.postId || replies.some((p) => p.postId === target.postId);
-			if (!shownHere) {
-				await goto(`/page48/post/${target.postId}`);
-				return;
+			// Every card in this view stays mounted, so the answer can be placed under
+			// whichever one it replies to — no refetch, no navigation.
+			target.replyCount += 1;
+			const lastSegment = chain[chain.length - 1];
+			if (lastSegment?.postId === target.postId && created.userId === target.userId) {
+				// The author answering the end of their own thread keeps the chain going,
+				// so it reads as another segment with a straight line, not a reply.
+				chain = [...chain, created];
+				chainTotal += 1;
+			} else if (target.postId === focused?.postId) {
+				replyTree = [...replyTree, { post: created, replies: [] }];
+			} else if (replies.some((p) => p.postId === target.postId)) {
+				replyTree = insertReply(replyTree, target.postId, created);
+			} else {
+				localReplies = {
+					...localReplies,
+					[target.postId]: [...(localReplies[target.postId] ?? []), created]
+				};
 			}
-			await load(postId);
+			replyTarget = focused;
 		} catch (err: unknown) {
 			const e = err as { message?: string };
 			showToast(e?.message || t('page48.post.replyError'), 'error');
@@ -270,7 +312,10 @@
 			replies.find((p) => p.postId === id) ??
 			chain.find((p) => p.postId === id) ??
 			(parentContext?.postId === id ? parentContext : undefined) ??
-			(focused?.postId === id ? focused : undefined)
+			(focused?.postId === id ? focused : undefined) ??
+			Object.values(localReplies)
+				.flat()
+				.find((p) => p.postId === id)
 		);
 	}
 
@@ -289,6 +334,30 @@
 		if (post) await handleToggle(post, 'bookmark');
 	}
 </script>
+
+{#snippet extraReplies(parentId: string, depth: number)}
+	{#each localReplies[parentId] ?? [] as reply (reply.postId)}
+		<div
+			class={depth === 0
+				? `${SEGMENT_REPLY_INDENT} ${REPLY_LINE}`
+				: depth <= MAX_INDENT_DEPTH
+					? `${NESTED_REPLY_INDENT} ${REPLY_LINE}`
+					: ''}
+		>
+			<PostCard
+				post={reply}
+				showThreadLink={false}
+				onLike={handleReplyLike}
+				onRepost={handleReplyRepost}
+				onBookmark={handleReplyBookmark}
+				onComment={handleComment}
+				onShare={handleShare}
+				onDelete={handleDelete}
+			/>
+			{@render extraReplies(reply.postId, depth + 1)}
+		</div>
+	{/each}
+{/snippet}
 
 {#snippet inlineComposer(post: Page48Post)}
 	{#if isAuthenticated.value && replyTarget?.postId === post.postId}
@@ -332,11 +401,7 @@
 	{@render inlineComposer(node.post)}
 
 	{#if node.replies.length > 0 && node.replies.length < NESTED_REPLY_LIMIT}
-		<div
-			class={depth < MAX_INDENT_DEPTH
-				? 'ml-5 sm:ml-6 border-l-2 border-gray-200/70 dark:border-zinc-800'
-				: ''}
-		>
+		<div class={depth < MAX_INDENT_DEPTH ? `${NESTED_REPLY_INDENT} ${REPLY_LINE}` : ''}>
 			{#each node.replies as child (child.post.postId)}
 				{@render replyNode(child, depth + 1)}
 			{/each}
@@ -419,13 +484,14 @@
 				onDelete={handleDelete}
 			/>
 			{@render inlineComposer(parentContext)}
+			{@render extraReplies(parentContext.postId, 0)}
 		{/if}
 
 		<!-- The author's chain: connected, like a thread should read -->
 		{#each chain as item, i (item.postId)}
 			<PostCard
 				post={item}
-				isThreadLine={i < chain.length - 1}
+				isThreadLine={i < chain.length - 1 || (localReplies[item.postId]?.length ?? 0) > 0}
 				isContinuation={i > 0 || !!parentContext}
 				threadPosition={chainTotal > 1 ? { index: chainStart + i, total: chainTotal } : undefined}
 				showThreadLink={false}
@@ -440,6 +506,7 @@
 				onDelete={handleDelete}
 			/>
 			{@render inlineComposer(item)}
+			{@render extraReplies(item.postId, 0)}
 		{/each}
 
 		<!-- Everyone else's replies: nested like a thread until they get too many -->
