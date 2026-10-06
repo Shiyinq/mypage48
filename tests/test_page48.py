@@ -13,6 +13,7 @@ Layout mirrors the endpoint groups in `src/page48/route.py`:
 import asyncio
 import base64
 import io
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -1391,3 +1392,433 @@ async def test_admin_reports_list_and_filters(client, create_user, make_post):
     assert (
         await client.get("/api/page48/admin/reports", headers=normal)
     ).status_code == 404
+
+
+# --------------------------------------------------------------------------- #
+# Additional use cases (edge branches beyond the happy path)
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.asyncio
+async def test_poll_expires_after_deadline(client, db, create_user):
+    _, _, author = await create_user("p48_poll_exp_author")
+    created = await client.post(
+        "/api/page48/posts",
+        json={"content": "ends soon?", "poll": {"options": ["yes", "no"]}},
+        headers=author,
+    )
+    body = created.json()
+    post_id = body["postId"]
+    option_id = body["poll"]["options"][0]["id"]
+
+    # Move the deadline into the past, exactly as 24 hours would do.
+    await db["page48_posts"].update_one(
+        {"postId": post_id},
+        {"$set": {"poll.endsAt": datetime.now(timezone.utc) - timedelta(hours=1)}},
+    )
+
+    fetched = (await client.get(f"/api/page48/posts/{post_id}", headers=author)).json()
+    assert fetched["poll"]["isExpired"] is True
+
+    _, _, voter = await create_user("p48_poll_exp_voter")
+    vote = await client.post(
+        f"/api/page48/posts/{post_id}/poll/vote",
+        json={"optionId": option_id},
+        headers=voter,
+    )
+    assert vote.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_quote_with_poll_is_rejected(client, create_user, make_post):
+    _, _, author = await create_user("p48_qp_author")
+    original = await make_post(author, "original")
+
+    _, _, quoter = await create_user("p48_qp_quoter")
+    res = await client.post(
+        "/api/page48/posts",
+        json={
+            "content": "quote with poll",
+            "quotedPostId": original["postId"],
+            "poll": {"options": ["a", "b"]},
+        },
+        headers=quoter,
+    )
+    assert res.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_create_thread_too_long(client, create_user):
+    _, _, headers = await create_user("p48_thread_long")
+    res = await client.post(
+        "/api/page48/posts/thread",
+        json={"posts": [{"content": f"part {i}"} for i in range(26)]},
+        headers=headers,
+    )
+    assert res.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_search_operators(client, create_user, make_post):
+    _, _, from_author = await create_user("p48_op_from")
+    await make_post(from_author, "operator post")
+
+    _, _, mentioner = await create_user("p48_op_mentioner")
+    await make_post(mentioner, "ping @p48_op_target now")
+
+    _, _, tagger = await create_user("p48_op_tagger")
+    await make_post(tagger, "hashtag #p48optag here")
+
+    _, _, searcher = await create_user("p48_op_searcher")
+
+    by_author = await client.get(
+        "/api/page48/search/posts?query=from:p48_op_from", headers=searcher
+    )
+    assert [p["content"] for p in by_author.json()["data"]] == ["operator post"]
+
+    by_mention = await client.get(
+        "/api/page48/search/posts?query=@p48_op_target", headers=searcher
+    )
+    assert len(by_mention.json()["data"]) == 1
+
+    by_tag = await client.get(
+        "/api/page48/search/posts?query=%23p48optag", headers=searcher
+    )
+    assert len(by_tag.json()["data"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_quote_includes_preview(client, create_user, make_post):
+    _, _, author = await create_user("p48_prev_author")
+    original = await make_post(author, "preview me")
+
+    _, _, quoter = await create_user("p48_prev_quoter")
+    quote = await make_post(quoter, "quoting", quotedPostId=original["postId"])
+
+    fetched = (await client.get(f"/api/page48/posts/{quote['postId']}")).json()
+    assert fetched["quotedPostId"] == original["postId"]
+    assert fetched["quotedPost"] is not None
+    assert fetched["quotedPost"]["content"] == "preview me"
+
+
+@pytest.mark.asyncio
+async def test_user_reposts_list(client, create_user, make_post):
+    _, _, author = await create_user("p48_ur_author")
+    post = await make_post(author, "repost target")
+
+    _, _, reposter = await create_user("p48_ur_reposter")
+    await client.post(f"/api/page48/posts/{post['postId']}/repost", headers=reposter)
+
+    res = await client.get("/api/page48/users/p48_ur_reposter/reposts")
+    data = res.json()["data"]
+    assert [p["postId"] for p in data] == [post["postId"]]
+    assert data[0]["repostedAt"] is not None
+
+
+@pytest.mark.asyncio
+async def test_cursor_pagination_replies(client, create_user, make_post):
+    _, _, author = await create_user("p48_cp_author")
+    root = await make_post(author, "root for replies")
+    for index in range(3):
+        await make_post(author, f"reply {index}", parentPostId=root["postId"])
+
+    first = (
+        await client.get(f"/api/page48/posts/{root['postId']}/replies?limit=2")
+    ).json()
+    assert len(first["data"]) == 2
+    assert first["meta"]["hasMore"] is True
+
+    second = (
+        await client.get(
+            f"/api/page48/posts/{root['postId']}/replies"
+            f"?limit=2&cursor={first['meta']['nextCursor']}"
+        )
+    ).json()
+    assert len(second["data"]) == 1
+    ids = {p["postId"] for p in first["data"]} | {p["postId"] for p in second["data"]}
+    assert len(ids) == 3
+
+
+@pytest.mark.asyncio
+async def test_cursor_pagination_likes(client, create_user, make_post):
+    _, _, author = await create_user("p48_cl_author")
+    post = await make_post(author, "many likes")
+
+    for name in ("p48_cl_l1", "p48_cl_l2", "p48_cl_l3"):
+        _, _, liker = await create_user(name)
+        await client.post(f"/api/page48/posts/{post['postId']}/like", headers=liker)
+
+    first = (
+        await client.get(
+            f"/api/page48/posts/{post['postId']}/likes?limit=2", headers=author
+        )
+    ).json()
+    assert len(first["data"]) == 2
+    assert first["meta"]["hasMore"] is True
+
+    second = (
+        await client.get(
+            f"/api/page48/posts/{post['postId']}/likes"
+            f"?limit=2&cursor={first['meta']['nextCursor']}",
+            headers=author,
+        )
+    ).json()
+    assert len(second["data"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_cursor_pagination_followers(client, create_user, follow):
+    _, _, target = await create_user("p48_cf_target")
+    for name in ("p48_cf_1", "p48_cf_2", "p48_cf_3"):
+        _, _, follower = await create_user(name)
+        await follow(follower, "p48_cf_target")
+
+    first = (
+        await client.get(
+            "/api/page48/users/p48_cf_target/followers?limit=2", headers=target
+        )
+    ).json()
+    assert len(first["data"]) == 2
+    assert first["meta"]["hasMore"] is True
+
+    second = (
+        await client.get(
+            "/api/page48/users/p48_cf_target/followers"
+            f"?limit=2&cursor={first['meta']['nextCursor']}",
+            headers=target,
+        )
+    ).json()
+    assert len(second["data"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_locked_reply_hidden_from_thread(client, create_user, make_post, follow):
+    _, _, author = await create_user("p48_lr_author")
+    root = await make_post(author, "public root")
+
+    _, _, locked = await create_user("p48_lr_locked")
+    await client.patch("/api/page48/me/settings", json={"locked": True}, headers=locked)
+    await make_post(locked, "locked reply", parentPostId=root["postId"])
+
+    _, _, stranger = await create_user("p48_lr_stranger")
+    thread = (
+        await client.get(f"/api/page48/posts/{root['postId']}/thread", headers=stranger)
+    ).json()
+    assert thread["replies"] == []
+
+    # Following a locked account stays a request until the owner approves it.
+    await follow(stranger, "p48_lr_locked")
+    still_hidden = (
+        await client.get(f"/api/page48/posts/{root['postId']}/thread", headers=stranger)
+    ).json()
+    assert still_hidden["replies"] == []
+
+    await client.post("/api/page48/users/p48_lr_stranger/follow/accept", headers=locked)
+    visible = (
+        await client.get(f"/api/page48/posts/{root['postId']}/thread", headers=stranger)
+    ).json()
+    assert len(visible["replies"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_private_reply_inherits_privacy(client, create_user, make_post):
+    _, _, author = await create_user("p48_pr_author")
+    root = await make_post(author, "private root")
+    await client.post(f"/api/page48/posts/{root['postId']}/private", headers=author)
+
+    reply = await make_post(author, "hidden reply", parentPostId=root["postId"])
+    assert reply["isPrivate"] is True
+
+    assert (await client.get(f"/api/page48/posts/{reply['postId']}")).status_code == 404
+    assert (
+        await client.get(f"/api/page48/posts/{reply['postId']}", headers=author)
+    ).status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_declining_pending_request_clears_notification(
+    client, create_user, follow
+):
+    _, _, owner = await create_user("p48_up_owner")
+    _, _, fan = await create_user("p48_up_fan")
+
+    await client.patch("/api/page48/me/settings", json={"locked": True}, headers=owner)
+    await follow(fan, "p48_up_owner")
+
+    before = (
+        await client.get("/api/page48/notifications?tab=follows", headers=owner)
+    ).json()
+    assert len(before["data"]) == 1
+
+    # Cancelling the request has to remove the owner's Follows entry too.
+    await client.delete("/api/page48/users/p48_up_owner/follow", headers=fan)
+
+    after = (
+        await client.get("/api/page48/notifications?tab=follows", headers=owner)
+    ).json()
+    assert after["data"] == []
+
+
+@pytest.mark.asyncio
+async def test_accept_without_pending_request(client, create_user):
+    _, _, owner = await create_user("p48_ap_owner")
+    _, _, other = await create_user("p48_ap_other")
+
+    # Nothing is pending, so this is a no-op the endpoint reports as success.
+    res = await client.post(
+        "/api/page48/users/p48_ap_other/follow/accept", headers=owner
+    )
+    assert res.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_block_hides_viewer_from_blocked_account_feed(
+    client, create_user, make_post
+):
+    _, _, alice = await create_user("p48_bw_alice")
+    _, _, bob = await create_user("p48_bw_bob")
+    alice_post = await make_post(alice, "alice post")
+    await make_post(bob, "bob post")
+
+    await client.post("/api/page48/users/p48_bw_bob/block", headers=alice)
+
+    # The block is mutual, so Alice's post is gone from Bob's timeline too.
+    bob_feed = (await client.get("/api/page48/feed", headers=bob)).json()["data"]
+    assert alice_post["postId"] not in [p["postId"] for p in bob_feed]
+    assert (
+        await client.get(f"/api/page48/posts/{alice_post['postId']}", headers=bob)
+    ).status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_pinned_post_only_on_first_page(client, create_user, make_post):
+    _, _, author = await create_user("p48_pin_page")
+    posts = [await make_post(author, f"pin page {i}") for i in range(4)]
+    pinned = posts[0]
+    await client.post(f"/api/page48/posts/{pinned['postId']}/pin", headers=author)
+
+    first = (await client.get("/api/page48/users/p48_pin_page/posts?limit=2")).json()
+    assert first["data"][0]["postId"] == pinned["postId"]
+    assert first["data"][0]["isPinned"] is True
+
+    second = (
+        await client.get(
+            "/api/page48/users/p48_pin_page/posts"
+            f"?limit=2&cursor={first['meta']['nextCursor']}"
+        )
+    ).json()
+    assert pinned["postId"] not in [p["postId"] for p in second["data"]]
+
+    ids = [p["postId"] for p in first["data"]] + [p["postId"] for p in second["data"]]
+    assert len(ids) == len(set(ids)) == 4
+
+
+@pytest.mark.asyncio
+async def test_aggregates_hide_blocked_accounts(client, create_user, make_post):
+    _, _, alice = await create_user("p48_ag_alice")
+    _, _, bob = await create_user("p48_ag_bob")
+    await make_post(bob, "blocked #p48blocktag")
+
+    guest_tags = {
+        t["tag"] for t in (await client.get("/api/page48/tags/trending")).json()["tags"]
+    }
+    assert "p48blocktag" in guest_tags
+
+    await client.post("/api/page48/users/p48_ag_bob/block", headers=alice)
+
+    alice_tags = {
+        t["tag"]
+        for t in (await client.get("/api/page48/tags/trending", headers=alice)).json()[
+            "tags"
+        ]
+    }
+    assert "p48blocktag" not in alice_tags
+
+    guest_active = {
+        u["username"]
+        for u in (await client.get("/api/page48/users/active")).json()["users"]
+    }
+    assert "p48_ag_bob" in guest_active
+
+    alice_active = {
+        u["username"]
+        for u in (await client.get("/api/page48/users/active", headers=alice)).json()[
+            "users"
+        ]
+    }
+    assert "p48_ag_bob" not in alice_active
+
+
+@pytest.mark.asyncio
+async def test_edit_updates_search_index(client, create_user, make_post):
+    _, _, author = await create_user("p48_ei_author")
+    post = await make_post(author, "alpha foxtrot")
+    _, _, searcher = await create_user("p48_ei_searcher")
+
+    before = (
+        await client.get("/api/page48/search/posts?query=alpha", headers=searcher)
+    ).json()
+    assert len(before["data"]) == 1
+
+    await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={"content": "omega foxtrot"},
+        headers=author,
+    )
+
+    stale = (
+        await client.get("/api/page48/search/posts?query=alpha", headers=searcher)
+    ).json()
+    assert stale["data"] == []
+
+    fresh = (
+        await client.get("/api/page48/search/posts?query=omega", headers=searcher)
+    ).json()
+    assert len(fresh["data"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_feed_media_video_filter(client, create_user, storage_service):
+    _, user_id, headers = await create_user("p48_fv_user")
+    await client.post(
+        "/api/page48/posts",
+        json={
+            "content": "clip",
+            "videos": [
+                {
+                    "filename": f"page48/{user_id}/c.mp4",
+                    "width": 1080,
+                    "height": 1920,
+                    "duration": 3,
+                }
+            ],
+        },
+        headers=headers,
+    )
+
+    videos = (await client.get("/api/page48/feed?media=video")).json()["data"]
+    assert len(videos) == 1
+    assert videos[0]["videos"]
+
+    images = (await client.get("/api/page48/feed?media=image")).json()["data"]
+    assert images == []
+
+
+@pytest.mark.asyncio
+async def test_notification_overview_per_tab(client, create_user, make_post, follow):
+    _, _, user = await create_user("p48_ov_user")
+    post = await make_post(user, "overview post")
+
+    _, _, liker = await create_user("p48_ov_liker")
+    await client.post(f"/api/page48/posts/{post['postId']}/like", headers=liker)
+    await follow(liker, "p48_ov_user")
+
+    overview = (
+        await client.get("/api/page48/notifications/overview", headers=user)
+    ).json()
+    assert overview["total"] >= 2
+
+    tabs = {t["tab"]: t for t in overview["tabs"]}
+    assert tabs["likes"]["count"] == 1
+    assert tabs["likes"]["previews"]
+    assert tabs["follows"]["count"] == 1
