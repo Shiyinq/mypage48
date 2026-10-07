@@ -128,3 +128,7 @@ class CannotBlockSelfError(DomainException):
 
 class CannotMuteSelfError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.CANNOT_MUTE_SELF
+
+
+class TooManyRelationsError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.MAX_RELATIONS_REACHED

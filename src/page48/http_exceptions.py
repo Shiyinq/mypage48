@@ -138,3 +138,7 @@ class CannotBlockSelf(BadRequest):
 
 class CannotMuteSelf(BadRequest):
     DETAIL = ErrorCode.CANNOT_MUTE_SELF
+
+
+class TooManyRelations(BadRequest):
+    DETAIL = ErrorCode.MAX_RELATIONS_REACHED

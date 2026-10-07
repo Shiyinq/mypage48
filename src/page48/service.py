@@ -37,6 +37,7 @@ from src.page48.exceptions import (
     ReportCreationError,
     ThreadTooLongError,
     ThreadTooShortError,
+    TooManyRelationsError,
     UnauthorizedActionError,
     UserProfileNotFoundError,
     VideoTooLargeError,
@@ -156,6 +157,10 @@ MAX_POLL_OPTIONS = 6
 MAX_POLL_OPTION_LENGTH = 50
 MIN_THREAD_POSTS = 2
 MAX_THREAD_POSTS = 25
+# How many accounts one person may block / mute. Bounded at write time so the
+# viewer-side hidden-authors scan can never silently drop an edge.
+MAX_BLOCK_RELATIONS = 500
+MAX_MUTE_RELATIONS = 500
 ALLOWED_VIDEO_TYPES = {
     "video/mp4": "mp4",
     "video/webm": "webm",
@@ -2648,6 +2653,11 @@ class Page48Service:
             raise CannotBlockSelfError()
 
         if not await self.repository.get_block(current_user_id, target_id):
+            if (
+                await self.repository.count_outgoing_blocks(current_user_id)
+                >= MAX_BLOCK_RELATIONS
+            ):
+                raise TooManyRelationsError()
             try:
                 await self.repository.insert_block(current_user_id, target_id)
             except DuplicateKeyError:
@@ -2678,6 +2688,11 @@ class Page48Service:
             raise CannotMuteSelfError()
 
         if not await self.repository.get_mute(current_user_id, target_id):
+            if (
+                await self.repository.count_outgoing_mutes(current_user_id)
+                >= MAX_MUTE_RELATIONS
+            ):
+                raise TooManyRelationsError()
             try:
                 await self.repository.insert_mute(current_user_id, target_id)
             except DuplicateKeyError:

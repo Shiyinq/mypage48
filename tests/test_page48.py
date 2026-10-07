@@ -1999,3 +1999,46 @@ async def test_create_post_rejects_foreign_image_reference(client, create_user):
         headers=headers,
     )
     assert thread.status_code == 400
+
+
+# --------------------------------------------------------------------------- #
+# Block / mute lists are bounded at write time
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.asyncio
+async def test_block_relation_limit(client, create_user, monkeypatch):
+    monkeypatch.setattr("src.page48.service.MAX_BLOCK_RELATIONS", 1)
+    _, _, alice = await create_user("p48_bl_alice")
+    _, _, _bob = await create_user("p48_bl_bob")
+    _, _, _carol = await create_user("p48_bl_carol")
+
+    first = await client.post("/api/page48/users/p48_bl_bob/block", headers=alice)
+    assert first.status_code == 200
+
+    # The second block is refused while the first still occupies the slot.
+    second = await client.post("/api/page48/users/p48_bl_carol/block", headers=alice)
+    assert second.status_code == 400
+
+    # Freeing a slot lets the next block through.
+    await client.delete("/api/page48/users/p48_bl_bob/block", headers=alice)
+    third = await client.post("/api/page48/users/p48_bl_carol/block", headers=alice)
+    assert third.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_mute_relation_limit(client, create_user, monkeypatch):
+    monkeypatch.setattr("src.page48.service.MAX_MUTE_RELATIONS", 1)
+    _, _, alice = await create_user("p48_mu_alice")
+    _, _, _bob = await create_user("p48_mu_bob")
+    _, _, _carol = await create_user("p48_mu_carol")
+
+    first = await client.post("/api/page48/users/p48_mu_bob/mute", headers=alice)
+    assert first.status_code == 200
+
+    second = await client.post("/api/page48/users/p48_mu_carol/mute", headers=alice)
+    assert second.status_code == 400
+
+    await client.delete("/api/page48/users/p48_mu_bob/mute", headers=alice)
+    third = await client.post("/api/page48/users/p48_mu_carol/mute", headers=alice)
+    assert third.status_code == 200

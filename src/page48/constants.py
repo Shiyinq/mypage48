@@ -19,6 +19,9 @@ class ErrorCode:
     POST_NOT_FOUND = "Post not found."
     POST_CREATE_ERROR = "Failed to create post."
     INVALID_IMAGE = "The image reference is invalid."
+    MAX_RELATIONS_REACHED = (
+        "You have reached the maximum number of blocked or muted accounts."
+    )
     UNAUTHORIZED_ACTION = "You are not authorized to perform this action."
     MAX_MEDIA_EXCEEDED = "Maximum number of media allowed per post is 10."
     REPLY_NOT_FOUND = "The post you are trying to reply to does not exist."
@@ -55,6 +58,9 @@ class DomainErrorCode:
     POST_NOT_FOUND = "Post not found."
     POST_CREATION_FAILED = "Failed to create post."
     INVALID_IMAGE = "The image reference is invalid."
+    MAX_RELATIONS_REACHED = (
+        "You have reached the maximum number of blocked or muted accounts."
+    )
     UNAUTHORIZED = "Unauthorized."
     USER_NOT_FOUND = "User not found."
     REPORT_CREATION_FAILED = "Failed to submit report."

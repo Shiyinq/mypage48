@@ -5,6 +5,8 @@ from typing import Dict, List, Optional
 from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from src.logging_config import create_logger
+
 # A search query may sort its matches on disk, but it must never hang a request.
 SEARCH_MAX_TIME_MS = 5000
 # Posts scanned when counting tag matches; bounds the aggregation's work.
@@ -13,11 +15,17 @@ SEARCH_TAG_POST_SCAN = 20000
 # unauthenticated callers, so an unbounded `$unwind`/`$group` over the whole
 # collection would be a cheap way to exhaust the database.
 AGGREGATION_POST_SCAN = 20000
-# How many block/mute edges one lookup will read before giving up on the rest.
-RELATION_SCAN_LIMIT = 5000
+# Safety ceiling for block/mute edges read in one lookup. Outgoing edges are
+# capped at write time (MAX_BLOCK_RELATIONS / MAX_MUTE_RELATIONS), so a viewer's
+# own list stays far below this; the ceiling only guards against a pathological
+# number of incoming edges, and hitting it is logged rather than silently
+# dropping a block/mute.
+RELATION_SCAN_LIMIT = 20000
 # A follow is accepted unless it is explicitly waiting for the target's approval.
 # Legacy rows predate the field entirely, so "not pending" is the safe test.
 ACCEPTED_FOLLOW = {"status": {"$ne": "pending"}}
+
+logger = create_logger("page48_repository", __name__)
 
 
 class Page48Repository:
@@ -1177,15 +1185,35 @@ class Page48Repository:
         )
 
     async def get_blocked_ids(self, viewer_id: str) -> List[str]:
-        """Who the viewer blocked, plus who blocked the viewer: block is mutual."""
-        rows = await self.blocks.find(
-            {"$or": [{"blockerId": viewer_id}, {"blockedId": viewer_id}]},
-            {"blockerId": 1, "blockedId": 1},
-        ).to_list(length=RELATION_SCAN_LIMIT)
+        """Who the viewer blocked, plus who blocked the viewer: block is mutual.
+
+        Sorted newest-first so that, if the safety ceiling is ever reached, it is
+        the oldest edges that fall off — deterministically, and with a warning,
+        never silently.
+        """
+        rows = (
+            await self.blocks.find(
+                {"$or": [{"blockerId": viewer_id}, {"blockedId": viewer_id}]},
+                {"blockerId": 1, "blockedId": 1},
+            )
+            .sort([("createdAt", -1), ("_id", -1)])
+            .to_list(length=RELATION_SCAN_LIMIT + 1)
+        )
+        if len(rows) > RELATION_SCAN_LIMIT:
+            logger.warning(
+                "Block relations for %s exceed RELATION_SCAN_LIMIT (%d); the "
+                "oldest edges are dropped from the hidden set.",
+                viewer_id,
+                RELATION_SCAN_LIMIT,
+            )
+            rows = rows[:RELATION_SCAN_LIMIT]
         return [
             row["blockedId"] if row["blockerId"] == viewer_id else row["blockerId"]
             for row in rows
         ]
+
+    async def count_outgoing_blocks(self, blocker_id: str) -> int:
+        return await self.blocks.count_documents({"blockerId": blocker_id})
 
     async def get_blocked_users(
         self, blocker_id: str, limit: int = 20, cursor: Optional[dict] = None
@@ -1218,11 +1246,27 @@ class Page48Repository:
         return await self.mutes.find_one({"muterId": muter_id, "mutedId": muted_id})
 
     async def get_muted_ids(self, muter_id: str) -> List[str]:
-        """Who the viewer muted. Unlike block, this is one-directional."""
-        rows = await self.mutes.find(
-            {"muterId": muter_id}, {"mutedId": 1}
-        ).to_list(length=RELATION_SCAN_LIMIT)
+        """Who the viewer muted. Unlike block, this is one-directional.
+
+        Sorted newest-first, with the same ceiling-and-warn behaviour as blocks.
+        """
+        rows = (
+            await self.mutes.find({"muterId": muter_id}, {"mutedId": 1})
+            .sort([("createdAt", -1), ("_id", -1)])
+            .to_list(length=RELATION_SCAN_LIMIT + 1)
+        )
+        if len(rows) > RELATION_SCAN_LIMIT:
+            logger.warning(
+                "Mute relations for %s exceed RELATION_SCAN_LIMIT (%d); the "
+                "oldest edges are dropped from the timeline filter.",
+                muter_id,
+                RELATION_SCAN_LIMIT,
+            )
+            rows = rows[:RELATION_SCAN_LIMIT]
         return [row["mutedId"] for row in rows]
+
+    async def count_outgoing_mutes(self, muter_id: str) -> int:
+        return await self.mutes.count_documents({"muterId": muter_id})
 
     async def get_muted_users(
         self, muter_id: str, limit: int = 20, cursor: Optional[dict] = None

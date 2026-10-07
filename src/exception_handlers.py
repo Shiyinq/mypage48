@@ -155,6 +155,7 @@ from src.page48.exceptions import (
     ReportCreationError,
     ThreadTooLongError,
     ThreadTooShortError,
+    TooManyRelationsError,
     UnauthorizedActionError,
     UserProfileNotFoundError,
     VideoTooLargeError,
@@ -188,6 +189,7 @@ from src.page48.http_exceptions import (
     ReportCreateError,
     ThreadTooLong,
     ThreadTooShort,
+    TooManyRelations,
     UnauthorizedAction,
     UserProfileNotFound,
     VideoTooLarge,
@@ -596,6 +598,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, CannotBlockSelf())
     if isinstance(exc, CannotMuteSelfError):
         return await detailed_http_exception_handler(request, CannotMuteSelf())
+    if isinstance(exc, TooManyRelationsError):
+        return await detailed_http_exception_handler(request, TooManyRelations())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):
