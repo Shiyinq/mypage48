@@ -1695,9 +1695,6 @@ class Page48Service:
         cursor: Optional[str] = None,
         current_user_id: Optional[str] = None,
     ) -> PostUserListResponse:
-        if not await self.repository.get_post_by_id(post_id):
-            raise PostNotFoundError()
-
         parent = await self.repository.get_post_by_id(post_id)
         if not parent:
             raise PostNotFoundError()
@@ -2606,8 +2603,11 @@ class Page48Service:
             )
             # Let the new follower know the request went through.
             await self._notify(requester_id, current_user_id, "followAccepted")
+        # Report the relationship that actually exists: a pending request was
+        # just accepted, an already-accepted follow stays, and nothing pending
+        # is a no-op instead of an imaginary follow.
         return FollowResponse(
-            isFollowing=True,
+            isFollowing=bool(row),
             followerCount=await self.repository.count_followers(current_user_id),
         )
 

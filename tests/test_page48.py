@@ -1664,11 +1664,35 @@ async def test_accept_without_pending_request(client, create_user):
     _, _, owner = await create_user("p48_ap_owner")
     _, _, other = await create_user("p48_ap_other")
 
-    # Nothing is pending, so this is a no-op the endpoint reports as success.
+    # Nothing is pending, so this is a no-op: it succeeds but reports that no
+    # follow relationship actually exists.
     res = await client.post(
         "/api/page48/users/p48_ap_other/follow/accept", headers=owner
     )
     assert res.status_code == 200
+    assert res.json()["isFollowing"] is False
+
+
+@pytest.mark.asyncio
+async def test_accept_pending_request_confirms_follow(client, create_user, follow):
+    _, _, owner = await create_user("p48_acc_owner")
+    _, _, fan = await create_user("p48_acc_fan")
+
+    await client.patch("/api/page48/me/settings", json={"locked": True}, headers=owner)
+    pending = await follow(fan, "p48_acc_owner")
+    assert pending["isPending"] is True
+
+    accepted = await client.post(
+        "/api/page48/users/p48_acc_fan/follow/accept", headers=owner
+    )
+    assert accepted.status_code == 200
+    assert accepted.json()["isFollowing"] is True
+
+    profile = (
+        await client.get("/api/page48/users/p48_acc_owner/profile", headers=fan)
+    ).json()
+    assert profile["isFollowing"] is True
+    assert profile["isFollowPending"] is False
 
 
 @pytest.mark.asyncio
