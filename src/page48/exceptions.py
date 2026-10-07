@@ -58,6 +58,10 @@ class InvalidVideoError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.INVALID_VIDEO
 
 
+class InvalidImageError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_IMAGE
+
+
 class PollNotFoundError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.POLL_NOT_FOUND
 

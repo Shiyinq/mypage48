@@ -18,6 +18,7 @@ class Info:
 class ErrorCode:
     POST_NOT_FOUND = "Post not found."
     POST_CREATE_ERROR = "Failed to create post."
+    INVALID_IMAGE = "The image reference is invalid."
     UNAUTHORIZED_ACTION = "You are not authorized to perform this action."
     MAX_MEDIA_EXCEEDED = "Maximum number of media allowed per post is 10."
     REPLY_NOT_FOUND = "The post you are trying to reply to does not exist."
@@ -53,6 +54,7 @@ class ErrorCode:
 class DomainErrorCode:
     POST_NOT_FOUND = "Post not found."
     POST_CREATION_FAILED = "Failed to create post."
+    INVALID_IMAGE = "The image reference is invalid."
     UNAUTHORIZED = "Unauthorized."
     USER_NOT_FOUND = "User not found."
     REPORT_CREATION_FAILED = "Failed to submit report."

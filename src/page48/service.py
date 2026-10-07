@@ -16,6 +16,7 @@ from src.page48.exceptions import (
     CannotPinReplyError,
     CannotPrivateReplyError,
     CannotReportSelfError,
+    InvalidImageError,
     InvalidPollOptionError,
     InvalidPollOptionsError,
     InvalidReportTargetError,
@@ -1102,6 +1103,9 @@ class Page48Service:
             parent = await self.repository.get_post_by_id(parent_post_id)
             if not parent:
                 raise PostNotFoundError()
+            # A reply must not expose, or chain onto, a post its author is not
+            # allowed to read.
+            await self._assert_post_visible(parent, user.userId)
 
             root_post_id = parent.get("rootPostId") or parent_post_id
             depth = parent.get("depth", 0) + 1
@@ -1110,16 +1114,24 @@ class Page48Service:
             # Update reply count of parent
             await self.repository.increment_post_stats(parent_post_id, "replyCount", 1)
 
-        # Dimensions come from the client so the feed can reserve the right
-        # box for each photo without cropping it.
-        images_data = [
-            {
-                "filename": ref.filename,
-                "width": ref.width or 0,
-                "height": ref.height or 0,
-            }
-            for ref in data.images
-        ]
+        # Every image must live under the uploader's own prefix, exactly like a
+        # video: the read side signs whatever path a post carries, so an
+        # unvalidated reference would turn a public post into a signed-URL
+        # oracle for arbitrary stored objects (other users' files, other
+        # services) and let external/data: URLs into the feed.
+        image_prefix = f"page48/{user.userId}/"
+        images_data = []
+        for ref in data.images:
+            filename = (ref.filename or "").strip()
+            if not filename.startswith(image_prefix) or ".." in filename:
+                raise InvalidImageError()
+            images_data.append(
+                {
+                    "filename": filename,
+                    "width": ref.width or 0,
+                    "height": ref.height or 0,
+                }
+            )
         video_refs = data.videos or []
 
         # A post is either images or a single video, never both.
@@ -1148,8 +1160,12 @@ class Page48Service:
 
         # A quote is an ordinary post that embeds a preview of another one.
         quoted_post_id = getattr(data, "quotedPostId", None)
-        if quoted_post_id and not await self.repository.get_post_by_id(quoted_post_id):
-            raise QuotedPostNotFoundError()
+        if quoted_post_id:
+            quoted_post = await self.repository.get_post_by_id(quoted_post_id)
+            if not quoted_post:
+                raise QuotedPostNotFoundError()
+            # You can only quote a post you are allowed to read.
+            await self._assert_post_visible(quoted_post, user.userId)
 
         poll_data = None
         if data.poll is not None:
@@ -1210,6 +1226,7 @@ class Page48Service:
             MediaConflictError,
             MaxVideoExceededError,
             InvalidVideoError,
+            InvalidImageError,
             InvalidPollOptionsError,
             PollMediaConflictError,
             QuotePollConflictError,
@@ -1256,6 +1273,7 @@ class Page48Service:
             MediaConflictError,
             MaxVideoExceededError,
             InvalidVideoError,
+            InvalidImageError,
             InvalidPollOptionsError,
             PollMediaConflictError,
             QuotePollConflictError,
@@ -1787,6 +1805,8 @@ class Page48Service:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
+        # Likes are refused on a post this viewer may not read.
+        await self._assert_post_visible(post, user_id)
 
         existing = await self.repository.get_like(post_id, user_id)
         if existing:
@@ -1809,6 +1829,7 @@ class Page48Service:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
+        await self._assert_post_visible(post, user_id)
 
         poll = post.get("poll")
         if not poll:
@@ -1836,6 +1857,7 @@ class Page48Service:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
+        await self._assert_post_visible(post, user_id)
 
         existing = await self.repository.get_repost(post_id, user_id)
         if existing:
@@ -1856,6 +1878,7 @@ class Page48Service:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
+        await self._assert_post_visible(post, user_id)
 
         existing = await self.repository.get_bookmark(post_id, user_id)
         if existing:
@@ -1953,6 +1976,13 @@ class Page48Service:
             if data.targetType == "post":
                 target = await self.repository.get_post_by_id(data.targetId)
                 if not target:
+                    raise InvalidReportTargetError()
+                # A post the reporter cannot read is reported as "not found",
+                # the same answer an unknown id gets, so reporting cannot probe
+                # for hidden posts.
+                try:
+                    await self._assert_post_visible(target, reporter.userId)
+                except PostNotFoundError:
                     raise InvalidReportTargetError()
                 owner_id = target.get("userId")
             else:

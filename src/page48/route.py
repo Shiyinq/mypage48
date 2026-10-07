@@ -3,10 +3,12 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, Path, Query, UploadFile
 
 from src.auth.schemas import UserCurrent
+from src.config import Settings
 from src.dependencies import (
     get_current_user,
     get_current_user_optional,
     get_page48_service,
+    get_settings,
     require_admin,
     require_csrf_protection,
 )
@@ -314,9 +316,13 @@ async def upload_video(
     duration: float = Form(0.0, description="Video duration in seconds"),
     current_user: UserCurrent = Depends(get_current_user),
     _: bool = Depends(require_csrf_protection),
+    config: Settings = Depends(get_settings),
     service: Page48Service = Depends(get_page48_service),
 ):
-    data = await file.read()
+    # Read one byte past the cap so an oversized body can never be buffered whole
+    # into memory; the service re-checks and answers 413.
+    limit = config.max_page48_video_upload_size_bytes
+    data = await file.read(limit + 1)
     return await service.upload_video(
         current_user, data, file.content_type, width, height, duration
     )

@@ -9,6 +9,10 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 SEARCH_MAX_TIME_MS = 5000
 # Posts scanned when counting tag matches; bounds the aggregation's work.
 SEARCH_TAG_POST_SCAN = 20000
+# Posts a trending-tags / most-active aggregation will scan. Both run for
+# unauthenticated callers, so an unbounded `$unwind`/`$group` over the whole
+# collection would be a cheap way to exhaust the database.
+AGGREGATION_POST_SCAN = 20000
 # How many block/mute edges one lookup will read before giving up on the rest.
 RELATION_SCAN_LIMIT = 5000
 # A follow is accepted unless it is explicitly waiting for the target's approval.
@@ -327,6 +331,9 @@ class Page48Repository:
         pipeline = [
             {"$match": match},
             {"$sort": {"createdAt": -1}},
+            # Bound the work: only the window's newest posts are grouped. Past
+            # this ceiling the ranking is a sample, which is fine for a widget.
+            {"$limit": AGGREGATION_POST_SCAN},
             {
                 "$group": {
                     "_id": "$userId",
@@ -444,6 +451,9 @@ class Page48Repository:
             match.update(visibility)
         pipeline = [
             {"$match": match},
+            # Bound the work before unwinding; counts stay exact at a realistic
+            # scale and become a sample past the ceiling (like `search_tags`).
+            {"$limit": AGGREGATION_POST_SCAN},
             {"$unwind": "$tags"},
             {"$group": {"_id": "$tags", "count": {"$sum": 1}}},
             {"$sort": {"count": -1, "_id": 1}},

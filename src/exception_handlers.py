@@ -134,6 +134,7 @@ from src.page48.exceptions import (
     CannotPinReplyError,
     CannotPrivateReplyError,
     CannotReportSelfError,
+    InvalidImageError,
     InvalidPollOptionError,
     InvalidPollOptionsError,
     InvalidReportTargetError,
@@ -166,6 +167,7 @@ from src.page48.http_exceptions import (
     CannotPinReply,
     CannotPrivateReply,
     CannotReportSelf,
+    InvalidImage,
     InvalidPollOption,
     InvalidPollOptions,
     InvalidReportTarget,
@@ -558,6 +560,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, MediaConflict())
     if isinstance(exc, InvalidVideoError):
         return await detailed_http_exception_handler(request, InvalidVideo())
+    if isinstance(exc, InvalidImageError):
+        return await detailed_http_exception_handler(request, InvalidImage())
     if isinstance(exc, VideoUploadError):
         return await detailed_http_exception_handler(request, VideoUploadHTTPError())
     if isinstance(exc, PollNotFoundError):

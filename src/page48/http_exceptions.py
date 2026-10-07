@@ -72,6 +72,10 @@ class InvalidVideo(BadRequest):
     DETAIL = ErrorCode.INVALID_VIDEO
 
 
+class InvalidImage(BadRequest):
+    DETAIL = ErrorCode.INVALID_IMAGE
+
+
 class PollNotFound(NotFound):
     DETAIL = ErrorCode.POLL_NOT_FOUND
 

@@ -493,7 +493,7 @@ async def test_create_quote_not_found(client, create_user):
 
 @pytest.mark.asyncio
 async def test_create_post_poll_rules(client, create_user):
-    _, _, headers = await create_user("p48_poll_rules")
+    _, user_id, headers = await create_user("p48_poll_rules")
 
     too_few = await client.post(
         "/api/page48/posts",
@@ -514,7 +514,7 @@ async def test_create_post_poll_rules(client, create_user):
         json={
             "content": "poll with image",
             "poll": {"options": ["a", "b"]},
-            "images": [{"filename": "page48/x/y.webp"}],
+            "images": [{"filename": f"page48/{user_id}/y.webp"}],
         },
         headers=headers,
     )
@@ -1822,3 +1822,156 @@ async def test_notification_overview_per_tab(client, create_user, make_post, fol
     assert tabs["likes"]["count"] == 1
     assert tabs["likes"]["previews"]
     assert tabs["follows"]["count"] == 1
+
+
+# --------------------------------------------------------------------------- #
+# Visibility must gate interactions, not just reads
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.asyncio
+async def test_interactions_refuse_hidden_posts(client, create_user, make_post):
+    _, _, author = await create_user("p48_hid_author")
+    post = await make_post(author, "hidden target")
+
+    # The author blocks the actor, so the post is invisible to them.
+    _, _, actor = await create_user("p48_hid_actor")
+    await client.post("/api/page48/users/p48_hid_actor/block", headers=author)
+
+    assert (
+        await client.get(f"/api/page48/posts/{post['postId']}", headers=actor)
+    ).status_code == 404
+
+    for action in ("like", "repost", "bookmark"):
+        res = await client.post(
+            f"/api/page48/posts/{post['postId']}/{action}", headers=actor
+        )
+        assert res.status_code == 404
+
+    # Reporting answers "invalid target", exactly like an unknown id, so the
+    # response cannot be used to probe for hidden posts.
+    assert (
+        await client.post(
+            "/api/page48/reports",
+            json={"targetType": "post", "targetId": post["postId"], "reason": "spam"},
+            headers=actor,
+        )
+    ).status_code == 400
+
+    assert (
+        await client.post(
+            "/api/page48/posts",
+            json={"content": "quoting hidden", "quotedPostId": post["postId"]},
+            headers=actor,
+        )
+    ).status_code == 404
+
+    assert (
+        await client.post(
+            "/api/page48/posts",
+            json={"content": "replying hidden", "parentPostId": post["postId"]},
+            headers=actor,
+        )
+    ).status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_interactions_refuse_private_posts(client, create_user, make_post):
+    _, _, author = await create_user("p48_privint_author")
+    post = await make_post(author, "private target")
+    await client.post(f"/api/page48/posts/{post['postId']}/private", headers=author)
+
+    _, _, actor = await create_user("p48_privint_actor")
+    for action in ("like", "repost", "bookmark"):
+        assert (
+            await client.post(
+                f"/api/page48/posts/{post['postId']}/{action}", headers=actor
+            )
+        ).status_code == 404
+
+    assert (
+        await client.post(
+            "/api/page48/reports",
+            json={"targetType": "post", "targetId": post["postId"], "reason": "spam"},
+            headers=actor,
+        )
+    ).status_code == 400
+
+    # The owner may still read and report their own post (self-report is caught).
+    assert (
+        await client.get(f"/api/page48/posts/{post['postId']}", headers=author)
+    ).status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_poll_vote_refused_on_hidden_post(client, create_user):
+    _, _, author = await create_user("p48_hidpoll_author")
+    created = await client.post(
+        "/api/page48/posts",
+        json={"content": "hidden poll", "poll": {"options": ["a", "b"]}},
+        headers=author,
+    )
+    body = created.json()
+    option_id = body["poll"]["options"][0]["id"]
+    await client.post(f"/api/page48/posts/{body['postId']}/private", headers=author)
+
+    _, _, voter = await create_user("p48_hidpoll_voter")
+    res = await client.post(
+        f"/api/page48/posts/{body['postId']}/poll/vote",
+        json={"optionId": option_id},
+        headers=voter,
+    )
+    assert res.status_code == 404
+
+
+# --------------------------------------------------------------------------- #
+# Image references must stay inside the uploader's own prefix
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.asyncio
+async def test_create_post_rejects_foreign_image_reference(client, create_user):
+    _, user_id, headers = await create_user("p48_img_ref")
+
+    # A reference under the caller's own prefix is accepted.
+    ok = await client.post(
+        "/api/page48/posts",
+        json={
+            "content": "own image",
+            "images": [{"filename": f"page48/{user_id}/a.webp"}],
+        },
+        headers=headers,
+    )
+    assert ok.status_code == 201, ok.text
+
+    bad_refs = [
+        # Another service's / user's stored object: the read side would sign it.
+        "tickets/someone/evidence.webp",
+        "avatar/someone/photo.webp",
+        "page48/other-user/x.webp",
+        # Traversal that still satisfies the prefix check.
+        f"page48/{user_id}/../../tickets/x.webp",
+        # External / inline payloads via the storage service passthrough.
+        "https://evil.example/x.jpg",
+        "data:image/svg+xml;base64,AAAA",
+    ]
+    for filename in bad_refs:
+        res = await client.post(
+            "/api/page48/posts",
+            json={"content": "bad image", "images": [{"filename": filename}]},
+            headers=headers,
+        )
+        assert res.status_code == 400, f"{filename} -> {res.status_code}"
+
+    # Thread items go through the same check.
+    thread = await client.post(
+        "/api/page48/posts/thread",
+        json={
+            "posts": [
+                {"content": "one"},
+                {"content": "two", "images": [{"filename": "tickets/x/y.webp"}]},
+            ]
+        },
+        headers=headers,
+    )
+    assert thread.status_code == 400
