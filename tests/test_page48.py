@@ -31,6 +31,11 @@ _VALID_PNG_BYTES = base64.b64decode(
     "AhKmMIQAAAABJRU5ErkJggg=="
 )
 
+# Just enough bytes to satisfy the container sniff: MP4 carries `ftyp` at
+# offset 4, WebM starts with the EBML magic number.
+_MP4_BYTES = b"\x00\x00\x00\x18ftypmp42" + b"\x00" * 8
+_WEBM_BYTES = b"\x1a\x45\xdf\xa3" + b"\x00" * 12
+
 
 class _MockStorageRepository:
     """Minimal stand-in for StorageRepository, mirroring tests/test_storage.py."""
@@ -601,7 +606,7 @@ async def test_upload_video_success(client, create_user, storage_service):
     _, _, headers = await create_user("p48_video_uploader")
     res = await client.post(
         "/api/page48/videos",
-        files={"file": ("clip.mp4", b"binary-video-bytes", "video/mp4")},
+        files={"file": ("clip.mp4", _MP4_BYTES, "video/mp4")},
         data={"width": "1080", "height": "1920", "duration": "5.5"},
         headers=headers,
     )
@@ -632,6 +637,67 @@ async def test_upload_video_empty(client, create_user, storage_service):
         headers=headers,
     )
     assert res.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_upload_video_rejects_spoofed_container(
+    client, create_user, storage_service
+):
+    _, _, headers = await create_user("p48_video_spoof")
+
+    # Claims MP4 but the bytes say otherwise.
+    mp4_lie = await client.post(
+        "/api/page48/videos",
+        files={"file": ("clip.mp4", b"definitely not an mp4", "video/mp4")},
+        headers=headers,
+    )
+    assert mp4_lie.status_code == 400
+
+    # Claims WebM while carrying an MP4 header.
+    cross = await client.post(
+        "/api/page48/videos",
+        files={"file": ("clip.webm", _MP4_BYTES, "video/webm")},
+        headers=headers,
+    )
+    assert cross.status_code == 400
+
+    # A genuine WebM payload is accepted for a WebM claim.
+    ok = await client.post(
+        "/api/page48/videos",
+        files={"file": ("clip.webm", _WEBM_BYTES, "video/webm")},
+        headers=headers,
+    )
+    assert ok.status_code == 201, ok.text
+
+
+@pytest.mark.asyncio
+async def test_upload_video_rejects_bad_metadata(client, create_user, storage_service):
+    _, _, headers = await create_user("p48_video_meta")
+
+    negative = await client.post(
+        "/api/page48/videos",
+        files={"file": ("clip.mp4", _MP4_BYTES, "video/mp4")},
+        data={"width": "-1", "height": "1920", "duration": "5"},
+        headers=headers,
+    )
+    assert negative.status_code == 400
+
+    absurd = await client.post(
+        "/api/page48/videos",
+        files={"file": ("clip.mp4", _MP4_BYTES, "video/mp4")},
+        data={"width": "100000", "height": "10", "duration": "5"},
+        headers=headers,
+    )
+    assert absurd.status_code == 400
+
+    # 0 means "unknown" and stays allowed.
+    unknown = await client.post(
+        "/api/page48/videos",
+        files={"file": ("clip.mp4", _MP4_BYTES, "video/mp4")},
+        data={"width": "0", "height": "0", "duration": "0"},
+        headers=headers,
+    )
+    assert unknown.status_code == 201, unknown.text
 
 
 @pytest.mark.asyncio

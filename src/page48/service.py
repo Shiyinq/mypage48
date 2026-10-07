@@ -165,6 +165,25 @@ ALLOWED_VIDEO_TYPES = {
     "video/mp4": "mp4",
     "video/webm": "webm",
 }
+# Sane, client-independent bounds for the descriptive video metadata. The real
+# values cannot be read without decoding the media, but they must at least be
+# plausible: the feed uses them to reserve layout space.
+MAX_VIDEO_DIMENSION = 8192
+MAX_VIDEO_DURATION_SECONDS = 3600
+
+
+def _detect_video_container(data: bytes) -> Optional[str]:
+    """The container the bytes actually look like, judged by its magic bytes.
+
+    `Content-Type` comes from the client and proves nothing, so the payload has
+    to identify itself: MP4 (ISO-BMFF) always carries an `ftyp` box at offset 4,
+    and WebM/Matroska always starts with the EBML header.
+    """
+    if len(data) >= 12 and data[4:8] == b"ftyp":
+        return "video/mp4"
+    if data[:4] == b"\x1a\x45\xdf\xa3":
+        return "video/webm"
+    return None
 
 
 class Page48Service:
@@ -1058,9 +1077,25 @@ class Page48Service:
         if len(data) > self.config.max_page48_video_upload_size_bytes:
             raise VideoTooLargeError()
 
-        extension = ALLOWED_VIDEO_TYPES.get((content_type or "").lower())
+        claimed = (content_type or "").lower()
+        extension = ALLOWED_VIDEO_TYPES.get(claimed)
         if not extension:
             raise InvalidVideoTypeError()
+
+        # The bytes must be the container they claim: a spoofed Content-Type
+        # could otherwise park arbitrary files in storage under a video/* label.
+        if _detect_video_container(data) != claimed:
+            raise InvalidVideoTypeError()
+
+        if (
+            width < 0
+            or height < 0
+            or duration < 0
+            or width > MAX_VIDEO_DIMENSION
+            or height > MAX_VIDEO_DIMENSION
+            or duration > MAX_VIDEO_DURATION_SECONDS
+        ):
+            raise InvalidVideoError()
 
         try:
             filename = f"page48/{user.userId}/{uuid.uuid4().hex}.{extension}"
