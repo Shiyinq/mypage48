@@ -65,7 +65,7 @@
 <!-- Only the pieces that must be links are raised above the row link; everything
      else falls through to it, so no anchor ends up nested inside another. -->
 <div
-	class={`relative flex gap-3 px-5 py-3.5 transition-colors hover:bg-gray-50 dark:hover:bg-white/5 sm:px-6 ${
+	class={`relative isolate flex gap-3 px-5 py-3.5 transition-colors hover:bg-gray-50 dark:hover:bg-white/5 sm:px-6 ${
 		notification.isUnread ? 'bg-red-50/40 dark:bg-red-950/10' : ''
 	}`}
 >
@@ -90,7 +90,7 @@
 		</span>
 	</div>
 
-	<div class="pointer-events-none min-w-0 flex-1">
+	<div class="pointer-events-none relative z-[1] min-w-0 flex-1">
 		<div class="flex items-center gap-1.5 text-[14px]">
 			<UserHoverCard
 				username={notification.actor.username}
