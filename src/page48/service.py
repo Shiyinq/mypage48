@@ -1,3 +1,4 @@
+import asyncio
 import re
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -272,9 +273,7 @@ class Page48Service:
             return conditions[0]
         return {"$and": conditions}
 
-    async def _assert_post_visible(
-        self, post: dict, viewer_id: Optional[str]
-    ) -> None:
+    async def _assert_post_visible(self, post: dict, viewer_id: Optional[str]) -> None:
         """A direct link has to respect visibility: hidden posts look missing."""
         hidden = await self._hidden_author_ids(viewer_id)
         if post.get("userId") in hidden:
@@ -351,45 +350,24 @@ class Page48Service:
             post, user_map, avatar_cache
         )
 
-        # Resolve image variants
-        images = []
-        for img in post.get("images", []):
-            try:
-                filename = img["filename"]
-                variants = await self.storage_service.resolve_image_variants(
-                    filename, default_blur_hash=img.get("blurHash")
-                )
-                images.append(
-                    Page48Image(
-                        filename=filename,
-                        url=variants["url"],
-                        url_medium=variants["url_medium"],
-                        url_small=variants["url_small"],
-                        blurHash=variants.get("blurHash") or img.get("blurHash"),
-                        width=img.get("width", 0),
-                        height=img.get("height", 0),
-                    )
-                )
-            except Exception as e:
-                logger.error(f"Failed to resolve image {img.get('filename')}: {str(e)}")
-
-        # Resolve videos (direct presigned URL so playback supports HTTP Range)
-        videos = []
-        for vid in post.get("videos", []):
-            try:
-                filename = vid["filename"]
-                url = await self.storage_service.resolve_video_url(filename)
-                videos.append(
-                    Page48Video(
-                        filename=filename,
-                        url=url,
-                        width=vid.get("width", 0),
-                        height=vid.get("height", 0),
-                        duration=vid.get("duration", 0) or 0.0,
-                    )
-                )
-            except Exception as e:
-                logger.error(f"Failed to resolve video {vid.get('filename')}: {str(e)}")
+        # Every media ref is an independent object lookup (presign for images,
+        # presigned URL for videos), so they are resolved concurrently instead of
+        # one after another: a post with ten images must not pay ten sequential
+        # storage round-trips for a single read. Order is preserved.
+        image_refs = post.get("images", [])
+        video_refs = post.get("videos", [])
+        resolved_images = (
+            await asyncio.gather(*(self._resolve_image(img) for img in image_refs))
+            if image_refs
+            else []
+        )
+        resolved_videos = (
+            await asyncio.gather(*(self._resolve_video(vid) for vid in video_refs))
+            if video_refs
+            else []
+        )
+        images = [image for image in resolved_images if image is not None]
+        videos = [video for video in resolved_videos if video is not None]
 
         # Identity is read exclusively from the live user document: posts only
         # carry the immutable `userId`, so a rename or a new picture is
@@ -438,6 +416,42 @@ class Page48Service:
             ),
         )
 
+    async def _resolve_image(self, img: dict) -> Optional[Page48Image]:
+        """Resolve one stored image ref to its variants, or None on failure."""
+        try:
+            filename = img["filename"]
+            variants = await self.storage_service.resolve_image_variants(
+                filename, default_blur_hash=img.get("blurHash")
+            )
+            return Page48Image(
+                filename=filename,
+                url=variants["url"],
+                url_medium=variants["url_medium"],
+                url_small=variants["url_small"],
+                blurHash=variants.get("blurHash") or img.get("blurHash"),
+                width=img.get("width", 0),
+                height=img.get("height", 0),
+            )
+        except Exception as e:
+            logger.error(f"Failed to resolve image {img.get('filename')}: {str(e)}")
+            return None
+
+    async def _resolve_video(self, vid: dict) -> Optional[Page48Video]:
+        """Resolve one stored video ref to a presigned URL, or None on failure."""
+        try:
+            filename = vid["filename"]
+            url = await self.storage_service.resolve_video_url(filename)
+            return Page48Video(
+                filename=filename,
+                url=url,
+                width=vid.get("width", 0),
+                height=vid.get("height", 0),
+                duration=vid.get("duration", 0) or 0.0,
+            )
+        except Exception as e:
+            logger.error(f"Failed to resolve video {vid.get('filename')}: {str(e)}")
+            return None
+
     async def _enrich_posts(
         self,
         posts: List[dict],
@@ -465,11 +479,14 @@ class Page48Service:
         users = await self.user_repository.get_users_by_ids(author_ids)
         user_map = {u["userId"]: u for u in users}
 
-        enriched = []
+        # Posts are enriched concurrently. Each `_enrich_post` only reads the
+        # shared lookups above, so they can run in parallel; `asyncio.gather`
+        # keeps the original order. The avatar cache is shared so authors that
+        # repeat across the page are still signed once.
         avatar_cache = {}
-        for p in posts:
-            enriched.append(
-                await self._enrich_post(
+        enriched = await asyncio.gather(
+            *(
+                self._enrich_post(
                     p,
                     interactions,
                     avatar_cache,
@@ -478,7 +495,9 @@ class Page48Service:
                     thread_counts.get(p["postId"], 0),
                     quote_counts.get(p["postId"], 0),
                 )
+                for p in posts
             )
+        )
 
         if include_quotes:
             await self._attach_quoted_posts(posts, enriched, user_id)
@@ -715,10 +734,7 @@ class Page48Service:
     @staticmethod
     def _has_search_criteria(parsed: dict) -> bool:
         return bool(
-            parsed["words"]
-            or parsed["tags"]
-            or parsed["mentions"]
-            or parsed["authors"]
+            parsed["words"] or parsed["tags"] or parsed["mentions"] or parsed["authors"]
         )
 
     def _search_term_for_people(self, query: str) -> str:
@@ -984,9 +1000,7 @@ class Page48Service:
         pending: set = set()
         if viewer_id:
             user_ids = [user["userId"] for user in users]
-            followed = set(
-                await self.repository.get_followed_ids(viewer_id, user_ids)
-            )
+            followed = set(await self.repository.get_followed_ids(viewer_id, user_ids))
             pending = set(
                 await self.repository.get_pending_follow_ids(viewer_id, user_ids)
             )
@@ -1587,9 +1601,7 @@ class Page48Service:
 
         return NotificationPaginationResponse(
             data=await self._build_notifications(rows, current_user_id),
-            meta=NotificationPaginationMeta(
-                nextCursor=next_cursor, hasMore=has_more
-            ),
+            meta=NotificationPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
         )
 
     async def get_notification_counts(
@@ -2361,11 +2373,14 @@ class Page48Service:
             last_post = posts[-1]
             next_cursor = f"{last_post['createdAt'].isoformat()}_{last_post['postId']}"
 
-        enriched_posts = await self._enrich_posts(posts, current_user_id)
-        # Only the first page carries the pin above the regular list.
-        if pinned_post and cursor_dict is None:
-            pinned = await self._enrich_posts([pinned_post], current_user_id)
-            enriched_posts = [*pinned, *enriched_posts]
+        # The pinned post and the page share one enrichment batch: the pin may
+        # carry media too, and resolving it in a second pass would add a whole
+        # extra storage round after the page's own media is already done. It
+        # leads the list only on the first page, so later pages leave it out.
+        pinned_list = [pinned_post] if (pinned_post and cursor_dict is None) else []
+        enriched_posts = await self._enrich_posts(
+            [*pinned_list, *posts], current_user_id
+        )
 
         return PostPaginationResponse(
             data=enriched_posts,
