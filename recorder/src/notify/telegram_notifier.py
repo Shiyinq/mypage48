@@ -16,7 +16,7 @@ from .web_screenshot import capture_web_screenshot
 
 log = logging.getLogger("notify")
 
-LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/history/live"
+LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/details"
 
 ID_MONTHS = [
     "",
@@ -181,8 +181,8 @@ def _format_recap_end_live_caption(
 
     live_id = live_id or data.get("live_id")
     if live_id:
-        history_url = f"https://mypage48.com/jkt48/live/history/live/{live_id}"
-        caption += f"\n• <a href='{history_url}'>Data Lengkap di MyPage48</a>"
+        detail_url = f"{LIVE_DETAIL_BASE_URL}/{live_id}"
+        caption += f"\n• <a href='{detail_url}'>Data Lengkap di MyPage48</a>"
 
     youtube_id = data.get("youtube_id")
     if youtube_id and live_type == "public":
