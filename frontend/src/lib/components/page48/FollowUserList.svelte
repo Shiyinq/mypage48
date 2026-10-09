@@ -2,12 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import { ArrowLeft } from 'lucide-svelte';
-	import { page48Api, type PostUserItem } from '$lib/api/page48';
+	import type { PostUserItem } from '$lib/api/page48';
+	import { page48Reads } from '$lib/stores/page48.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import UserListItem from '$lib/components/page48/UserListItem.svelte';
 	import PostActivityRowsSkeleton from '$lib/components/page48/PostActivityRowsSkeleton.svelte';
-	import { ErrorState } from '$lib/components';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
@@ -57,8 +58,8 @@
 		try {
 			const res =
 				which === 'followers'
-					? await page48Api.getFollowers(name, PAGE_SIZE, null)
-					: await page48Api.getFollowing(name, PAGE_SIZE, null);
+					? await page48Reads.getFollowers(name, PAGE_SIZE, null)
+					: await page48Reads.getFollowing(name, PAGE_SIZE, null);
 			if (current !== token) return;
 			users = res.data;
 			hasMore = res.meta.hasMore;
@@ -78,8 +79,8 @@
 			loadingMore = true;
 			const res =
 				mode === 'followers'
-					? await page48Api.getFollowers(username, PAGE_SIZE, nextCursor)
-					: await page48Api.getFollowing(username, PAGE_SIZE, nextCursor);
+					? await page48Reads.getFollowers(username, PAGE_SIZE, nextCursor)
+					: await page48Reads.getFollowing(username, PAGE_SIZE, nextCursor);
 			users = [...users, ...res.data];
 			hasMore = res.meta.hasMore;
 			nextCursor = res.meta.nextCursor;

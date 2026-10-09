@@ -2,9 +2,10 @@
 	import { fade } from 'svelte/transition';
 	import { X, FileQuestion } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type ThreadResponse } from '$lib/api/page48';
+	import { page48Reads } from '$lib/stores/page48.svelte';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
-	import { ErrorState } from '$lib/components';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -112,7 +113,7 @@
 				notFound = true;
 				return;
 			}
-			const thread = await page48Api.getThread(id);
+			const thread = await page48Reads.getThread(id);
 			const path = findPath(thread, id) ?? [thread];
 			const node = path[path.length - 1];
 			focused = node.post;

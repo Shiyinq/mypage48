@@ -3,12 +3,12 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Hash } from 'lucide-svelte';
-	import { page48Api, type Page48Post } from '$lib/api/page48';
+	import type { Page48Post } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
-	import { ErrorState } from '$lib/components';
-	import { page48NavbarStore } from '$lib/stores/page48.svelte';
+	import ErrorState from '$lib/components/ErrorState.svelte';
+	import { page48NavbarStore, page48Reads } from '$lib/stores/page48.svelte';
 	import { sharePost, togglePostInteraction, getActiveMedia } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -52,7 +52,7 @@
 		try {
 			loading = true;
 			error = null;
-			const response = await page48Api.getPostsByTag(tag, 20, null, media);
+			const response = await page48Reads.getPostsByTag(tag, 20, null, media);
 			posts = response.data;
 			hasMore = response.meta.hasMore;
 			nextCursor = response.meta.nextCursor;
@@ -68,7 +68,7 @@
 		if (loadingMore || !hasMore || !nextCursor || loading) return;
 		try {
 			loadingMore = true;
-			const response = await page48Api.getPostsByTag(tag, 20, nextCursor, media);
+			const response = await page48Reads.getPostsByTag(tag, 20, nextCursor, media);
 			posts = [...posts, ...response.data];
 			hasMore = response.meta.hasMore;
 			nextCursor = response.meta.nextCursor;

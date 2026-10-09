@@ -17,7 +17,7 @@
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
 	import PostComposerModal from '$lib/components/page48/PostComposerModal.svelte';
 	import type { ComponentType, Snippet } from 'svelte';
-	import { AppBackground } from '$lib/components/common';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import {
 		page48NavbarStore,
 		page48UnreadStore,

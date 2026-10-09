@@ -16,11 +16,12 @@
 		NOTIFICATION_ACTION_KEYS,
 		NOTIFICATION_TAB_ICONS
 	} from '$lib/components/page48/notificationMeta';
-	import { ErrorState } from '$lib/components';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
 		applyPage48Counts,
 		page48NavbarStore,
+		page48Reads,
 		page48UnreadStore,
 		refreshPage48Unread
 	} from '$lib/stores/page48.svelte';
@@ -67,7 +68,7 @@
 		overviewLoading = true;
 		overviewFailed = false;
 		try {
-			const response = await page48Api.getNotificationOverview();
+			const response = await page48Reads.getNotificationOverview();
 			overview = response;
 			// The overview already carries the counts, so the bell can use them
 			// instead of asking for the same numbers again.
@@ -101,7 +102,7 @@
 
 		const requestCursor = reset ? null : cursor;
 		try {
-			const response = await page48Api.getNotifications(tab, PAGE_SIZE, requestCursor);
+			const response = await page48Reads.getNotifications(tab, PAGE_SIZE, requestCursor);
 			items = reset ? response.data : [...items, ...response.data];
 			cursor = response.meta.nextCursor;
 			hasMore = response.meta.hasMore;

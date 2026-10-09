@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { TrendingUp } from 'lucide-svelte';
-	import { page48Api, type TrendingTag } from '$lib/api/page48';
-	import { ErrorState } from '$lib/components';
-	import { page48NavbarStore } from '$lib/stores/page48.svelte';
+	import type { TrendingTag } from '$lib/api/page48';
+	import ErrorState from '$lib/components/ErrorState.svelte';
+	import { page48NavbarStore, page48Reads } from '$lib/stores/page48.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
@@ -25,7 +25,7 @@
 		try {
 			loading = true;
 			error = null;
-			const response = await page48Api.getTrendingTags(50);
+			const response = await page48Reads.getTrendingTags(50);
 			tags = response.tags;
 		} catch (err: unknown) {
 			const e = err as { message?: string };

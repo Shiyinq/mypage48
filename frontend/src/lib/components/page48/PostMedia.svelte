@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Page48Image, Page48Video } from '$lib/api/page48';
-	import { OptimizedImage } from '$lib/components/common';
+	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 	import PostImageCarousel from '$lib/components/page48/PostImageCarousel.svelte';
 	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
 	import { imageRatio, measureMissingImageSizes } from '$lib/utils/page48';

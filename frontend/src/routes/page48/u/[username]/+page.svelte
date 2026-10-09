@@ -11,9 +11,9 @@
 	import UserMenu from '$lib/components/page48/UserMenu.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
-	import { ErrorState } from '$lib/components';
-	import { OptimizedImage } from '$lib/components/common';
-	import { page48NavbarStore } from '$lib/stores/page48.svelte';
+	import ErrorState from '$lib/components/ErrorState.svelte';
+	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
+	import { page48NavbarStore, page48Reads } from '$lib/stores/page48.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
@@ -182,7 +182,7 @@
 				notFound = true;
 				return;
 			}
-			profile = await page48Api.getUserProfile(username);
+			profile = await page48Reads.getUserProfile(username);
 		} catch (err: unknown) {
 			const e = err as { status?: number; message?: string };
 			if (e?.status === 404) {
@@ -198,19 +198,19 @@
 	async function fetchTab(tab: Tab, cursor: string | null) {
 		switch (tab) {
 			case 'images':
-				return page48Api.getUserPosts(username, 20, cursor, 'image');
+				return page48Reads.getUserPosts(username, 20, cursor, 'image');
 			case 'videos':
-				return page48Api.getUserPosts(username, 20, cursor, 'video');
+				return page48Reads.getUserPosts(username, 20, cursor, 'video');
 			case 'reposts':
-				return page48Api.getUserReposts(username, 20, cursor);
+				return page48Reads.getUserReposts(username, 20, cursor);
 			case 'replies':
-				return page48Api.getUserReplies(username, 20, cursor);
+				return page48Reads.getUserReplies(username, 20, cursor);
 			case 'likes':
-				return page48Api.getLikes(20, cursor);
+				return page48Reads.getLikes(20, cursor);
 			case 'bookmarks':
-				return page48Api.getBookmarks(20, cursor);
+				return page48Reads.getBookmarks(20, cursor);
 			default:
-				return page48Api.getUserPosts(username, 20, cursor);
+				return page48Reads.getUserPosts(username, 20, cursor);
 		}
 	}
 

@@ -5,7 +5,6 @@
 	import { fade } from 'svelte/transition';
 	import { Hash, Search } from 'lucide-svelte';
 	import {
-		page48Api,
 		type Page48Post,
 		type Page48SearchTab,
 		type Page48SearchTopResponse,
@@ -17,10 +16,10 @@
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
 	import { SEARCH_FIELD_CLASS, SEARCH_FIELD_ICON_CLASS } from '$lib/components/page48/searchField';
-	import { ErrorState } from '$lib/components';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
-	import { page48NavbarStore } from '$lib/stores/page48.svelte';
+	import { page48NavbarStore, page48Reads } from '$lib/stores/page48.svelte';
 	import { sharePost, tagUrl, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -87,11 +86,11 @@
 			if (isListTab) {
 				await loadPosts(true);
 			} else if (activeTab === 'top') {
-				top = await page48Api.searchTop(query);
+				top = await page48Reads.searchTop(query);
 			} else if (activeTab === 'users') {
-				people = (await page48Api.searchUsers(query)).data;
+				people = (await page48Reads.searchUsers(query)).data;
 			} else {
-				tags = (await page48Api.searchTags(query)).tags;
+				tags = (await page48Reads.searchTags(query)).tags;
 			}
 		} catch {
 			failed = true;
@@ -102,7 +101,7 @@
 	}
 
 	async function loadPosts(reset: boolean) {
-		const response = await page48Api.searchPosts(
+		const response = await page48Reads.searchPosts(
 			query,
 			activeTab === 'media' ? 'media' : 'posts',
 			PAGE_SIZE,

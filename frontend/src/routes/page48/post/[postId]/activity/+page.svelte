@@ -7,7 +7,7 @@
 	import { page48Api, type PostActivityResponse } from '$lib/api/page48';
 	import PostActivityList from '$lib/components/page48/PostActivityList.svelte';
 	import PostActivityRowsSkeleton from '$lib/components/page48/PostActivityRowsSkeleton.svelte';
-	import { ErrorState } from '$lib/components';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
 	import { activityNavStore } from '$lib/stores/page48Nav.svelte';

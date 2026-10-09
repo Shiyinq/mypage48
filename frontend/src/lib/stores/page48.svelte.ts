@@ -2,6 +2,7 @@ import {
 	page48Api,
 	type ActiveUser,
 	type Page48NotificationCounts,
+	type Page48NotificationTab,
 	type Page48UserProfile,
 	type TrendingTag
 } from '$lib/api/page48';
@@ -230,3 +231,158 @@ export async function refreshPage48Unread(force = false) {
 		unreadFetchInFlight = false;
 	}
 }
+
+/**
+ * Read-through cache for the Page48 read endpoints.
+ *
+ * A Page48 route is prefetched by its `+page.ts` `load` and mounted right after;
+ * both ask for the same data. `createRequestDedup` makes the concurrent calls
+ * share a single request, and a short TTL lets a click reuse a prefetch that
+ * already finished — so a page never fires the same GET twice, whether it was
+ * hovered, clicked, or refreshed. Writes keep going straight to `page48Api`;
+ * the TTL is short enough that a change shows up on the next visit.
+ */
+const READ_CACHE_TTL_MS = 5_000;
+
+/** Cap the cache so a long session cannot accumulate responses without bound. */
+const READ_CACHE_MAX_ENTRIES = 200;
+
+const page48Reads = (() => {
+	const dedup = createRequestDedup();
+	const cache = new Map<string, { data: unknown; at: number }>();
+
+	async function cached<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+		const hit = cache.get(key);
+		if (hit && Date.now() - hit.at < READ_CACHE_TTL_MS) return hit.data as T;
+
+		const data = (await dedup.execute(key, fetcher)) as T;
+
+		// Evict the oldest entry first; insertion order makes the first key the oldest.
+		if (cache.size >= READ_CACHE_MAX_ENTRIES) {
+			const oldest = cache.keys().next().value;
+			if (oldest !== undefined) cache.delete(oldest);
+		}
+		cache.set(key, { data, at: Date.now() });
+		return data;
+	}
+
+	return {
+		getFeed: (
+			limit = 20,
+			cursor: string | null = null,
+			media: 'text' | 'image' | 'video' | null = null,
+			following = false
+		) =>
+			cached(`feed:${limit}:${cursor ?? ''}:${media ?? ''}:${following}`, () =>
+				page48Api.getFeed(limit, cursor, media, following)
+			),
+
+		getPost: (postId: string) => cached(`post:${postId}`, () => page48Api.getPost(postId)),
+
+		getThread: (postId: string) => cached(`thread:${postId}`, () => page48Api.getThread(postId)),
+
+		getPostActivity: (postId: string) =>
+			cached(`activity:${postId}`, () => page48Api.getPostActivity(postId)),
+
+		getPostQuotes: (postId: string, limit = 20, cursor: string | null = null) =>
+			cached(`quotes:${postId}:${limit}:${cursor ?? ''}`, () =>
+				page48Api.getPostQuotes(postId, limit, cursor)
+			),
+
+		getPostReposts: (postId: string, limit = 20, cursor: string | null = null) =>
+			cached(`reposts:${postId}:${limit}:${cursor ?? ''}`, () =>
+				page48Api.getPostReposts(postId, limit, cursor)
+			),
+
+		getPostLikes: (postId: string, limit = 20, cursor: string | null = null) =>
+			cached(`post-likes:${postId}:${limit}:${cursor ?? ''}`, () =>
+				page48Api.getPostLikes(postId, limit, cursor)
+			),
+
+		getUserProfile: (username: string) =>
+			cached(`profile:${username}`, () => page48Api.getUserProfile(username)),
+
+		getUserPosts: (
+			username: string,
+			limit = 20,
+			cursor: string | null = null,
+			media: 'text' | 'image' | 'video' | null = null
+		) =>
+			cached(`user-posts:${username}:${limit}:${cursor ?? ''}:${media ?? ''}`, () =>
+				page48Api.getUserPosts(username, limit, cursor, media)
+			),
+
+		getUserReplies: (username: string, limit = 20, cursor: string | null = null) =>
+			cached(`user-replies:${username}:${limit}:${cursor ?? ''}`, () =>
+				page48Api.getUserReplies(username, limit, cursor)
+			),
+
+		getUserReposts: (username: string, limit = 20, cursor: string | null = null) =>
+			cached(`user-reposts:${username}:${limit}:${cursor ?? ''}`, () =>
+				page48Api.getUserReposts(username, limit, cursor)
+			),
+
+		getPostsByTag: (
+			tag: string,
+			limit = 20,
+			cursor: string | null = null,
+			media: 'text' | 'image' | 'video' | null = null
+		) =>
+			cached(`tag:${tag}:${limit}:${cursor ?? ''}:${media ?? ''}`, () =>
+				page48Api.getPostsByTag(tag, limit, cursor, media)
+			),
+
+		getTrendingTags: (limit = 10) =>
+			cached(`trending:${limit}`, () => page48Api.getTrendingTags(limit)),
+
+		getActiveUsers: (limit = 5, days = 7) =>
+			cached(`active-users:${limit}:${days}`, () => page48Api.getActiveUsers(limit, days)),
+
+		getNotifications: (
+			tab: Page48NotificationTab = 'replies',
+			limit = 20,
+			cursor: string | null = null
+		) =>
+			cached(`notifications:${tab}:${limit}:${cursor ?? ''}`, () =>
+				page48Api.getNotifications(tab, limit, cursor)
+			),
+
+		getNotificationOverview: () =>
+			cached('notifications-overview', () => page48Api.getNotificationOverview()),
+
+		getBookmarks: (limit = 20, cursor: string | null = null) =>
+			cached(`bookmarks:${limit}:${cursor ?? ''}`, () => page48Api.getBookmarks(limit, cursor)),
+
+		getLikes: (limit = 20, cursor: string | null = null) =>
+			cached(`mylikes:${limit}:${cursor ?? ''}`, () => page48Api.getLikes(limit, cursor)),
+
+		getFollowers: (username: string, limit = 20, cursor: string | null = null) =>
+			cached(`followers:${username}:${limit}:${cursor ?? ''}`, () =>
+				page48Api.getFollowers(username, limit, cursor)
+			),
+
+		getFollowing: (username: string, limit = 20, cursor: string | null = null) =>
+			cached(`following:${username}:${limit}:${cursor ?? ''}`, () =>
+				page48Api.getFollowing(username, limit, cursor)
+			),
+
+		searchTop: (query: string) => cached(`search-top:${query}`, () => page48Api.searchTop(query)),
+
+		searchPosts: (
+			query: string,
+			tab: 'posts' | 'media',
+			limit = 20,
+			cursor: string | null = null
+		) =>
+			cached(`search-posts:${query}:${tab}:${limit}:${cursor ?? ''}`, () =>
+				page48Api.searchPosts(query, tab, limit, cursor)
+			),
+
+		searchUsers: (query: string) =>
+			cached(`search-users:${query}`, () => page48Api.searchUsers(query)),
+
+		searchTags: (query: string) => cached(`search-tags:${query}`, () => page48Api.searchTags(query))
+	};
+})();
+
+export { page48Reads };

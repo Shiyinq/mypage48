@@ -11,10 +11,11 @@
 		ChevronDown,
 		Video
 	} from 'lucide-svelte';
-	import { page48Api, type Page48Post } from '$lib/api/page48';
+	import type { Page48Post } from '$lib/api/page48';
+	import { page48Reads } from '$lib/stores/page48.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
-	import { ErrorState } from '$lib/components';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -77,7 +78,7 @@
 		try {
 			loading = true;
 			error = null;
-			const res = await page48Api.getFeed(10, null, 'video');
+			const res = await page48Reads.getFeed(10, null, 'video');
 			posts = res.data.filter((p) => p.videos.length > 0);
 			hasMore = res.meta.hasMore;
 			nextCursor = res.meta.nextCursor;
@@ -93,7 +94,7 @@
 		if (loadingMore || loading || !hasMore || !nextCursor) return;
 		try {
 			loadingMore = true;
-			const res = await page48Api.getFeed(10, nextCursor, 'video');
+			const res = await page48Reads.getFeed(10, nextCursor, 'video');
 			posts = [...posts, ...res.data.filter((p) => p.videos.length > 0)];
 			hasMore = res.meta.hasMore;
 			nextCursor = res.meta.nextCursor;

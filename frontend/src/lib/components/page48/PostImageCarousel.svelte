@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
-	import { OptimizedImage } from '$lib/components/common';
+	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 	import type { Page48Image } from '$lib/api/page48';
 	import { carouselRatio, imageRatio, measureMissingImageSizes } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';

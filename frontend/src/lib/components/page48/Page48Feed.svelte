@@ -2,11 +2,12 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { page48Api, type Page48Post } from '$lib/api/page48';
+	import { page48Reads } from '$lib/stores/page48.svelte';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
-	import { ErrorState } from '$lib/components';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { fade } from 'svelte/transition';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
@@ -76,7 +77,7 @@
 		try {
 			loading = true;
 			error = null;
-			const response = await page48Api.getFeed(20, null, media, following);
+			const response = await page48Reads.getFeed(20, null, media, following);
 			posts = response.data;
 			hasMore = response.meta.hasMore;
 			nextCursor = response.meta.nextCursor;
@@ -92,7 +93,7 @@
 		if (loadingMore || !hasMore || !nextCursor || loading) return;
 		try {
 			loadingMore = true;
-			const response = await page48Api.getFeed(20, nextCursor, media, following);
+			const response = await page48Reads.getFeed(20, nextCursor, media, following);
 			posts = [...posts, ...response.data];
 			hasMore = response.meta.hasMore;
 			nextCursor = response.meta.nextCursor;
