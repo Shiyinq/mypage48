@@ -2110,7 +2110,11 @@
 			"prev": "Previous video",
 			"next": "Next video",
 			"showMore": "Show more",
-			"showLess": "Show less"
+			"showLess": "Show less",
+			"commentsTitle": "Comments",
+			"commentsEmpty": "No comments yet. Be the first!",
+			"commentsSignIn": "Sign in to comment",
+			"commentReply": "Reply"
 		},
 		"feed": {
 			"emptyTitle": "No posts yet",

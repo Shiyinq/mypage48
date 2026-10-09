@@ -2114,7 +2114,11 @@
 			"prev": "Video sebelumnya",
 			"next": "Video berikutnya",
 			"showMore": "Selengkapnya",
-			"showLess": "Sembunyikan"
+			"showLess": "Sembunyikan",
+			"commentsTitle": "Komentar",
+			"commentsEmpty": "Belum ada komentar. Jadilah yang pertama!",
+			"commentsSignIn": "Masuk untuk berkomentar",
+			"commentReply": "Balas"
 		},
 		"feed": {
 			"emptyTitle": "Belum ada postingan",

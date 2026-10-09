@@ -2108,7 +2108,11 @@
 			"prev": "前の動画",
 			"next": "次の動画",
 			"showMore": "もっと見る",
-			"showLess": "閉じる"
+			"showLess": "閉じる",
+			"commentsTitle": "コメント",
+			"commentsEmpty": "まだコメントがありません。最初にコメントしましょう！",
+			"commentsSignIn": "コメントするにはサインイン",
+			"commentReply": "返信"
 		},
 		"feed": {
 			"emptyTitle": "まだ投稿がありません",

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import {
 		Heart,
 		MessageCircle,
@@ -15,6 +14,7 @@
 	import { page48Reads } from '$lib/stores/page48.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
+	import VideoCommentsPanel from '$lib/components/page48/VideoCommentsPanel.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
@@ -31,6 +31,8 @@
 	let sentinel: HTMLDivElement | undefined = $state();
 	let scroller: HTMLDivElement | undefined = $state();
 	let currentIndex = $state(0);
+	/** The video whose comments are open; null keeps the panel closed. */
+	let commentPost = $state<Page48Post | null>(null);
 	// Mobile: full-bleed TikTok look (cover). Desktop: letterboxed & centered.
 	let isMobile = $state(true);
 
@@ -65,6 +67,11 @@
 		const el = scroller;
 		if (!el) return;
 		currentIndex = Math.round(el.scrollTop / (el.clientHeight || 1));
+		// Keep the open comments panel in sync with the clip being viewed.
+		if (commentPost) {
+			const current = posts[currentIndex];
+			if (current && current.postId !== commentPost.postId) commentPost = current;
+		}
 	}
 
 	function goTo(index: number) {
@@ -125,8 +132,12 @@
 		if (post) await togglePostInteraction(post, 'bookmark');
 	}
 	function handleComment(post: Page48Post) {
-		if (!canInteract) return;
-		goto(`/page48/post/${post.postId}`);
+		// Toggle: the same icon both opens and closes the panel for its video.
+		commentPost = commentPost?.postId === post.postId ? null : post;
+	}
+	function handleReplyAdded(postId: string, delta: number) {
+		const post = findPost(postId);
+		if (post) post.replyCount += delta;
 	}
 	function handleShare(post: Page48Post) {
 		if (!canInteract) return;
@@ -296,6 +307,15 @@
 				<ChevronDown size={20} />
 			</button>
 		</div>
+	{/if}
+
+	<!-- Comments: floating panel on desktop, bottom drawer on mobile -->
+	{#if commentPost}
+		<VideoCommentsPanel
+			post={commentPost}
+			onClose={() => (commentPost = null)}
+			onReplyAdded={handleReplyAdded}
+		/>
 	{/if}
 </div>
 
