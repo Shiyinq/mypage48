@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from recorder.src.notify.web_screenshot import capture_web_screenshot
 
 RECORDINGS_DIR = os.path.join(os.path.dirname(__file__), "recordings")
-LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/history/live"
+LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/details"
 
 
 async def main():
