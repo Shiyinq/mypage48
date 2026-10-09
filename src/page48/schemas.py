@@ -160,6 +160,10 @@ class PostResponse(BaseModel):
     # Kept alongside the preview so a deleted original can still be detected.
     quotedPostId: Optional[str] = None
 
+    # The post this one replies to, attached only on a profile's Replies tab so
+    # the reply keeps its context. Never nested more than one level deep.
+    repliedToPost: Optional["PostResponse"] = None
+
 
 class Page48UserProfileResponse(BaseModel):
     userId: str

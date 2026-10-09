@@ -366,7 +366,52 @@ async def test_user_replies(client, create_user, make_post):
 
     res = await client.get("/api/page48/users/p48_u_replier/replies")
     assert res.status_code == 200
-    assert len(res.json()["data"]) == 1
+    data = res.json()["data"]
+    assert len(data) == 1
+    # The reply carries the post it answered so the profile tab can show context.
+    replied_to = data[0]["repliedToPost"]
+    assert replied_to is not None
+    assert replied_to["postId"] == root["postId"]
+    assert replied_to["content"] == "root"
+    assert replied_to["username"] == "p48_u_reply_author"
+
+
+@pytest.mark.asyncio
+async def test_user_replies_show_immediate_parent(client, create_user, make_post):
+    _, _, author = await create_user("p48_u_reply_chain_author")
+    root = await make_post(author, "chain root")
+
+    _, _, replier = await create_user("p48_u_reply_chain")
+    first = await make_post(replier, "first reply", parentPostId=root["postId"])
+    second = await make_post(replier, "second reply", parentPostId=first["postId"])
+
+    res = await client.get("/api/page48/users/p48_u_reply_chain/replies")
+    assert res.status_code == 200
+    by_id = {post["postId"]: post for post in res.json()["data"]}
+    # A reply to a reply points at the immediate parent, never deeper.
+    assert by_id[second["postId"]]["repliedToPost"]["postId"] == first["postId"]
+    assert by_id[second["postId"]]["repliedToPost"]["repliedToPost"] is None
+    assert by_id[first["postId"]]["repliedToPost"]["postId"] == root["postId"]
+
+
+@pytest.mark.asyncio
+async def test_user_replies_missing_parent_stays_null(client, create_user, make_post):
+    _, _, author = await create_user("p48_u_reply_gone_author")
+    root = await make_post(author, "doomed root")
+
+    _, _, replier = await create_user("p48_u_reply_gone")
+    await make_post(replier, "reply to gone", parentPostId=root["postId"])
+
+    # Deleting the root leaves the reply reachable, but with no parent preview.
+    deleted = await client.delete(f"/api/page48/posts/{root['postId']}", headers=author)
+    assert deleted.status_code == 200
+
+    res = await client.get("/api/page48/users/p48_u_reply_gone/replies")
+    assert res.status_code == 200
+    data = res.json()["data"]
+    assert len(data) == 1
+    assert data[0]["repliedToPost"] is None
+    assert data[0]["parentPostId"] == root["postId"]
 
 
 @pytest.mark.asyncio

@@ -5,6 +5,7 @@
 	import { Repeat2, Settings, Copy, Play, Pin } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type Page48UserProfile } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
+	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
 	import UserMenu from '$lib/components/page48/UserMenu.svelte';
@@ -23,7 +24,7 @@
 
 	const { t } = useTranslation();
 
-	type Tab = 'posts' | 'media' | 'videos' | 'reposts' | 'replies' | 'likes' | 'bookmarks';
+	type Tab = 'posts' | 'images' | 'videos' | 'reposts' | 'replies' | 'likes' | 'bookmarks';
 
 	let username = $derived($page.params.username ?? '');
 
@@ -68,7 +69,7 @@
 	let tabs = $derived.by(() => {
 		const items: { key: Tab; label: string }[] = [
 			{ key: 'posts', label: t('page48.tabs.posts') },
-			{ key: 'media', label: t('page48.tabs.media') },
+			{ key: 'images', label: t('page48.tabs.media') },
 			{ key: 'videos', label: t('page48.tabs.videos') },
 			{ key: 'reposts', label: t('page48.tabs.reposts') },
 			{ key: 'replies', label: t('page48.tabs.replies') }
@@ -113,11 +114,17 @@
 	let lastTabKey = '';
 
 	function resolveTab(raw: string | null): Tab {
+		// `media` was the key before the Photos tab became `images`; keep old links working.
+		if (raw === 'media') raw = 'images';
 		const allowed: Tab[] = isOwnProfile
-			? ['posts', 'media', 'videos', 'reposts', 'replies', 'likes', 'bookmarks']
-			: ['posts', 'media', 'videos', 'reposts', 'replies'];
+			? ['posts', 'images', 'videos', 'reposts', 'replies', 'likes', 'bookmarks']
+			: ['posts', 'images', 'videos', 'reposts', 'replies'];
 		return raw && (allowed as string[]).includes(raw) ? (raw as Tab) : 'posts';
 	}
+
+	// Which grid the loading skeleton should mimic. Read straight from the URL so a
+	// cold load of `?tab=images` never flashes the list skeleton first.
+	let skeletonTab = $derived(resolveTab(tabParam));
 
 	$effect(() => {
 		const name = username;
@@ -190,7 +197,7 @@
 
 	async function fetchTab(tab: Tab, cursor: string | null) {
 		switch (tab) {
-			case 'media':
+			case 'images':
 				return page48Api.getUserPosts(username, 20, cursor, 'image');
 			case 'videos':
 				return page48Api.getUserPosts(username, 20, cursor, 'video');
@@ -368,6 +375,14 @@
 
 <svelte:window onscroll={handleScroll} />
 
+{#snippet mediaGridSkeleton()}
+	<div class="grid grid-cols-3 gap-0.5 p-0.5 animate-pulse">
+		{#each Array(9) as _}
+			<div class="aspect-square bg-gray-200 dark:bg-zinc-800"></div>
+		{/each}
+	</div>
+{/snippet}
+
 <SEO
 	title={seoTitle}
 	path={`/page48/u/${username}`}
@@ -414,31 +429,35 @@
 				</div>
 			</div>
 
-			<!-- Tabs -->
+			<!-- Tabs: 5 for others, 7 on your own profile (likes + saved) -->
 			<div class="flex border-b border-gray-200/60 dark:border-white/10">
-				{#each Array(4) as _}
+				{#each Array(isSameUser ? 7 : 5) as _}
 					<div class="flex-1 px-4 sm:px-2 py-3 flex justify-center">
 						<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-3/4"></div>
 					</div>
 				{/each}
 			</div>
 
-			<!-- Post list -->
-			<div class="divide-y divide-gray-200/60 dark:divide-white/10">
-				{#each Array(4) as _}
-					<div class="p-5 flex gap-4">
-						<div class="w-11 h-11 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
-						<div class="flex-1 space-y-2">
-							<div class="flex items-center justify-between">
-								<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/4"></div>
-								<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-12"></div>
+			<!-- Post list / media grid -->
+			{#if skeletonTab === 'images' || skeletonTab === 'videos'}
+				{@render mediaGridSkeleton()}
+			{:else}
+				<div class="divide-y divide-gray-200/60 dark:divide-white/10">
+					{#each Array(4) as _}
+						<div class="p-5 flex gap-4">
+							<div class="w-11 h-11 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
+							<div class="flex-1 space-y-2">
+								<div class="flex items-center justify-between">
+									<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/4"></div>
+									<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-12"></div>
+								</div>
+								<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-3/4"></div>
+								<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
 							</div>
-							<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-3/4"></div>
-							<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
 						</div>
-					</div>
-				{/each}
-			</div>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	{:else if notFound}
 		<div class="flex flex-col items-center justify-center p-16 text-center text-gray-500">
@@ -624,23 +643,27 @@
 
 			<!-- Post list -->
 			{#if loadingList}
-				<div class="divide-y divide-gray-200/60 dark:divide-white/10">
-					{#each Array(4) as _}
-						<div class="p-5 flex gap-4 animate-pulse">
-							<div class="w-11 h-11 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
-							<div class="flex-1 space-y-2">
-								<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/4"></div>
-								<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-3/4"></div>
-								<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
+				{#if skeletonTab === 'images' || skeletonTab === 'videos'}
+					{@render mediaGridSkeleton()}
+				{:else}
+					<div class="divide-y divide-gray-200/60 dark:divide-white/10">
+						{#each Array(4) as _}
+							<div class="p-5 flex gap-4 animate-pulse">
+								<div class="w-11 h-11 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
+								<div class="flex-1 space-y-2">
+									<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/4"></div>
+									<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-3/4"></div>
+									<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
+								</div>
 							</div>
-						</div>
-					{/each}
-				</div>
+						{/each}
+					</div>
+				{/if}
 			{:else if posts.length === 0}
 				<div class="p-12 text-center text-[13px] font-medium text-gray-400 dark:text-gray-500">
 					{#if activeTab === 'posts'}
 						{t('page48.empty.posts')}
-					{:else if activeTab === 'media'}
+					{:else if activeTab === 'images'}
 						{t('page48.empty.media')}
 					{:else if activeTab === 'videos'}
 						{t('page48.empty.videos')}
@@ -654,7 +677,7 @@
 						{t('page48.empty.replies')}
 					{/if}
 				</div>
-			{:else if activeTab === 'media'}
+			{:else if activeTab === 'images'}
 				<div class="grid grid-cols-3 gap-0.5 p-0.5" in:fade={{ duration: 250 }}>
 					{#each posts as post (post.postId)}
 						{@const cover = post.images?.[0]}
@@ -769,6 +792,24 @@
 								>
 									<Pin size={14} class="fill-red-500/20" />
 									{t('page48.userPage.pinned')}
+								</div>
+							{/if}
+
+							<!-- Replies tab: show the post/comment this reply answered, like X -->
+							{#if activeTab === 'replies' && post.parentPostId}
+								<div
+									class="flex items-center gap-1 px-5 pt-3 text-[13px] font-medium text-gray-500 sm:px-6 dark:text-gray-400"
+								>
+									{t('page48.post.replyingTo')}
+									{#if post.repliedToPost}
+										<span class="font-semibold text-red-500">@{post.repliedToPost.username}</span>
+									{/if}
+								</div>
+								<div class="px-5 pt-0.5 sm:px-6">
+									<QuotedPostCard
+										post={post.repliedToPost ?? null}
+										unavailable={!post.repliedToPost}
+									/>
 								</div>
 							{/if}
 							<PostCard

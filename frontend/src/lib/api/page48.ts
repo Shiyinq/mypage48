@@ -109,6 +109,11 @@ export interface Page48Post {
 	quotedPost?: Page48Post | null;
 	/** Kept even when the quoted post is gone, so the UI can detect a dangling quote. */
 	quotedPostId?: string | null;
+	/**
+	 * The post this one replies to. Attached only on a profile's Replies tab so
+	 * the reply shows its context, like X. Always one level deep.
+	 */
+	repliedToPost?: Page48Post | null;
 
 	// Populated when the post is returned as a user's repost
 	repostedAt?: string | null;

@@ -517,6 +517,43 @@ class Page48Service:
                     quoted = quoted.model_copy(update={"quotedPost": None})
                 enriched_post.quotedPost = quoted
 
+    async def _attach_replied_to_posts(
+        self,
+        posts: List[dict],
+        enriched: List[PostResponse],
+        user_id: Optional[str],
+    ) -> None:
+        """Fill in each reply's `repliedToPost` context, one level deep only.
+
+        Used by the profile Replies tab so a reply is never shown without the post
+        it answered. Parents that are deleted or not visible to the viewer stay
+        `None`, which the client renders as an "unavailable" placeholder.
+        """
+        by_id = {item.postId: item for item in enriched}
+        parent_ids = [
+            post.get("parentPostId") for post in posts if post.get("parentPostId")
+        ]
+        # A parent may be part of this same batch (e.g. a reply to the author's own
+        # earlier reply); only fetch the rest.
+        missing = [pid for pid in dict.fromkeys(parent_ids) if pid not in by_id]
+        if missing:
+            visibility = await self._visibility(user_id)
+            rows = await self.repository.get_posts_by_ids(missing, visibility)
+            nested = await self._enrich_posts(rows, user_id)
+            for parent in nested:
+                by_id[parent.postId] = parent
+
+        for post, enriched_post in zip(posts, enriched):
+            parent_id = post.get("parentPostId")
+            if parent_id and parent_id != enriched_post.postId:
+                parent = by_id.get(parent_id)
+                if parent is not None:
+                    # The parent may itself be a reply in this batch; never embed
+                    # more than one level deep.
+                    enriched_post.repliedToPost = parent.model_copy(
+                        update={"repliedToPost": None}
+                    )
+
     async def _count_self_threads(self, posts: List[dict]) -> dict:
         """Thread size starting at each post, the post itself included.
 
@@ -2365,6 +2402,7 @@ class Page48Service:
             posts = posts[:limit]
 
         enriched_posts = await self._enrich_posts(posts, current_user_id)
+        await self._attach_replied_to_posts(posts, enriched_posts, current_user_id)
 
         next_cursor = None
         if has_more and enriched_posts:
