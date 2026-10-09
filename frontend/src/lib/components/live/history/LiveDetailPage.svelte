@@ -42,6 +42,17 @@
 
 	const { t, locale } = useTranslation();
 
+	interface Props {
+		showReplay?: boolean;
+	}
+
+	let { showReplay }: Props = $props();
+
+	let isDetailRoute = $derived(
+		$page.url.pathname.includes('/live/details') || $page.url.pathname.includes('/live/detail')
+	);
+	let canShowReplay = $derived(showReplay ?? !isDetailRoute);
+
 	let liveId = $derived($page.params.live_id || '');
 	let replayData = $derived(liveHistoryDetailStore.data[liveId]);
 	let loading = $derived(liveHistoryDetailStore.loading[liveId] ?? false);
@@ -183,12 +194,16 @@
 									<div class="w-28 h-4 rounded bg-zinc-200 dark:bg-zinc-700 mt-1"></div>
 									<div class="w-full h-4 rounded bg-zinc-200 dark:bg-zinc-700 mt-2"></div>
 									<div class="w-3/4 h-4 rounded bg-zinc-200 dark:bg-zinc-700 mt-1"></div>
-									<div
-										class="hidden lg:block w-32 h-9 rounded-full bg-zinc-200 dark:bg-zinc-700 mt-3"
-									></div>
+									{#if canShowReplay}
+										<div
+											class="hidden lg:block w-32 h-9 rounded-full bg-zinc-200 dark:bg-zinc-700 mt-3"
+										></div>
+									{/if}
 								</div>
 							</div>
-							<div class="lg:hidden w-full h-11 rounded-full bg-zinc-200 dark:bg-zinc-700"></div>
+							{#if canShowReplay}
+								<div class="lg:hidden w-full h-11 rounded-full bg-zinc-200 dark:bg-zinc-700"></div>
+							{/if}
 							<div class="flex-1 w-full flex flex-col sm:flex-row gap-5 sm:gap-6">
 								<div class="w-full lg:w-[320px] space-y-6">
 									<div>
@@ -413,7 +428,7 @@
 										{data.title}
 									</p>
 								{/if}
-								{#if data.youtube_id}
+								{#if canShowReplay && data.youtube_id}
 									<button
 										onclick={() => goToReplay(data)}
 										class="hidden lg:inline-flex items-center gap-2 mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition-colors shadow-sm w-fit cursor-pointer"
@@ -425,7 +440,7 @@
 							</div>
 						</div>
 
-						{#if data.youtube_id}
+						{#if canShowReplay && data.youtube_id}
 							<button
 								onclick={() => goToReplay(data)}
 								class="lg:hidden inline-flex items-center justify-center gap-2 mt-3 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition-colors shadow-sm w-full cursor-pointer"

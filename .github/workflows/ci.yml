@@ -111,8 +111,8 @@ jobs:
           done
           
           # Create required bucket
-          docker run --rm --network host minio/mc alias set myminio http://localhost:9000 minioadmin minioadmin123
-          docker run --rm --network host minio/mc mb myminio/mypage48-images
+          docker run --rm --network host quay.io/minio/mc:latest alias set myminio http://localhost:9000 minioadmin minioadmin123
+          docker run --rm --network host quay.io/minio/mc:latest mb myminio/mypage48-images
         env:
           MINIO_ACCESS_KEY: minioadmin
           MINIO_SECRET_KEY: minioadmin123
