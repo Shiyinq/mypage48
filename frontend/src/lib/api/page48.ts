@@ -83,6 +83,8 @@ export interface Page48Post {
 	userProfilePicture: string | null;
 	userProfilePicture_small: string | null;
 	userBlurHash: string | null;
+	/** Page48-only account badge; null for regular accounts. */
+	page48AccountType?: Page48AccountType | null;
 
 	content: string;
 	images: Page48Image[];

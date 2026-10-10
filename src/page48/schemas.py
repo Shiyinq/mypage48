@@ -120,6 +120,8 @@ class PostResponse(BaseModel):
     userProfilePicture: Optional[str] = None
     userProfilePicture_small: Optional[str] = None
     userBlurHash: Optional[str] = None
+    # Page48-only account badge: "official_account" or "page48_admin".
+    page48AccountType: Optional[str] = None
 
     content: str
     images: list[Page48Image] = []

@@ -4,6 +4,7 @@
 	import { page48Api, type Page48Post, type ThreadResponse } from '$lib/api/page48';
 	import { page48Reads } from '$lib/stores/page48.svelte';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
+	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
@@ -283,6 +284,7 @@
 							<span class="truncate text-[13px] font-semibold text-gray-900 dark:text-gray-100">
 								{comment.userDisplayName}
 							</span>
+							<AccountBadge type={comment.page48AccountType} size={13} class="-ml-1 -mr-1" />
 							<span class="truncate text-[12px] text-gray-500 dark:text-gray-400">
 								@{comment.username}
 							</span>

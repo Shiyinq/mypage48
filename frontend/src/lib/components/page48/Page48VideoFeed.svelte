@@ -15,6 +15,7 @@
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
 	import VideoCommentsPanel from '$lib/components/page48/VideoCommentsPanel.svelte';
+	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
@@ -251,12 +252,19 @@
 						<div
 							class="absolute left-3 right-16 sm:right-3 bottom-16 sm:bottom-12 z-[2] text-white pointer-events-none"
 						>
-							<a
-								href={`/page48/u/${post.username}`}
-								class="font-bold text-[16px] sm:text-[14px] drop-shadow-lg pointer-events-auto"
-							>
-								@{post.username}
-							</a>
+							<div class="flex items-center gap-1.5">
+								<a
+									href={`/page48/u/${post.username}`}
+									class="font-bold text-[16px] sm:text-[14px] drop-shadow-lg pointer-events-auto"
+								>
+									@{post.username}
+								</a>
+								<AccountBadge
+									type={post.page48AccountType}
+									size={15}
+									class="pointer-events-auto drop-shadow"
+								/>
+							</div>
 							{#if post.content}
 								<p
 									class={`text-[15px] sm:text-[13px] leading-snug mt-1 drop-shadow-lg break-words ${

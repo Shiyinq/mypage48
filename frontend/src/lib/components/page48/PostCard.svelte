@@ -9,6 +9,7 @@
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
+	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
@@ -320,6 +321,7 @@
 					class="font-semibold text-[15px] tracking-tight text-gray-900 dark:text-gray-100 group-hover/name:underline truncate"
 					>{post.userDisplayName}</span
 				>
+				<AccountBadge type={post.page48AccountType} size={15} class="-ml-1 -mr-1" />
 				<span class="truncate text-[14px] text-gray-500 dark:text-gray-400">@{post.username}</span>
 			</UserHoverCard>
 			<div class="relative z-[1] flex items-center gap-2 shrink-0">

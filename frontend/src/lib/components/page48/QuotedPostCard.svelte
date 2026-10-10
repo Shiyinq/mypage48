@@ -7,6 +7,7 @@
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
+	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import { formatPostTime, getActiveMedia, parseContent, tagUrl, userUrl } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -127,6 +128,7 @@
 					<span class="truncate font-semibold text-gray-900 dark:text-gray-100">
 						{post.userDisplayName}
 					</span>
+					<AccountBadge type={post.page48AccountType} size={13} class="-ml-1 -mr-1" />
 					<span class="truncate text-gray-500 dark:text-gray-400">@{post.username}</span>
 				</UserHoverCard>
 				<span class="shrink-0 text-gray-400">·</span>

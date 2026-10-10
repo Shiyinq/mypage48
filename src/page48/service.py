@@ -389,6 +389,7 @@ class Page48Service:
             userProfilePicture=user_picture,
             userProfilePicture_small=user_picture_small,
             userBlurHash=blur_hash,
+            page48AccountType=author.get("page48AccountType"),
             content=post["content"],
             images=images,
             videos=videos,
