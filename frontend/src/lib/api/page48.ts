@@ -3,6 +3,13 @@ import { accessToken } from '$lib/stores/accessToken.svelte';
 import { page48NavStore } from '$lib/stores/page48Nav.svelte';
 import { getCSRFToken } from '$lib/utils/auth';
 
+/**
+ * Page48-only account badge. Regular accounts have no type (no check mark).
+ * - `official_account`: official/organization account (red check).
+ * - `page48_admin`: Page48 staff/admin (gold check).
+ */
+export type Page48AccountType = 'official_account' | 'page48_admin';
+
 export interface Page48ImageRef {
 	filename: string;
 	width: number;
@@ -124,6 +131,8 @@ export interface Page48UserProfile {
 	name: string;
 	username: string;
 	bio: string | null;
+	/** Page48-only account badge; null for regular accounts. */
+	page48AccountType?: Page48AccountType | null;
 	profilePicture: string | null;
 	profilePicture_medium: string | null;
 	profilePicture_small: string | null;
@@ -182,6 +191,8 @@ export interface PostUserItem {
 	profilePicture: string | null;
 	profilePicture_small: string | null;
 	bio: string | null;
+	/** Page48-only account badge; null for regular accounts. */
+	page48AccountType?: Page48AccountType | null;
 	/** Whether the requesting user already follows this account. */
 	isFollowing?: boolean;
 	/** Whether the requesting user has an unanswered follow request pending. */
@@ -291,6 +302,7 @@ export interface ActiveUser {
 	username: string;
 	name: string;
 	profilePicture: string | null;
+	page48AccountType?: Page48AccountType | null;
 	postCount: number;
 	lastPostedAt: string | null;
 }

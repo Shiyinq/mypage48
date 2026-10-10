@@ -5,6 +5,7 @@
 	import { portal } from '$lib/actions/portal';
 	import type { Page48UserProfile } from '$lib/api/page48';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
+	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import { page48HoverProfileStore } from '$lib/stores/page48.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -154,8 +155,11 @@
 					<img src={avatarUrl(profile)} alt="" class="h-full w-full object-cover" />
 				</div>
 				<a {href} class="min-w-0 flex-1">
-					<span class="block truncate text-[15px] font-bold text-gray-900 dark:text-gray-100">
-						{profile.name}
+					<span
+						class="flex items-center gap-1 text-[15px] font-bold text-gray-900 dark:text-gray-100"
+					>
+						<span class="truncate">{profile.name}</span>
+						<AccountBadge type={profile.page48AccountType} size={15} />
 					</span>
 					<span class="block truncate text-[13px] text-gray-500 dark:text-gray-400">
 						@{profile.username}

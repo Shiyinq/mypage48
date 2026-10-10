@@ -170,6 +170,8 @@ class Page48UserProfileResponse(BaseModel):
     name: str
     username: str
     bio: Optional[str] = None
+    # Page48-only account badge: "official_account" or "page48_admin".
+    page48AccountType: Optional[str] = None
     profilePicture: Optional[str] = None
     profilePicture_medium: Optional[str] = None
     profilePicture_small: Optional[str] = None
@@ -227,6 +229,7 @@ class ActiveUserItem(BaseModel):
     username: str
     name: str
     profilePicture: Optional[str] = None
+    page48AccountType: Optional[str] = None
     postCount: int = 0
     lastPostedAt: Optional[datetime] = None
 
@@ -312,6 +315,7 @@ class PostUserItem(BaseModel):
     profilePicture: Optional[str] = None
     profilePicture_small: Optional[str] = None
     bio: Optional[str] = None
+    page48AccountType: Optional[str] = None
     # Whether the requesting user already follows this account.
     isFollowing: bool = False
     # Whether the requesting user has an unanswered follow request pending.

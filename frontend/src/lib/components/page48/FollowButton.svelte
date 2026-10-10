@@ -14,10 +14,19 @@
 		isPending?: boolean;
 		/** `md` is the profile header size, `sm` fits inside user lists. */
 		size?: 'sm' | 'md';
+		/** Extra classes for the button (e.g. `w-full` for the mobile CTA). */
+		class?: string;
 		onChange?: (isFollowing: boolean, isPending: boolean) => void;
 	}
 
-	let { username, isFollowing = false, isPending = false, size = 'sm', onChange }: Props = $props();
+	let {
+		username,
+		isFollowing = false,
+		isPending = false,
+		size = 'sm',
+		class: className = '',
+		onChange
+	}: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -80,7 +89,7 @@
 {#if canFollow}
 	<button
 		type="button"
-		class={`shrink-0 rounded-full font-bold transition-colors cursor-pointer disabled:opacity-60 ${
+		class={`shrink-0 rounded-full font-bold transition-colors cursor-pointer disabled:opacity-60 ${className} ${
 			size === 'md' ? 'h-9 px-4 text-[13px]' : 'h-8 px-3 text-[12px]'
 		} ${
 			canUndo

@@ -2,6 +2,7 @@
 	import type { Page48Notification } from '$lib/api/page48';
 	import { page48Api } from '$lib/api/page48';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
+	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import {
 		NOTIFICATION_ACTION_KEYS,
 		NOTIFICATION_ICONS
@@ -102,6 +103,7 @@
 			<span class="truncate text-[13px] text-gray-500 dark:text-gray-400"
 				>@{notification.actor.username}</span
 			>
+			<AccountBadge type={notification.actor.page48AccountType} size={14} />
 			<span class="shrink-0 text-gray-400">·</span>
 			<span class="shrink-0 text-[12px] text-gray-500 dark:text-gray-400"
 				>{formatPostTime(notification.createdAt)}</span

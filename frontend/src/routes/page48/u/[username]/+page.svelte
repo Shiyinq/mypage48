@@ -8,6 +8,7 @@
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
+	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import UserMenu from '$lib/components/page48/UserMenu.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
@@ -533,21 +534,26 @@
 				<div class="flex-1 min-w-0 pt-1">
 					<div class="flex items-center gap-3">
 						<div class="min-w-0">
-							<h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
-								{profile.name}
-							</h1>
+							<div class="flex items-center gap-1.5">
+								<h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
+									{profile.name}
+								</h1>
+								<AccountBadge type={profile.page48AccountType} size={18} interactive />
+							</div>
 							<p class="text-[14px] text-gray-500 dark:text-gray-400 truncate">
 								@{profile.username}
 							</p>
 						</div>
 						{#if !isOwnProfile && isAuthenticated.value && !profile.isBlocked && !profile.isBlockedBy}
-							<FollowButton
-								username={profile.username}
-								isFollowing={profile.isFollowing}
-								isPending={profile.isFollowPending}
-								size="md"
-								onChange={handleFollowChange}
-							/>
+							<div class="hidden shrink-0 sm:block">
+								<FollowButton
+									username={profile.username}
+									isFollowing={profile.isFollowing}
+									isPending={profile.isFollowPending}
+									size="md"
+									onChange={handleFollowChange}
+								/>
+							</div>
 						{/if}
 					</div>
 					<div
@@ -611,6 +617,20 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Mobile: full-width follow CTA above the tabs, so it never squeezes the name -->
+		{#if !isOwnProfile && isAuthenticated.value && !profile.isBlocked && !profile.isBlockedBy}
+			<div class="px-5 pt-1 sm:hidden">
+				<FollowButton
+					username={profile.username}
+					isFollowing={profile.isFollowing}
+					isPending={profile.isFollowPending}
+					size="md"
+					class="w-full"
+					onChange={handleFollowChange}
+				/>
+			</div>
+		{/if}
 
 		<!-- Tabs -->
 		{#if !showPosts}

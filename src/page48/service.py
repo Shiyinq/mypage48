@@ -1019,6 +1019,7 @@ class Page48Service:
                     profilePicture=picture,
                     profilePicture_small=picture_small,
                     bio=user.get("bio"),
+                    page48AccountType=user.get("page48AccountType"),
                     isFollowing=user.get("userId") in followed,
                     isPending=user.get("userId") in pending,
                 )
@@ -1062,6 +1063,7 @@ class Page48Service:
                     username=(user or {}).get("username") or "",
                     name=(user or {}).get("name") or "",
                     profilePicture=picture,
+                    page48AccountType=(user or {}).get("page48AccountType"),
                     postCount=row.get("postCount", 0),
                     lastPostedAt=row.get("lastPostedAt"),
                 )
@@ -1725,6 +1727,7 @@ class Page48Service:
                         profilePicture=picture,
                         profilePicture_small=picture_small,
                         bio=actor.get("bio"),
+                        page48AccountType=actor.get("page48AccountType"),
                     ),
                     post=post_map.get(row.get("postId") or ""),
                 )
@@ -1878,6 +1881,7 @@ class Page48Service:
                     profilePicture=picture,
                     profilePicture_small=picture_small,
                     bio=user.get("bio"),
+                    page48AccountType=user.get("page48AccountType"),
                     isFollowing=user_id in followed,
                     isPending=user_id in pending,
                 )
@@ -2590,6 +2594,7 @@ class Page48Service:
             name=user.get("name") or stored_username,
             username=stored_username,
             bio=user.get("bio"),
+            page48AccountType=user.get("page48AccountType"),
             profilePicture=profile_picture,
             profilePicture_medium=profile_picture_medium,
             profilePicture_small=profile_picture_small,

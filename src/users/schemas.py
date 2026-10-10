@@ -89,6 +89,9 @@ class UserInDB(BaseModel):
     updatedAt: datetime = Field(default_factory=datetime.now)
     isEmailVerified: bool = Field(default=False)
     isPublic: bool = Field(default=False)
+    # Page48-only account badge: "official_account" or "page48_admin".
+    # None means a regular account with no check mark.
+    page48AccountType: Optional[str] = Field(default=None)
     publicYear: Optional[int] = Field(default=None)  # None = All Years
     failedLoginAttempts: int = Field(default=0)
     isAccountLocked: bool = Field(default=False)

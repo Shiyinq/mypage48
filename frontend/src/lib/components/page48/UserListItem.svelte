@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PostUserItem } from '$lib/api/page48';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
+	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 
 	interface Props {
 		user: PostUserItem;
@@ -37,6 +38,7 @@
 				>
 					{user.name}
 				</span>
+				<AccountBadge type={user.page48AccountType} size={15} />
 				<span class="truncate text-[14px] text-gray-500 dark:text-gray-400">
 					@{user.username}
 				</span>

@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { Users } from 'lucide-svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
+	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import { activeUsersStore } from '$lib/stores/page48.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -67,9 +68,10 @@
 							class="block cursor-pointer"
 						>
 							<span
-								class="block truncate font-semibold text-[14px] text-gray-900 dark:text-gray-100"
+								class="flex items-center gap-1 font-semibold text-[14px] text-gray-900 dark:text-gray-100"
 							>
-								{user.name}
+								<span class="truncate">{user.name}</span>
+								<AccountBadge type={user.page48AccountType} size={14} />
 							</span>
 							<span class="block truncate text-[12px] text-gray-400 dark:text-gray-500">
 								@{user.username}
