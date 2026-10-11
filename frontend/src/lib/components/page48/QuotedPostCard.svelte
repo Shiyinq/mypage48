@@ -152,9 +152,7 @@
 				</span>
 			</div>
 
-			{#if spoilerHidden}
-				<SpoilerCover postId={post.postId} />
-			{:else}
+			{#snippet postBody()}
 				{#if post.content}
 					<p
 						class="pointer-events-none relative z-[1] mt-1 line-clamp-6 whitespace-pre-wrap break-words text-[14px] leading-relaxed text-gray-700 dark:text-gray-300"
@@ -203,6 +201,17 @@
 						<PostEmbedView embed={postEmbed} compact />
 					</div>
 				{/if}
+			{/snippet}
+
+			{#if spoilerHidden}
+				<div class="relative min-h-[64px] overflow-hidden rounded-2xl">
+					<div class="spoiler-media pointer-events-none select-none opacity-80 blur-[6px]" inert>
+						{@render postBody()}
+					</div>
+					<SpoilerCover postId={post.postId} />
+				</div>
+			{:else}
+				{@render postBody()}
 			{/if}
 		</div>
 	{/if}
@@ -218,3 +227,12 @@
 		/>
 	</div>
 {/if}
+
+<style>
+	/* Media is blurred harder than the text so a photo is not recognisable. */
+	.spoiler-media :global(img),
+	.spoiler-media :global(video),
+	.spoiler-media :global(iframe) {
+		filter: blur(40px) grayscale(0.5);
+	}
+</style>

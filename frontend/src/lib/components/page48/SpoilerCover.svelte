@@ -5,10 +5,9 @@
 
 	interface Props {
 		postId: string;
-		class?: string;
 	}
 
-	let { postId, class: klass = '' }: Props = $props();
+	let { postId }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -19,17 +18,18 @@
 	}
 </script>
 
+<!-- No veil: just the reveal pill over the blurred content, matching the inline
+     spoiler (a real blur, not a box). -->
 <button
 	type="button"
-	class={`pointer-events-auto relative z-[1] mt-2 flex w-full cursor-pointer flex-col items-center gap-1.5 rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-6 text-center transition-colors hover:bg-amber-100 dark:border-amber-900/40 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 ${klass}`}
+	class="absolute inset-0 z-[3] flex cursor-pointer items-center justify-center rounded-2xl transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
 	onclick={reveal}
 	aria-label={t('page48.spoiler.show')}
 >
-	<EyeOff size={20} class="text-amber-600 dark:text-amber-400" />
-	<span class="text-[14px] font-semibold text-amber-700 dark:text-amber-400">
+	<span
+		class="pointer-events-none inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-zinc-900/85 px-3.5 py-1.5 text-[12.5px] font-semibold text-white shadow-lg backdrop-blur-md"
+	>
+		<EyeOff size={14} />
 		{t('page48.spoiler.show')}
-	</span>
-	<span class="text-[12px] text-amber-700/80 dark:text-amber-400/80">
-		{t('page48.spoiler.tapToShow')}
 	</span>
 </button>

@@ -25,10 +25,28 @@
 {:else}
 	<button
 		type="button"
-		class="pointer-events-auto rounded bg-gray-800 px-1 text-transparent transition-colors hover:bg-gray-700 dark:bg-zinc-600 dark:hover:bg-zinc-500"
+		class="spoiler-hidden pointer-events-auto cursor-pointer appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit]"
 		onclick={reveal}
 		aria-label={t('page48.spoiler.show')}
 	>
 		{text}
 	</button>
 {/if}
+
+<style>
+	/* A real blur of the glyphs (Threads-style), not a box or a shadow: the text
+	   is unreadable until tapped. Blur lightens on hover as a hint. */
+	.spoiler-hidden {
+		filter: blur(6px);
+		opacity: 0.8;
+		user-select: none;
+		transition:
+			filter 150ms ease,
+			opacity 150ms ease;
+	}
+	.spoiler-hidden:hover,
+	.spoiler-hidden:focus-visible {
+		filter: blur(4px);
+		opacity: 0.95;
+	}
+</style>

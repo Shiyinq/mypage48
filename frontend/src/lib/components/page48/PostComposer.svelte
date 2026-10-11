@@ -659,9 +659,7 @@
 						{:else if part.link}
 							<span class="text-blue-500">{part.text}</span>
 						{:else if part.spoiler}
-							<span class="rounded bg-gray-800 text-transparent dark:bg-zinc-600"
-								>||{part.text}||</span
-							>
+							<span class="spoiler-hidden">||{part.text}||</span>
 						{:else}
 							{part.text}
 						{/if}
@@ -951,3 +949,12 @@
 {#if emojiOpen}
 	<EmojiPicker anchor={emojiButton} onPick={insertEmoji} onClose={() => (emojiOpen = false)} />
 {/if}
+
+<style>
+	/* Matches the published inline spoiler: a real blur of the glyphs. */
+	.spoiler-hidden {
+		filter: blur(6px);
+		opacity: 0.8;
+		user-select: none;
+	}
+</style>

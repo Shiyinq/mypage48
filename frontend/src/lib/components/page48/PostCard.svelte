@@ -128,6 +128,23 @@
 
 	let detailHref = $derived(`/page48/post/${post.postId}`);
 	let activityHref = $derived(`${detailHref}/activity`);
+
+	/**
+	 * Open the post when its text is clicked (like X), but not when the click is a
+	 * text selection — that is what keeps the text copyable.
+	 */
+	function handleContentClick(event: MouseEvent) {
+		if (event.defaultPrevented || event.button !== 0) return;
+		const target = event.target as HTMLElement | null;
+		if (target?.closest('a, button, [role="button"]')) return;
+		if (typeof window !== 'undefined' && window.getSelection()?.toString()) return;
+
+		if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+			window.open(detailHref, '_blank', 'noopener');
+			return;
+		}
+		goto(detailHref);
+	}
 	let imageUrls = $derived(post.images?.map((image) => image.url) ?? []);
 	// Keep the active media filter (Gambar/Video) when opening a hashtag.
 	let activeMedia = $derived(getActiveMedia($page.url.pathname, $page.url.search));
@@ -410,15 +427,18 @@
 			</div>
 		</div>
 
-		{#if spoilerHidden}
-			<SpoilerCover postId={post.postId} />
-		{:else}
+		{#snippet postBody()}
 			<!-- Post Content (clickable hashtags and mentions; rest of the card opens
 		     post detail) -->
 			{#if post.content}
+				<!-- The paragraph mirrors the card's link so text stays selectable but a
+				     plain click still opens the post; the <a> overlay stays the a11y entry. -->
+				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<p
 					bind:this={contentEl}
-					class={`relative z-[1] pointer-events-none text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'max-h-[250px] overflow-hidden' : ''}`}
+					class={`relative z-[1] cursor-pointer text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'max-h-[250px] overflow-hidden' : ''}`}
+					onclick={handleContentClick}
 				>
 					{#each contentParts as part, i (i)}
 						{#if part.tag}
@@ -512,6 +532,17 @@
 					<QuotedPostCard post={post.quotedPost ?? null} unavailable={!post.quotedPost} />
 				</div>
 			{/if}
+		{/snippet}
+
+		{#if spoilerHidden}
+			<div class="relative min-h-[88px] overflow-hidden rounded-2xl">
+				<div class="spoiler-media pointer-events-none select-none opacity-80 blur-[6px]" inert>
+					{@render postBody()}
+				</div>
+				<SpoilerCover postId={post.postId} />
+			</div>
+		{:else}
+			{@render postBody()}
 		{/if}
 
 		<!-- Thread continuation: opens the detail page where the chain is shown -->
@@ -646,3 +677,13 @@
 		/>
 	{/if}
 </article>
+
+<style>
+	/* The text keeps the light inline-style blur, but a photo, video or embed would
+	   stay recognisable at that strength, so media is blurred harder on top. */
+	.spoiler-media :global(img),
+	.spoiler-media :global(video),
+	.spoiler-media :global(iframe) {
+		filter: blur(40px) grayscale(0.5);
+	}
+</style>
