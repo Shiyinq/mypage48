@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
 import re
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 from bson.objectid import ObjectId
@@ -113,9 +113,7 @@ class Page48Repository:
             {"$set": {"isPrivate": is_private}},
         )
 
-    async def get_self_continuation(
-        self, post_id: str, user_id: str
-    ) -> Optional[dict]:
+    async def get_self_continuation(self, post_id: str, user_id: str) -> Optional[dict]:
         """The author's own next post in a thread, if this one has one."""
         return await self.posts.find_one(
             {"parentPostId": post_id, "userId": user_id},
@@ -130,7 +128,9 @@ class Page48Repository:
         if parent_post_id is None:
             # The deleted post was the thread root, so the continuation takes over.
             update["rootPostId"] = None
-        return await self.posts.update_one({"postId": continuation_id}, {"$set": update})
+        return await self.posts.update_one(
+            {"postId": continuation_id}, {"$set": update}
+        )
 
     async def repoint_thread_root(
         self, old_root_id: str, new_root_id: str, user_id: str
@@ -1085,7 +1085,9 @@ class Page48Repository:
                 {"_id": {"$in": [row["_id"] for row in stale]}}
             )
 
-    async def delete_notifications(self, recipient_id: str, actor_id: str, types: List[str]) -> int:
+    async def delete_notifications(
+        self, recipient_id: str, actor_id: str, types: List[str]
+    ) -> int:
         """Drop a recipient's notifications of the given types from one actor.
 
         A follow request that was accepted or declined must disappear from the
@@ -1238,9 +1240,7 @@ class Page48Repository:
         )
 
     async def delete_mute(self, muter_id: str, muted_id: str):
-        return await self.mutes.delete_one(
-            {"muterId": muter_id, "mutedId": muted_id}
-        )
+        return await self.mutes.delete_one({"muterId": muter_id, "mutedId": muted_id})
 
     async def get_mute(self, muter_id: str, muted_id: str) -> Optional[dict]:
         return await self.mutes.find_one({"muterId": muter_id, "mutedId": muted_id})
