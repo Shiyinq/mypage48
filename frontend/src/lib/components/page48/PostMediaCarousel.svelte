@@ -27,8 +27,12 @@
 	/** Set when the swipe itself moved `index`, so the effect below leaves it alone. */
 	let indexFromSwipe = false;
 
-	/** Two slides of the reference ratio fill the strip, which sets the shared height. */
-	const SLIDE_FRACTION = 0.48;
+	/**
+	 * Fraction of the strip one slide takes. ~0.85 shows the leading photo almost
+	 * full width with a peek of the next, closer to X's carousel, while two equal
+	 * columns are what 0.48 would give.
+	 */
+	const SLIDE_FRACTION = 0.85;
 	let slideRatio = $derived(carouselMediaRatio(media));
 	let stripRatio = $derived(slideRatio / SLIDE_FRACTION);
 
