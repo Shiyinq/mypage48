@@ -28,11 +28,10 @@
 	let indexFromSwipe = false;
 
 	/**
-	 * Fraction of the strip one slide takes. ~0.85 shows the leading photo almost
-	 * full width with a peek of the next, closer to X's carousel, while two equal
-	 * columns are what 0.48 would give.
+	 * Fraction of the strip one slide takes. ~0.60  shows the leading photo with a
+	 * generous peek of the next; 0.48 would show two equal columns.
 	 */
-	const SLIDE_FRACTION = 0.85;
+	const SLIDE_FRACTION = 0.60;
 	let slideRatio = $derived(carouselMediaRatio(media));
 	let stripRatio = $derived(slideRatio / SLIDE_FRACTION);
 
