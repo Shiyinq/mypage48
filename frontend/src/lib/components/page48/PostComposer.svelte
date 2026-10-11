@@ -14,12 +14,14 @@
 	import EmojiPicker from '$lib/components/page48/EmojiPicker.svelte';
 	import MentionSuggestions from '$lib/components/page48/MentionSuggestions.svelte';
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
+	import YouTubeEmbed from '$lib/components/page48/YouTubeEmbed.svelte';
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		findActiveMention,
+		findYouTubeEmbed,
 		parseContent,
 		probeVideo,
 		PAGE48_IMAGE_MAX_BYTES,
@@ -136,6 +138,8 @@
 
 	// Mentions and hashtags are coloured while typing, matching the published post.
 	let contentParts = $derived(parseContent(content));
+	// Live preview of a YouTube link, so the author sees the embed before posting.
+	let youtubeEmbed = $derived(findYouTubeEmbed(contentParts));
 
 	/** Insert text at the caret (or over a range), keeping focus and caret in place. */
 	async function insertAtCaret(text: string, rangeStart?: number, rangeEnd?: number) {
@@ -667,6 +671,13 @@
 				{@render submitButton()}
 			{/if}
 		</div>
+
+		<!-- YouTube link preview -->
+		{#if youtubeEmbed}
+			<div class="mt-2" in:fade>
+				<YouTubeEmbed videoId={youtubeEmbed.videoId} start={youtubeEmbed.start} maxHeight={300} />
+			</div>
+		{/if}
 
 		<!-- Poll editor -->
 		{#if pollOpen}

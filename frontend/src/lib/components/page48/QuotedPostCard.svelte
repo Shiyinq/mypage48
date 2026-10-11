@@ -4,11 +4,19 @@
 	import { portal } from '$lib/actions/portal';
 	import type { Page48Post } from '$lib/api/page48';
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
+	import YouTubeEmbed from '$lib/components/page48/YouTubeEmbed.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
-	import { formatPostTime, getActiveMedia, parseContent, tagUrl, userUrl } from '$lib/utils/page48';
+	import {
+		findYouTubeEmbed,
+		formatPostTime,
+		getActiveMedia,
+		parseContent,
+		tagUrl,
+		userUrl
+	} from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
@@ -35,6 +43,7 @@
 	let activeMedia = $derived(getActiveMedia($page.url.pathname, $page.url.search));
 
 	let contentParts = $derived(post?.content ? parseContent(post.content) : []);
+	let youtubeEmbed = $derived(findYouTubeEmbed(contentParts));
 	let imageUrls = $derived(post?.images?.map((image) => image.url) ?? []);
 
 	let lightboxOpen = $state(false);
@@ -177,6 +186,12 @@
 				bind:index={lightboxIndex}
 				onOpen={interactive ? openLightbox : undefined}
 			/>
+
+			{#if youtubeEmbed}
+				<div class="pointer-events-auto relative z-[1]">
+					<YouTubeEmbed videoId={youtubeEmbed.videoId} start={youtubeEmbed.start} maxHeight={300} />
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>

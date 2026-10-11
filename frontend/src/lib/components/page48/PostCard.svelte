@@ -8,6 +8,7 @@
 	import PostComposerModal from '$lib/components/page48/PostComposerModal.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
+	import YouTubeEmbed from '$lib/components/page48/YouTubeEmbed.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
@@ -20,7 +21,14 @@
 	import { activityNavStore } from '$lib/stores/page48Nav.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
-	import { formatPostTime, getActiveMedia, parseContent, tagUrl, userUrl } from '$lib/utils/page48';
+	import {
+		findYouTubeEmbed,
+		formatPostTime,
+		getActiveMedia,
+		parseContent,
+		tagUrl,
+		userUrl
+	} from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -270,6 +278,8 @@
 
 	// Hashtags and mentions inside the content, so neither needs a duplicated chip.
 	let contentParts = $derived(post.content ? parseContent(post.content) : []);
+	// A YouTube link anywhere in the text is embedded inline (first one only).
+	let youtubeEmbed = $derived(findYouTubeEmbed(contentParts));
 	let inlineTags = $derived(
 		new Set(contentParts.filter((part) => part.tag).map((part) => part.tag as string))
 	);
@@ -443,6 +453,17 @@
 				bind:index={lightboxIndex}
 				onOpen={openLightbox}
 			/>
+		{/if}
+
+		<!-- YouTube link: embedded lite player below the media, X/Twitter style -->
+		{#if youtubeEmbed}
+			<div class="pointer-events-none relative z-[1] mt-3">
+				<YouTubeEmbed
+					videoId={youtubeEmbed.videoId}
+					start={youtubeEmbed.start}
+					class="pointer-events-auto"
+				/>
+			</div>
 		{/if}
 
 		<!-- Quoted post preview -->

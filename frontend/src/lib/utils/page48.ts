@@ -179,6 +179,66 @@ function linkHref(link: string): string {
 	return /^www\./i.test(link) ? `https://${link}` : link;
 }
 
+/** A YouTube video the feed can embed inline. */
+export interface YouTubeEmbed {
+	videoId: string;
+	/** Playback offset in seconds, taken from `?t=`/`?start=`. */
+	start?: number;
+}
+
+/**
+ * Matches the many shapes of a YouTube URL and captures the 11-character video id:
+ * `watch?v=`, `youtu.be/`, `/shorts/`, `/embed/`, `/live/` and `/v/`. Extra query
+ * parameters (playlists, share tokens, timestamps) are ignored.
+ */
+const YOUTUBE_ID_PATTERN =
+	/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#\s]*&)?v=|shorts\/|embed\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i;
+
+/**
+ * Reads the playback offset from `t`/`start`, accepting both `90` and the `1m30s`
+ * form YouTube puts in share links. Returns undefined when there is no offset.
+ */
+function youTubeStartSeconds(url: string): number | undefined {
+	const match = url.match(/[?&#](?:t|start)=([0-9hms]+)/i);
+	if (!match) return undefined;
+
+	const value = match[1].toLowerCase();
+	if (/^\d+$/.test(value)) {
+		const seconds = parseInt(value, 10);
+		return seconds > 0 ? seconds : undefined;
+	}
+
+	let seconds = 0;
+	for (const part of value.match(/(\d+[hms])/g) ?? []) {
+		const unit = part.slice(-1);
+		const amount = parseInt(part, 10);
+		if (unit === 'h') seconds += amount * 3600;
+		else if (unit === 'm') seconds += amount * 60;
+		else seconds += amount;
+	}
+	return seconds > 0 ? seconds : undefined;
+}
+
+/** The video id inside a YouTube link, or null for any other URL. */
+export function extractYouTubeEmbed(url: string): YouTubeEmbed | null {
+	const match = url.match(YOUTUBE_ID_PATTERN);
+	if (!match) return null;
+	return { videoId: match[1], start: youTubeStartSeconds(url) };
+}
+
+/**
+ * The first YouTube link among already-parsed content parts. Only one video is
+ * embedded per post, matching how a link preview behaves elsewhere.
+ */
+export function findYouTubeEmbed(parts: ContentPart[]): YouTubeEmbed | null {
+	for (const part of parts) {
+		if (!part.link) continue;
+		const embed = extractYouTubeEmbed(part.link);
+		if (embed) return embed;
+	}
+	return null;
+}
+
 /** A Page48 post link anywhere in `text`, e.g. `https://host/page48/post/<uuid>`. */
 const PAGE48_POST_LINK =
 	/https?:\/\/\S*?\/page48\/post\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\S*/i;

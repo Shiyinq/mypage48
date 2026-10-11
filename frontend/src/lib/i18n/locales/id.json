@@ -1991,6 +1991,8 @@
 			"removeQuote": "Hapus kutipan",
 			"media": "Media postingan",
 			"viewImage": "Lihat gambar {index} dari {total}",
+			"playVideo": "Putar video",
+			"youtubeVideo": "Video YouTube",
 			"cancelReply": "Batalkan balasan",
 			"openX": "Buka X @{username}",
 			"imageCount": "{count} gambar",

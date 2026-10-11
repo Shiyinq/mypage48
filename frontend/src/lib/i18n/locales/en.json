@@ -1987,6 +1987,8 @@
 			"removeQuote": "Remove quote",
 			"media": "Post media",
 			"viewImage": "View image {index} of {total}",
+			"playVideo": "Play video",
+			"youtubeVideo": "YouTube video",
 			"cancelReply": "Cancel reply",
 			"openX": "Open X @{username}",
 			"imageCount": "{count} images",

@@ -1985,6 +1985,8 @@
 			"removeQuote": "引用を削除",
 			"media": "投稿メディア",
 			"viewImage": "画像 {index} / {total} を表示",
+			"playVideo": "動画を再生",
+			"youtubeVideo": "YouTube 動画",
 			"cancelReply": "返信をキャンセル",
 			"openX": "X @{username} を開く",
 			"imageCount": "画像 {count} 枚",
