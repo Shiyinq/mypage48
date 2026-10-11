@@ -144,7 +144,8 @@
 		}
 		goto(detailHref);
 	}
-	let imageUrls = $derived(post.images?.map((image) => image.url) ?? []);
+	// Any media (a video-only carousel included) can open the viewer.
+	let hasMedia = $derived((post.media?.length ?? 0) > 0);
 	// Keep the active media filter (Gambar/Video) when opening a hashtag.
 	let activeMedia = $derived(getActiveMedia($page.url.pathname, $page.url.search));
 
@@ -640,7 +641,7 @@
 		</div>
 	</div>
 
-	{#if !hideMedia && imageUrls.length > 0}
+	{#if !hideMedia && hasMedia}
 		<div use:portal>
 			<PostMediaViewer
 				{post}

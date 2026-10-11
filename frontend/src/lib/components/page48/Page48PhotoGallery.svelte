@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { ImageOff, LoaderCircle } from 'lucide-svelte';
+	import { ImageOff } from 'lucide-svelte';
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
+	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import type { Page48Post } from '$lib/api/page48';
 	import { page48Reads } from '$lib/stores/page48.svelte';
-	import { mediaRatio } from '$lib/utils/page48';
+	import { measureMissingImageSizes, mediaRatio } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
@@ -37,13 +38,34 @@
 	/** The post whose viewer is open, and the media index it opened on. */
 	let viewerPost = $state<Page48Post | null>(null);
 	let viewerIndex = $state(0);
+	/** URL to put back when the viewer closes, so the gallery link stays shareable. */
+	let viewerReturnUrl: string | null = null;
 
 	let sentinel = $state<HTMLDivElement>();
 
 	function openViewer(tile: (typeof tiles)[number]) {
 		viewerPost = tile.post;
 		viewerIndex = tile.index;
+
+		if (typeof window === 'undefined') return;
+		const target = `/page48/post/${tile.post.postId}`;
+		if (window.location.pathname === target) return;
+		viewerReturnUrl = window.location.pathname + window.location.search + window.location.hash;
+		window.history.replaceState(window.history.state, '', target);
 	}
+
+	function closeViewer() {
+		viewerPost = null;
+		if (typeof window === 'undefined' || !viewerReturnUrl) return;
+		window.history.replaceState(window.history.state, '', viewerReturnUrl);
+		viewerReturnUrl = null;
+	}
+
+	// Older posts stored no dimensions; measure them so each tile keeps its own ratio.
+	$effect(() => {
+		const images = posts.flatMap((post) => post.media ?? []).filter((m) => m.type === 'image');
+		if (images.length) return measureMissingImageSizes(images);
+	});
 
 	async function loadFeed() {
 		try {
@@ -96,8 +118,11 @@
 </script>
 
 {#if loading}
-	<div class="flex justify-center py-16">
-		<LoaderCircle class="h-6 w-6 animate-spin text-gray-400" />
+	<!-- Centered in the visible area, like the video feed (navbar + bottom bar). -->
+	<div
+		class="flex min-h-[calc(100dvh-8rem)] items-center justify-center xl:min-h-[calc(100dvh-4rem)]"
+	>
+		<Page48Spinner class="h-[26px] w-[26px]" />
 	</div>
 {:else if error}
 	<div class="flex flex-col items-center gap-2 py-16 text-center text-gray-500 dark:text-gray-400">
@@ -146,7 +171,7 @@
 
 	{#if loadingMore}
 		<div class="flex justify-center py-8">
-			<LoaderCircle class="h-5 w-5 animate-spin text-gray-400" />
+			<Page48Spinner class="h-[22px] w-[22px]" />
 		</div>
 	{/if}
 {/if}
@@ -156,6 +181,6 @@
 		post={viewerPost}
 		initialIndex={viewerIndex}
 		isOpen={viewerPost !== null}
-		onClose={() => (viewerPost = null)}
+		onClose={closeViewer}
 	/>
 {/if}

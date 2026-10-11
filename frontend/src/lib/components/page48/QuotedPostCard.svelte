@@ -50,7 +50,8 @@
 	let spoilerHidden = $derived(
 		post ? !!post.isSpoiler && !spoilerStore.isRevealed(post.postId) : false
 	);
-	let imageUrls = $derived(post?.images?.map((image) => image.url) ?? []);
+	// Any media (a video-only carousel included) can open the viewer.
+	let hasMedia = $derived((post?.media?.length ?? 0) > 0);
 
 	let lightboxOpen = $state(false);
 	let lightboxIndex = $state(0);
@@ -220,7 +221,7 @@
 	{/if}
 </div>
 
-{#if interactive && post && imageUrls.length > 0}
+{#if interactive && post && hasMedia}
 	<div use:portal>
 		<PostMediaViewer
 			{post}
