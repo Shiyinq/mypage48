@@ -374,6 +374,28 @@ export function extractSpotifyLink(url: string): SpotifyLink | null {
 	return { url };
 }
 
+/** An embeddable public Telegram channel post. */
+export interface TelegramEmbed {
+	channel: string;
+	messageId: string;
+}
+
+/**
+ * Matches a public Telegram channel post (`t.me/<channel>/<id>`, with an optional
+ * `/s/` preview prefix or the `telegram.me` host) and captures the channel and
+ * message id. The leading `//` keeps lookalike hosts such as `nott.me` out, and
+ * the 5-32 channel length skips `t.me/c/<id>` private links.
+ */
+const TELEGRAM_PATTERN =
+	/(?:^|\/\/)(?:t\.me|telegram\.me)\/(?:s\/)?([A-Za-z0-9_]{5,32})\/(\d{1,12})/i;
+
+/** The channel and message id inside a Telegram link, or null for any other URL. */
+export function extractTelegramEmbed(url: string): TelegramEmbed | null {
+	const match = url.match(TELEGRAM_PATTERN);
+	if (!match) return null;
+	return { channel: match[1], messageId: match[2] };
+}
+
 /** An embeddable (or link-card) link found in a post: one per post, first wins. */
 export type PostEmbed =
 	| ({ type: 'youtube' } & YouTubeEmbed)
@@ -383,7 +405,8 @@ export type PostEmbed =
 	| ({ type: 'tiktok' } & TikTokEmbed)
 	| ({ type: 'tiktok-link' } & TikTokLink)
 	| ({ type: 'spotify' } & SpotifyEmbed)
-	| ({ type: 'spotify-link' } & SpotifyLink);
+	| ({ type: 'spotify-link' } & SpotifyLink)
+	| ({ type: 'telegram' } & TelegramEmbed);
 
 /**
  * The first embeddable link among already-parsed content parts. Only one embed is
@@ -416,6 +439,9 @@ export function findPostEmbed(parts: ContentPart[]): PostEmbed | null {
 
 		const spotifyLink = extractSpotifyLink(part.link);
 		if (spotifyLink) return { type: 'spotify-link', ...spotifyLink };
+
+		const telegram = extractTelegramEmbed(part.link);
+		if (telegram) return { type: 'telegram', ...telegram };
 	}
 	return null;
 }

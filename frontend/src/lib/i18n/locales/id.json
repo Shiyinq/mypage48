@@ -2004,7 +2004,8 @@
 			"xPost": "Postingan X",
 			"instagramPost": "Postingan Instagram",
 			"tiktokPost": "Postingan TikTok",
-			"spotifyEmbed": "Embed Spotify"
+			"spotifyEmbed": "Embed Spotify",
+			"telegramPost": "Postingan Telegram"
 		},
 		"embed": {
 			"viewOnX": "Lihat post di X",
@@ -2018,7 +2019,9 @@
 			"tiktokShortNotice": "Membuka video di TikTok",
 			"listenOnSpotify": "Dengar di Spotify",
 			"spotifyLoads": "Player dimuat dari Spotify",
-			"spotifyShortNotice": "Membuka di Spotify"
+			"spotifyShortNotice": "Membuka di Spotify",
+			"viewOnTelegram": "Lihat post di Telegram",
+			"telegramLoads": "Post dimuat dari Telegram"
 		},
 		"mentions": {
 			"noResults": "Pengguna tidak ditemukan",

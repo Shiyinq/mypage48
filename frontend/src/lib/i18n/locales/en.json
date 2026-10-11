@@ -2000,7 +2000,8 @@
 			"xPost": "X post",
 			"instagramPost": "Instagram post",
 			"tiktokPost": "TikTok post",
-			"spotifyEmbed": "Spotify embed"
+			"spotifyEmbed": "Spotify embed",
+			"telegramPost": "Telegram post"
 		},
 		"embed": {
 			"viewOnX": "View post on X",
@@ -2014,7 +2015,9 @@
 			"tiktokShortNotice": "Opens the video on TikTok",
 			"listenOnSpotify": "Listen on Spotify",
 			"spotifyLoads": "The player loads from Spotify",
-			"spotifyShortNotice": "Opens on Spotify"
+			"spotifyShortNotice": "Opens on Spotify",
+			"viewOnTelegram": "View post on Telegram",
+			"telegramLoads": "The post loads from Telegram"
 		},
 		"mentions": {
 			"noResults": "No users found",

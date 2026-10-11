@@ -10,6 +10,7 @@
 	import TikTokLinkCard from '$lib/components/page48/TikTokLinkCard.svelte';
 	import SpotifyEmbed from '$lib/components/page48/SpotifyEmbed.svelte';
 	import SpotifyLinkCard from '$lib/components/page48/SpotifyLinkCard.svelte';
+	import TelegramEmbed from '$lib/components/page48/TelegramEmbed.svelte';
 
 	interface Props {
 		embed: PostEmbed;
@@ -71,12 +72,14 @@
 	/>
 {:else if shown.type === 'spotify'}
 	<SpotifyEmbed kind={shown.kind} spotifyId={shown.spotifyId} class={klass} />
+{:else if shown.type === 'telegram'}
+	<TelegramEmbed channel={shown.channel} messageId={shown.messageId} class={klass} />
 {:else if shown.type === 'tiktok-link'}
 	{@const linkUrl = shown.url}
 	<div use:loadOnView={{ onLoad: () => resolveShortLink(linkUrl) }}>
 		<TikTokLinkCard url={linkUrl} class={klass} />
 	</div>
-{:else}
+{:else if shown.type === 'spotify-link'}
 	{@const linkUrl = shown.url}
 	<div use:loadOnView={{ onLoad: () => resolveShortLink(linkUrl) }}>
 		<SpotifyLinkCard url={linkUrl} class={klass} />

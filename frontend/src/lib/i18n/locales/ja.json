@@ -1998,7 +1998,8 @@
 			"xPost": "X の投稿",
 			"instagramPost": "Instagram の投稿",
 			"tiktokPost": "TikTok の投稿",
-			"spotifyEmbed": "Spotify 埋め込み"
+			"spotifyEmbed": "Spotify 埋め込み",
+			"telegramPost": "Telegram の投稿"
 		},
 		"embed": {
 			"viewOnX": "X で投稿を表示",
@@ -2012,7 +2013,9 @@
 			"tiktokShortNotice": "TikTok で動画を開きます",
 			"listenOnSpotify": "Spotify で聴く",
 			"spotifyLoads": "プレーヤーは Spotify から読み込みます",
-			"spotifyShortNotice": "Spotify で開きます"
+			"spotifyShortNotice": "Spotify で開きます",
+			"viewOnTelegram": "Telegram で投稿を表示",
+			"telegramLoads": "投稿は Telegram から読み込みます"
 		},
 		"mentions": {
 			"noResults": "ユーザーが見つかりません",
