@@ -1997,11 +1997,16 @@
 			"close": "Close",
 			"mentionSuggestions": "User suggestions",
 			"userPreview": "User preview",
-			"xPost": "X post"
+			"xPost": "X post",
+			"instagramPost": "Instagram post"
 		},
 		"embed": {
 			"viewOnX": "View post on X",
-			"xLoads": "The post loads from X"
+			"xLoads": "The post loads from X",
+			"viewOnInstagram": "View post on Instagram",
+			"instagramLoads": "The post loads from Instagram",
+			"viewStoryOnInstagram": "View story on Instagram",
+			"storyNotice": "Stories disappear after 24 hours"
 		},
 		"mentions": {
 			"noResults": "No users found",

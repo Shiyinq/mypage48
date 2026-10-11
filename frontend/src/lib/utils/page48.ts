@@ -248,8 +248,57 @@ export function extractXEmbed(url: string): XEmbed | null {
 	return { tweetId: match[1] };
 }
 
-/** An embeddable link found in a post: one is shown per post, first match wins. */
-export type PostEmbed = ({ type: 'youtube' } & YouTubeEmbed) | ({ type: 'x' } & XEmbed);
+/** A kind of Instagram permalink that the official `/embed` iframe accepts. */
+export type InstagramKind = 'p' | 'reel' | 'tv';
+
+/** An embeddable Instagram post, reel or IGTV video. */
+export interface InstagramEmbed {
+	shortcode: string;
+	kind: InstagramKind;
+}
+
+/**
+ * Matches an Instagram post/reel/tv permalink and captures its shortcode. The
+ * leading `//` keeps lookalike hosts such as `notinstagram.com` from matching.
+ * Profiles and stories have no embed endpoint and are handled separately.
+ */
+const INSTAGRAM_POST_PATTERN =
+	/(?:^|\/\/)(?:www\.)?instagram\.com\/(p|reel|reels|tv)\/([A-Za-z0-9_-]{5,20})/i;
+
+/** The shortcode inside an Instagram post link, or null for any other URL. */
+export function extractInstagramEmbed(url: string): InstagramEmbed | null {
+	const match = url.match(INSTAGRAM_POST_PATTERN);
+	if (!match) return null;
+	return {
+		kind: match[1].toLowerCase() === 'reels' ? 'reel' : (match[1].toLowerCase() as InstagramKind),
+		shortcode: match[2]
+	};
+}
+
+/**
+ * An Instagram story. Stories are ephemeral and have no official embed endpoint,
+ * so this is only used to render a link card that opens the story on Instagram.
+ */
+export interface InstagramStory {
+	url: string;
+}
+
+const INSTAGRAM_STORY_PATTERN =
+	/(?:^|\/\/)(?:www\.)?instagram\.com\/stories\/(?:highlights\/)?([A-Za-z0-9_.]{1,30})\/(\d{1,25})/i;
+
+/** A normalised link to an Instagram story, or null for any other URL. */
+export function extractInstagramStory(url: string): InstagramStory | null {
+	const match = url.match(INSTAGRAM_STORY_PATTERN);
+	if (!match) return null;
+	return { url: `https://www.instagram.com/stories/${match[1]}/${match[2]}/` };
+}
+
+/** An embeddable (or link-card) link found in a post: one per post, first wins. */
+export type PostEmbed =
+	| ({ type: 'youtube' } & YouTubeEmbed)
+	| ({ type: 'x' } & XEmbed)
+	| ({ type: 'instagram' } & InstagramEmbed)
+	| ({ type: 'instagram-story' } & InstagramStory);
 
 /**
  * The first embeddable link among already-parsed content parts. Only one embed is
@@ -264,6 +313,12 @@ export function findPostEmbed(parts: ContentPart[]): PostEmbed | null {
 
 		const x = extractXEmbed(part.link);
 		if (x) return { type: 'x', ...x };
+
+		const instagram = extractInstagramEmbed(part.link);
+		if (instagram) return { type: 'instagram', ...instagram };
+
+		const story = extractInstagramStory(part.link);
+		if (story) return { type: 'instagram-story', ...story };
 	}
 	return null;
 }

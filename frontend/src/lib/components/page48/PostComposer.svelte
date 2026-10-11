@@ -16,6 +16,8 @@
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import YouTubeEmbed from '$lib/components/page48/YouTubeEmbed.svelte';
 	import XEmbed from '$lib/components/page48/XEmbed.svelte';
+	import InstagramEmbed from '$lib/components/page48/InstagramEmbed.svelte';
+	import InstagramStoryCard from '$lib/components/page48/InstagramStoryCard.svelte';
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
@@ -673,13 +675,17 @@
 			{/if}
 		</div>
 
-		<!-- Embeddable link preview (YouTube or X) -->
+		<!-- Embeddable link preview (YouTube/X/Instagram) -->
 		{#if postEmbed}
 			<div class="mt-2" in:fade>
 				{#if postEmbed.type === 'youtube'}
 					<YouTubeEmbed videoId={postEmbed.videoId} start={postEmbed.start} maxHeight={300} />
-				{:else}
+				{:else if postEmbed.type === 'x'}
 					<XEmbed tweetId={postEmbed.tweetId} />
+				{:else if postEmbed.type === 'instagram'}
+					<InstagramEmbed shortcode={postEmbed.shortcode} kind={postEmbed.kind} height={420} />
+				{:else}
+					<InstagramStoryCard url={postEmbed.url} class="max-w-[540px]" />
 				{/if}
 			</div>
 		{/if}

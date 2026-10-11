@@ -10,6 +10,8 @@
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
 	import YouTubeEmbed from '$lib/components/page48/YouTubeEmbed.svelte';
 	import XEmbed from '$lib/components/page48/XEmbed.svelte';
+	import InstagramEmbed from '$lib/components/page48/InstagramEmbed.svelte';
+	import InstagramStoryCard from '$lib/components/page48/InstagramStoryCard.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
@@ -456,7 +458,7 @@
 			/>
 		{/if}
 
-		<!-- Embeddable link (YouTube or X): lite, click-to-load, below the media -->
+		<!-- Embeddable link (YouTube/X/Instagram): lite, click-to-load -->
 		{#if postEmbed}
 			<div class="pointer-events-none relative z-[1] mt-3">
 				{#if postEmbed.type === 'youtube'}
@@ -465,8 +467,19 @@
 						start={postEmbed.start}
 						class="pointer-events-auto"
 					/>
-				{:else}
+				{:else if postEmbed.type === 'x'}
 					<XEmbed tweetId={postEmbed.tweetId} class="pointer-events-auto" />
+				{:else if postEmbed.type === 'instagram'}
+					<InstagramEmbed
+						shortcode={postEmbed.shortcode}
+						kind={postEmbed.kind}
+						class="pointer-events-auto"
+					/>
+				{:else}
+					<InstagramStoryCard
+						url={postEmbed.url}
+						class="pointer-events-auto mx-auto max-w-[540px]"
+					/>
 				{/if}
 			</div>
 		{/if}

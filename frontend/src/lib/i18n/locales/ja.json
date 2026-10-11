@@ -1995,11 +1995,16 @@
 			"close": "閉じる",
 			"mentionSuggestions": "ユーザーの候補",
 			"userPreview": "ユーザーのプレビュー",
-			"xPost": "X の投稿"
+			"xPost": "X の投稿",
+			"instagramPost": "Instagram の投稿"
 		},
 		"embed": {
 			"viewOnX": "X で投稿を表示",
-			"xLoads": "投稿は X から読み込みます"
+			"xLoads": "投稿は X から読み込みます",
+			"viewOnInstagram": "Instagram で投稿を表示",
+			"instagramLoads": "投稿は Instagram から読み込みます",
+			"viewStoryOnInstagram": "Instagram でストーリーを表示",
+			"storyNotice": "ストーリーは 24 時間で消えます"
 		},
 		"mentions": {
 			"noResults": "ユーザーが見つかりません",
