@@ -40,7 +40,12 @@
 			: `/page48/post/${notification.post.postId}`
 	);
 
-	let snippet = $derived(notification.post?.content?.trim() ?? '');
+	// A spoiler post is never quoted in the notification list; show a neutral label.
+	let snippet = $derived(
+		notification.post?.isSpoiler
+			? t('page48.spoiler.notification')
+			: (notification.post?.content?.trim() ?? '')
+	);
 	let isFollowRequest = $derived(notification.type === 'followRequest');
 
 	async function respond(accept: boolean) {

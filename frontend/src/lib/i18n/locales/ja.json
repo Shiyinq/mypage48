@@ -2283,13 +2283,26 @@
 			"pin": "プロフィールに固定",
 			"unpin": "固定を解除",
 			"makePrivate": "非公開にする",
-			"makePublic": "公開にする"
+			"makePublic": "公開にする",
+			"markSpoiler": "ネタバレ設定",
+			"unmarkSpoiler": "ネタバレ解除"
 		},
 		"private": {
 			"badge": "自分のみ",
 			"made": "この投稿は自分のみ閲覧できます。",
 			"madePublic": "投稿を公開に戻しました。",
 			"error": "投稿の公開設定を変更できませんでした。"
+		},
+		"spoiler": {
+			"badge": "ネタバレ",
+			"label": "ネタバレ",
+			"show": "ネタバレを表示",
+			"tapToShow": "タップしてこの投稿を表示",
+			"mark": "ネタバレとして設定",
+			"marked": "ネタバレとして設定しました。",
+			"unmarked": "ネタバレを解除しました。",
+			"error": "ネタバレを更新できませんでした。",
+			"notification": "ネタバレ投稿"
 		},
 		"repostMenu": {
 			"repost": "リポスト",

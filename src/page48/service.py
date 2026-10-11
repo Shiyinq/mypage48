@@ -403,6 +403,7 @@ class Page48Service:
             updatedAt=post["updatedAt"],
             isPinned=bool(post.get("pinnedAt")),
             isPrivate=bool(post.get("isPrivate")),
+            isSpoiler=bool(post.get("isSpoiler")),
             isLiked=interactions.get("isLiked", False),
             isReposted=interactions.get("isReposted", False),
             isBookmarked=interactions.get("isBookmarked", False),
@@ -1291,6 +1292,7 @@ class Page48Service:
             "quotedPostId": quoted_post_id,
             "pinnedAt": None,
             "isPrivate": is_private,
+            "isSpoiler": bool(getattr(data, "isSpoiler", False)),
             "likesCount": 0,
             "repostCount": 0,
             "bookmarksCount": 0,
@@ -1696,6 +1698,7 @@ class Page48Service:
                 postId=post["postId"],
                 content=post.get("content", ""),
                 createdAt=post["createdAt"],
+                isSpoiler=bool(post.get("isSpoiler")),
             )
             for post in posts
         }
@@ -2032,6 +2035,25 @@ class Page48Service:
         post["isPrivate"] = is_private
         return (await self._enrich_posts([post], user_id))[0]
 
+    async def set_post_spoiler(
+        self, post_id: str, user_id: str, is_spoiler: bool
+    ) -> PostResponse:
+        """Mark one post as a spoiler, or clear it.
+
+        The content stays readable, so this is only a display flag on a single
+        post (a thread item or a reply can be flagged on its own). Ownership is
+        the only restriction.
+        """
+        post = await self.repository.get_post_by_id(post_id)
+        if not post:
+            raise PostNotFoundError()
+        if post["userId"] != user_id:
+            raise UnauthorizedActionError()
+
+        await self.repository.set_post_spoiler(post_id, is_spoiler)
+        post["isSpoiler"] = is_spoiler
+        return (await self._enrich_posts([post], user_id))[0]
+
     async def edit_post(
         self, post_id: str, data: EditPostRequest, user_id: str
     ) -> PostResponse:
@@ -2043,17 +2065,18 @@ class Page48Service:
             raise UnauthorizedActionError()
 
         tags = self._extract_tags(data.content, data.tags)
-        await self.repository.update_post(
-            post_id,
-            {
-                "content": data.content,
-                "tags": tags,
-                "searchTokens": self._extract_search_tokens(data.content),
-                "mentions": self._extract_mentions(data.content),
-                "isEdited": True,
-                "updatedAt": datetime.now(timezone.utc),
-            },
-        )
+        update: dict = {
+            "content": data.content,
+            "tags": tags,
+            "searchTokens": self._extract_search_tokens(data.content),
+            "mentions": self._extract_mentions(data.content),
+            "isEdited": True,
+            "updatedAt": datetime.now(timezone.utc),
+        }
+        # None means "leave the spoiler flag as it is".
+        if data.isSpoiler is not None:
+            update["isSpoiler"] = data.isSpoiler
+        await self.repository.update_post(post_id, update)
 
         updated = await self.repository.get_post_by_id(post_id)
         enriched = await self._enrich_posts([updated], user_id)

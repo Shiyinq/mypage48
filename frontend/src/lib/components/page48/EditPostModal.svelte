@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X } from 'lucide-svelte';
+	import { X, EyeOff } from 'lucide-svelte';
 	import { portal } from '$lib/actions/portal';
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { showToast } from '$lib/stores/toast.svelte';
@@ -18,15 +18,19 @@
 
 	// svelte-ignore state_referenced_locally
 	let content = $state(post.content ?? '');
+	// svelte-ignore state_referenced_locally
+	let spoilerOn = $state(post.isSpoiler ?? false);
 	let submitting = $state(false);
 
-	let canSave = $derived(content.trim().length > 0 && content !== post.content);
+	let canSave = $derived(
+		content.trim().length > 0 && (content !== post.content || spoilerOn !== post.isSpoiler)
+	);
 
 	async function save() {
 		if (submitting || !canSave) return;
 		submitting = true;
 		try {
-			const updated = await page48Api.editPost(post.postId, content.trim());
+			const updated = await page48Api.editPost(post.postId, content.trim(), spoilerOn);
 			onSaved?.(updated);
 			showToast(t('page48.edit.success'), 'success');
 			onClose();
@@ -83,6 +87,31 @@
 			placeholder={t('page48.edit.placeholder')}
 			class="mt-4 w-full rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-800 p-3 text-[14px] text-gray-900 dark:text-gray-100 outline-none resize-none focus:border-red-300 dark:focus:border-red-900"
 		></textarea>
+
+		<button
+			type="button"
+			class="mt-3 flex w-full items-center justify-between gap-3 rounded-xl border border-gray-200 px-3 py-2.5 text-left transition-colors cursor-pointer hover:bg-gray-50 dark:border-zinc-800 dark:hover:bg-zinc-800"
+			onclick={() => (spoilerOn = !spoilerOn)}
+			aria-pressed={spoilerOn}
+		>
+			<span
+				class="flex items-center gap-2 text-[13px] font-semibold text-gray-800 dark:text-gray-200"
+			>
+				<EyeOff size={16} class={spoilerOn ? 'text-amber-500' : 'text-gray-400'} />
+				{t('page48.spoiler.label')}
+			</span>
+			<span
+				class={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+					spoilerOn ? 'bg-red-500' : 'bg-gray-300 dark:bg-zinc-700'
+				}`}
+			>
+				<span
+					class={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
+						spoilerOn ? 'translate-x-5' : 'translate-x-1'
+					}`}
+				></span>
+			</span>
+		</button>
 
 		<div class="flex justify-end gap-2 mt-5">
 			<button

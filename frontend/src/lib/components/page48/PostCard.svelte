@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page48Api, type Page48Post } from '$lib/api/page48';
-	import { Heart, MessageCircle, Bookmark, Share2, Lock } from 'lucide-svelte';
+	import { Heart, MessageCircle, Bookmark, Share2, Lock, EyeOff } from 'lucide-svelte';
 	import PostMenu from '$lib/components/page48/PostMenu.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
 	import RepostMenu from '$lib/components/page48/RepostMenu.svelte';
@@ -9,6 +9,8 @@
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
 	import PostEmbedView from '$lib/components/page48/PostEmbedView.svelte';
+	import SpoilerCover from '$lib/components/page48/SpoilerCover.svelte';
+	import SpoilerText from '$lib/components/page48/SpoilerText.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
@@ -21,6 +23,7 @@
 	import { activityNavStore } from '$lib/stores/page48Nav.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
+	import { spoilerStore } from '$lib/stores/spoiler.svelte';
 	import {
 		findPostEmbed,
 		formatPostTime,
@@ -157,6 +160,7 @@
 	function handleEditSaved(updated: Page48Post) {
 		post.content = updated.content;
 		post.tags = updated.tags;
+		post.isSpoiler = updated.isSpoiler;
 		post.isEdited = updated.isEdited;
 		post.updatedAt = updated.updatedAt;
 		onUpdated?.(post);
@@ -222,6 +226,28 @@
 		}
 	}
 
+	let spoilering = $state(false);
+
+	// Spoiler is a display-only flag, so it can be toggled on any own post, replies
+	// included.
+	async function handleToggleSpoiler() {
+		if (spoilering) return;
+		spoilering = true;
+		try {
+			const updated = await page48Api.setPostSpoiler(post.postId, !post.isSpoiler);
+			post.isSpoiler = updated.isSpoiler;
+			showToast(
+				updated.isSpoiler ? t('page48.spoiler.marked') : t('page48.spoiler.unmarked'),
+				'success'
+			);
+		} catch (err: unknown) {
+			const e = err as { detail?: string; message?: string };
+			showToast(e?.detail || e?.message || t('page48.spoiler.error'), 'error');
+		} finally {
+			spoilering = false;
+		}
+	}
+
 	// Quoting reuses the shared composer in a modal, prefilled with this post.
 	let showQuote = $state(false);
 	let quoteTarget = $state<Page48Post | null>(null);
@@ -280,6 +306,8 @@
 	let contentParts = $derived(post.content ? parseContent(post.content) : []);
 	// A YouTube or X link anywhere in the text is embedded inline (first one only).
 	let postEmbed = $derived(findPostEmbed(contentParts));
+	// A spoiler stays covered until the reader opens it (kept per session).
+	let spoilerHidden = $derived(post.isSpoiler && !spoilerStore.isRevealed(post.postId));
 	let inlineTags = $derived(
 		new Set(contentParts.filter((part) => part.tag).map((part) => part.tag as string))
 	);
@@ -345,6 +373,14 @@
 						{t('page48.private.badge')}
 					</span>
 				{/if}
+				{#if post.isSpoiler}
+					<span
+						class="pointer-events-none flex shrink-0 items-center gap-1 rounded-md border border-amber-200 px-1.5 py-0.5 text-[12px] font-medium text-amber-600 dark:border-amber-900/40 dark:text-amber-400"
+					>
+						<EyeOff size={12} />
+						{t('page48.spoiler.badge')}
+					</span>
+				{/if}
 				<span class="group/time relative text-[15px] text-gray-500 hover:underline">
 					{timeLabel}
 					{#if !fullTimestamp}
@@ -361,112 +397,121 @@
 						{isOwner}
 						isPinned={post.isPinned}
 						isPrivate={post.isPrivate}
+						isSpoiler={post.isSpoiler}
 						onEdit={() => (showEdit = true)}
 						onDelete={() => (showDelete = true)}
 						onReport={() => (showReport = true)}
 						onTogglePin={isOwner && !post.parentPostId ? handleTogglePin : undefined}
 						onTogglePrivate={isOwner && !post.parentPostId ? handleTogglePrivate : undefined}
+						onToggleSpoiler={isOwner ? handleToggleSpoiler : undefined}
 						onViewActivity={openActivity}
 					/>
 				{/if}
 			</div>
 		</div>
 
-		<!-- Post Content (clickable hashtags and mentions; rest of the card opens
+		{#if spoilerHidden}
+			<SpoilerCover postId={post.postId} />
+		{:else}
+			<!-- Post Content (clickable hashtags and mentions; rest of the card opens
 		     post detail) -->
-		{#if post.content}
-			<p
-				bind:this={contentEl}
-				class={`relative z-[1] pointer-events-none text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'max-h-[250px] overflow-hidden' : ''}`}
-			>
-				{#each contentParts as part, i (i)}
-					{#if part.tag}
-						<a
-							href={tagUrl(part.tag, activeMedia)}
-							class="pointer-events-auto text-red-500 hover:underline cursor-pointer">{part.text}</a
-						>
-					{:else if part.mention}
-						<UserHoverCard
-							username={part.mention}
-							href={userUrl(part.mention)}
-							class="pointer-events-auto font-semibold text-red-500 hover:underline cursor-pointer"
-							>{part.text}</UserHoverCard
-						>
-					{:else if part.link}
-						<a
-							href={part.link}
-							target="_blank"
-							rel="noopener noreferrer nofollow"
-							class="pointer-events-auto text-blue-500 hover:underline break-all">{part.text}</a
-						>
-					{:else}
-						{part.text}
-					{/if}
-				{/each}
-			</p>
-
-			{#if showContentToggle}
-				<button
-					type="button"
-					class="relative z-[1] self-start mt-1 text-[14px] font-semibold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
-					onclick={toggleContent}
+			{#if post.content}
+				<p
+					bind:this={contentEl}
+					class={`relative z-[1] pointer-events-none text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'max-h-[250px] overflow-hidden' : ''}`}
 				>
-					{contentExpanded ? t('page48.post.showLess') : t('page48.post.showMore')}
-				</button>
-			{/if}
-		{/if}
+					{#each contentParts as part, i (i)}
+						{#if part.tag}
+							<a
+								href={tagUrl(part.tag, activeMedia)}
+								class="pointer-events-auto text-red-500 hover:underline cursor-pointer"
+								>{part.text}</a
+							>
+						{:else if part.mention}
+							<UserHoverCard
+								username={part.mention}
+								href={userUrl(part.mention)}
+								class="pointer-events-auto font-semibold text-red-500 hover:underline cursor-pointer"
+								>{part.text}</UserHoverCard
+							>
+						{:else if part.link}
+							<a
+								href={part.link}
+								target="_blank"
+								rel="noopener noreferrer nofollow"
+								class="pointer-events-auto text-blue-500 hover:underline break-all">{part.text}</a
+							>
+						{:else if part.spoiler}
+							<SpoilerText text={part.text} />
+						{:else}
+							{part.text}
+						{/if}
+					{/each}
+				</p>
 
-		<!-- Thread position: kept below the last line of the text, like Threads.
-		     The chip is decoration, so it must not swallow clicks meant for the card. -->
-		{#if threadPosition}
-			<div class="pointer-events-none relative z-[1] mt-1.5 flex">
-				<span
-					class="rounded-md border border-gray-200 px-1.5 py-0.5 text-[12px] font-medium tabular-nums text-gray-500 dark:border-zinc-700 dark:text-gray-400"
-				>
-					{threadPosition.index + 1}/{threadPosition.total}
-				</span>
-			</div>
-		{/if}
-
-		<!-- Extra tags (only those not already shown inline) -->
-		{#if extraTags.length > 0}
-			<div class="pointer-events-none relative z-[1] flex flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
-				{#each extraTags as tag (tag)}
-					<a
-						href={tagUrl(tag, activeMedia)}
-						class="pointer-events-auto text-[14px] font-medium text-red-500 hover:underline cursor-pointer"
+				{#if showContentToggle}
+					<button
+						type="button"
+						class="relative z-[1] self-start mt-1 text-[14px] font-semibold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
+						onclick={toggleContent}
 					>
-						#{tag}
-					</a>
-				{/each}
-			</div>
-		{/if}
+						{contentExpanded ? t('page48.post.showLess') : t('page48.post.showMore')}
+					</button>
+				{/if}
+			{/if}
 
-		<!-- Poll -->
-		<PostPoll {post} />
+			<!-- Thread position: kept below the last line of the text, like Threads.
+		     The chip is decoration, so it must not swallow clicks meant for the card. -->
+			{#if threadPosition}
+				<div class="pointer-events-none relative z-[1] mt-1.5 flex">
+					<span
+						class="rounded-md border border-gray-200 px-1.5 py-0.5 text-[12px] font-medium tabular-nums text-gray-500 dark:border-zinc-700 dark:text-gray-400"
+					>
+						{threadPosition.index + 1}/{threadPosition.total}
+					</span>
+				</div>
+			{/if}
 
-		<!-- Post media: photos (one inline, several as a carousel) and video -->
-		{#if !hideMedia}
-			<PostMedia
-				images={post.images ?? []}
-				videos={post.videos ?? []}
-				bind:index={lightboxIndex}
-				onOpen={openLightbox}
-			/>
-		{/if}
+			<!-- Extra tags (only those not already shown inline) -->
+			{#if extraTags.length > 0}
+				<div class="pointer-events-none relative z-[1] flex flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
+					{#each extraTags as tag (tag)}
+						<a
+							href={tagUrl(tag, activeMedia)}
+							class="pointer-events-auto text-[14px] font-medium text-red-500 hover:underline cursor-pointer"
+						>
+							#{tag}
+						</a>
+					{/each}
+				</div>
+			{/if}
 
-		<!-- Embeddable link (YouTube/X/Instagram/TikTok/Spotify): lite, click-to-load -->
-		{#if postEmbed}
-			<div class="pointer-events-none relative z-[1] mt-3">
-				<PostEmbedView embed={postEmbed} class="pointer-events-auto" />
-			</div>
-		{/if}
+			<!-- Poll -->
+			<PostPoll {post} />
 
-		<!-- Quoted post preview -->
-		{#if post.quotedPostId}
-			<div class="pointer-events-auto relative z-[1]">
-				<QuotedPostCard post={post.quotedPost ?? null} unavailable={!post.quotedPost} />
-			</div>
+			<!-- Post media: photos (one inline, several as a carousel) and video -->
+			{#if !hideMedia}
+				<PostMedia
+					images={post.images ?? []}
+					videos={post.videos ?? []}
+					bind:index={lightboxIndex}
+					onOpen={openLightbox}
+				/>
+			{/if}
+
+			<!-- Embeddable link (YouTube/X/Instagram/TikTok/Spotify): lite, click-to-load -->
+			{#if postEmbed}
+				<div class="pointer-events-none relative z-[1] mt-3">
+					<PostEmbedView embed={postEmbed} class="pointer-events-auto" />
+				</div>
+			{/if}
+
+			<!-- Quoted post preview -->
+			{#if post.quotedPostId}
+				<div class="pointer-events-auto relative z-[1]">
+					<QuotedPostCard post={post.quotedPost ?? null} unavailable={!post.quotedPost} />
+				</div>
+			{/if}
 		{/if}
 
 		<!-- Thread continuation: opens the detail page where the chain is shown -->

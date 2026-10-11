@@ -264,7 +264,8 @@
 		files: File[],
 		video: VideoDraft | null,
 		poll: { options: string[] } | null,
-		quotedPostId: string | null
+		quotedPostId: string | null,
+		isSpoiler: boolean
 	) {
 		const target = replyTarget ?? focused;
 		if (!target) return;
@@ -278,7 +279,8 @@
 				videos,
 				target.postId,
 				poll,
-				quotedPostId ?? undefined
+				quotedPostId ?? undefined,
+				isSpoiler
 			);
 			showToast(t('page48.post.replySent'), 'success');
 			// Every card in this view stays mounted, so the answer can be placed under

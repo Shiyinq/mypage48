@@ -2285,13 +2285,26 @@
 			"pin": "Pin to profile",
 			"unpin": "Unpin from profile",
 			"makePrivate": "Make private",
-			"makePublic": "Make public"
+			"makePublic": "Make public",
+			"markSpoiler": "Mark spoiler",
+			"unmarkSpoiler": "Remove spoiler"
 		},
 		"private": {
 			"badge": "Only you",
 			"made": "Only you can see this post now.",
 			"madePublic": "This post is public again.",
 			"error": "Could not change post privacy."
+		},
+		"spoiler": {
+			"badge": "Spoiler",
+			"label": "Spoiler",
+			"show": "Show spoiler",
+			"tapToShow": "Tap to reveal this post",
+			"mark": "Mark as spoiler",
+			"marked": "Marked as spoiler.",
+			"unmarked": "Spoiler removed.",
+			"error": "Could not update the spoiler.",
+			"notification": "Spoiler post"
 		},
 		"repostMenu": {
 			"repost": "Repost",

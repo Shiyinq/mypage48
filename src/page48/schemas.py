@@ -82,6 +82,8 @@ class ThreadPostItem(BaseModel):
     tags: list[str] = Field(default_factory=list)
     # Each thread post may quote its own post, exactly like a standalone one.
     quotedPostId: Optional[str] = None
+    # Hide this post's content behind a spoiler gate until the reader opts in.
+    isSpoiler: bool = False
 
 
 class CreateThreadRequest(BaseModel):
@@ -100,11 +102,15 @@ class CreatePostRequest(BaseModel):
     # When set, this post quotes the referenced post: it is a normal post of
     # its own that embeds a read-only preview of the quoted one.
     quotedPostId: Optional[str] = None
+    # Hide this post's content behind a spoiler gate until the reader opts in.
+    isSpoiler: bool = False
 
 
 class EditPostRequest(BaseModel):
     content: str = Field(..., max_length=500)
     tags: list[str] = Field(default_factory=list)
+    # None leaves the current spoiler flag untouched.
+    isSpoiler: Optional[bool] = None
 
 
 class PostResponse(BaseModel):
@@ -147,6 +153,10 @@ class PostResponse(BaseModel):
 
     # True when only the author can read this post (hidden from everyone else).
     isPrivate: bool = False
+
+    # True when the content is hidden behind a spoiler gate in the UI. Purely a
+    # display flag: everyone can still read the post, they just have to reveal it.
+    isSpoiler: bool = False
 
     # Context for current user (optional, returned if user is logged in)
     isLiked: Optional[bool] = False
@@ -393,6 +403,7 @@ class NotificationPostPreview(BaseModel):
     postId: str
     content: str
     createdAt: datetime
+    isSpoiler: bool = False
 
 
 class NotificationItem(BaseModel):

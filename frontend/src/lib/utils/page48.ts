@@ -29,6 +29,8 @@ export interface PostDraftInput {
 	poll: { options: string[] } | null;
 	/** The post this draft quotes, if any. */
 	quotedPostId?: string | null;
+	/** Hide this post's content behind a spoiler gate until the reader opts in. */
+	isSpoiler?: boolean;
 }
 
 /** Aspect ratio (width / height) of an image; falls back to 16:9 when unknown. */
@@ -110,12 +112,14 @@ export interface MentionCandidate {
 	profilePicture?: string | null;
 }
 
-/** A run of post content: plain text, a link, a `#hashtag`, or an `@mention`. */
+/** A run of post content: plain text, a link, a `#hashtag`, an `@mention` or a spoiler. */
 export interface ContentPart {
 	text: string;
 	link?: string;
 	tag?: string;
 	mention?: string;
+	/** Inline `||spoiler||` run: hidden until the reader taps it. */
+	spoiler?: boolean;
 }
 
 /**
@@ -134,12 +138,39 @@ const USERNAME_CHAR = /[\p{L}\p{N}_]/u;
 // Mirrors the backend's `username` field limit.
 const MAX_MENTION_LENGTH = 50;
 
+/** Inline spoilers, e.g. `||the twist||`. */
+const SPOILER_PATTERN = /\|\|([\s\S]+?)\|\|/g;
+
 /**
- * Split content into plain text, link, `#hashtag` and `@mention` runs so each can be
- * rendered as a link. `tag`/`mention` are lower-cased for URL building; `text` keeps
- * exactly what the author typed.
+ * Split content into plain text, link, `#hashtag`, `@mention` and inline `||spoiler||`
+ * runs. Spoilers are pulled out first so a `#`/`@`/URL inside one is not turned into a
+ * link; the rest of the text is parsed as before.
  */
 export function parseContent(content: string): ContentPart[] {
+	const parts: ContentPart[] = [];
+	const regex = new RegExp(SPOILER_PATTERN.source, 'gu');
+	let lastIndex = 0;
+	let match: RegExpExecArray | null;
+
+	while ((match = regex.exec(content)) !== null) {
+		if (match.index > lastIndex) {
+			parts.push(...parsePlainRuns(content.slice(lastIndex, match.index)));
+		}
+		parts.push({ text: match[1], spoiler: true });
+		lastIndex = match.index + match[0].length;
+	}
+
+	if (lastIndex < content.length) {
+		parts.push(...parsePlainRuns(content.slice(lastIndex)));
+	}
+	return parts;
+}
+
+/**
+ * Split a spoiler-free run into plain text, link, `#hashtag` and `@mention` parts.
+ * `tag`/`mention` are lower-cased for URL building; `text` keeps what the author typed.
+ */
+function parsePlainRuns(content: string): ContentPart[] {
 	const parts: ContentPart[] = [];
 	const regex = new RegExp(CONTENT_PATTERN, 'gu');
 	let lastIndex = 0;

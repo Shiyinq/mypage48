@@ -2,6 +2,7 @@
 	import {
 		Image as ImageIcon,
 		ChartNoAxesColumn,
+		EyeOff,
 		Plus,
 		Smile,
 		Trash2,
@@ -47,7 +48,8 @@
 			images: File[],
 			video: VideoDraft | null,
 			poll: { options: string[] } | null,
-			quotedPostId: string | null
+			quotedPostId: string | null,
+			isSpoiler: boolean
 		) => Promise<void>;
 		/** Only provided where threads make sense (the feed, not the reply composer). */
 		onPostThread?: (drafts: PostDraftInput[]) => Promise<void>;
@@ -101,6 +103,8 @@
 	let isSubmitting = $state(false);
 	let emojiOpen = $state(false);
 	let pollOpen = $state(false);
+	/** Mark the active draft as a spoiler (each thread item carries its own flag). */
+	let spoilerOn = $state(false);
 	/** Reply mode hides the tool row until the user engages the composer. */
 	let composerActive = $state(false);
 	let pollOptions = $state<string[]>(['', '']);
@@ -379,7 +383,8 @@
 			images: [...images],
 			video,
 			poll: pollOpen ? { options: pollDraft } : null,
-			quotedPostId: quote?.postId ?? null
+			quotedPostId: quote?.postId ?? null,
+			isSpoiler: spoilerOn
 		};
 	}
 
@@ -400,6 +405,7 @@
 		imagePreviews = [];
 		clearVideo();
 		closePoll();
+		spoilerOn = false;
 		quoteOverride = undefined;
 		emojiOpen = false;
 		void tick().then(() => {
@@ -520,7 +526,14 @@
 				await onPostThread?.(drafts);
 			} else {
 				const [only] = drafts;
-				await onPost(only.content, only.images, only.video, only.poll, only.quotedPostId ?? null);
+				await onPost(
+					only.content,
+					only.images,
+					only.video,
+					only.poll,
+					only.quotedPostId ?? null,
+					only.isSpoiler ?? false
+				);
 			}
 			threadItems = [];
 			resetDraft();
@@ -645,6 +658,10 @@
 							<span class="font-semibold text-red-500">{part.text}</span>
 						{:else if part.link}
 							<span class="text-blue-500">{part.text}</span>
+						{:else if part.spoiler}
+							<span class="rounded bg-gray-800 text-transparent dark:bg-zinc-600"
+								>||{part.text}||</span
+							>
 						{:else}
 							{part.text}
 						{/if}
@@ -865,6 +882,20 @@
 							<ChartNoAxesColumn size={20} class="group-hover:scale-110 transition-transform" />
 						</button>
 					{/if}
+
+					<!-- Spoiler toggle: available on every post, replies included -->
+					<button
+						class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
+							spoilerOn ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+						}`}
+						onclick={() => (spoilerOn = !spoilerOn)}
+						disabled={isSubmitting}
+						title={t('page48.spoiler.mark')}
+						aria-label={t('page48.spoiler.mark')}
+						aria-pressed={spoilerOn}
+					>
+						<EyeOff size={20} class="group-hover:scale-110 transition-transform" />
+					</button>
 				</div>
 
 				<!-- Character Counter + Submit Button -->

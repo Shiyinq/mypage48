@@ -6,6 +6,7 @@
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
+	import SpoilerText from '$lib/components/page48/SpoilerText.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
@@ -130,7 +131,8 @@
 		files: File[],
 		video: VideoDraft | null,
 		poll: { options: string[] } | null,
-		quotedPostId: string | null
+		quotedPostId: string | null,
+		isSpoiler: boolean
 	) {
 		const target = replyTarget ?? post;
 		try {
@@ -143,7 +145,8 @@
 				videos,
 				target.postId,
 				poll,
-				quotedPostId ?? undefined
+				quotedPostId ?? undefined,
+				isSpoiler
 			);
 			showToast(t('page48.post.replySent'), 'success');
 			// The server only bumps the direct parent's replyCount.
@@ -315,6 +318,8 @@
 											rel="noopener noreferrer nofollow"
 											class="break-all text-blue-500 hover:underline">{part.text}</a
 										>
+									{:else if part.spoiler}
+										<SpoilerText text={part.text} />
 									{:else}
 										{part.text}
 									{/if}

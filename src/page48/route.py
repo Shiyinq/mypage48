@@ -441,6 +441,26 @@ async def make_post_public(
     return await service.set_post_private(postId, current_user.userId, False)
 
 
+@router.post("/posts/{postId}/spoiler", response_model=PostResponse)
+async def mark_post_spoiler(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.set_post_spoiler(postId, current_user.userId, True)
+
+
+@router.delete("/posts/{postId}/spoiler", response_model=PostResponse)
+async def unmark_post_spoiler(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.set_post_spoiler(postId, current_user.userId, False)
+
+
 @router.get("/me/bookmarks", response_model=PostPaginationResponse)
 async def get_my_bookmarks(
     limit: int = Query(20, le=50),

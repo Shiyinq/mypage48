@@ -958,6 +958,63 @@ async def test_private_reply_not_allowed(client, create_user, make_post):
     assert res.status_code == 400
 
 
+@pytest.mark.asyncio
+async def test_post_spoiler_flag(client, create_user, make_post):
+    _, _, author = await create_user("p48_spoiler_author")
+
+    # Can be set at creation time, and defaults to off.
+    spoiler = await make_post(author, "the twist", isSpoiler=True)
+    assert spoiler["isSpoiler"] is True
+    plain = await make_post(author, "no spoiler here")
+    assert plain["isSpoiler"] is False
+
+    # Toggle afterwards on an existing (old) post.
+    marked = await client.post(
+        f"/api/page48/posts/{plain['postId']}/spoiler", headers=author
+    )
+    assert marked.status_code == 200
+    assert marked.json()["isSpoiler"] is True
+
+    # A spoiler is a display flag only: everyone can still read it.
+    assert (await client.get(f"/api/page48/posts/{plain['postId']}")).status_code == 200
+
+    unmarked = await client.delete(
+        f"/api/page48/posts/{plain['postId']}/spoiler", headers=author
+    )
+    assert unmarked.status_code == 200
+    assert unmarked.json()["isSpoiler"] is False
+
+
+@pytest.mark.asyncio
+async def test_post_spoiler_reply_edit_and_ownership(client, create_user, make_post):
+    _, _, author = await create_user("p48_spoiler_reply_author")
+    root = await make_post(author, "root")
+    reply = await make_post(author, "a spoiler reply", parentPostId=root["postId"])
+
+    # Replies can be spoilers too (unlike privacy).
+    marked = await client.post(
+        f"/api/page48/posts/{reply['postId']}/spoiler", headers=author
+    )
+    assert marked.status_code == 200
+    assert marked.json()["isSpoiler"] is True
+
+    # Editing can flip the flag as well.
+    edited = await client.patch(
+        f"/api/page48/posts/{root['postId']}",
+        json={"content": "root", "isSpoiler": True},
+        headers=author,
+    )
+    assert edited.status_code == 200
+    assert edited.json()["isSpoiler"] is True
+
+    # Only the author can toggle it.
+    _, _, other = await create_user("p48_spoiler_other")
+    res = await client.post(
+        f"/api/page48/posts/{root['postId']}/spoiler", headers=other
+    )
+    assert res.status_code in (403, 404)
+
+
 # --------------------------------------------------------------------------- #
 # Social: like / repost / bookmark / report / follows
 # --------------------------------------------------------------------------- #

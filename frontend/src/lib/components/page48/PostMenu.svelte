@@ -1,5 +1,16 @@
 <script lang="ts">
-	import { Pencil, Trash2, Flag, Pin, PinOff, Activity, Lock, Unlock } from 'lucide-svelte';
+	import {
+		Pencil,
+		Trash2,
+		Flag,
+		Pin,
+		PinOff,
+		Activity,
+		Lock,
+		Unlock,
+		Eye,
+		EyeOff
+	} from 'lucide-svelte';
 	import { portal } from '$lib/actions/portal';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -9,12 +20,16 @@
 		isPinned?: boolean;
 		/** Whether the post is visible only to its author. */
 		isPrivate?: boolean;
+		/** Whether the post's content is hidden behind a spoiler gate. */
+		isSpoiler?: boolean;
 		onEdit?: () => void;
 		onDelete?: () => void;
 		onReport?: () => void;
 		onTogglePin?: () => void;
 		/** Toggles the post between private and public (top-level posts only). */
 		onTogglePrivate?: () => void;
+		/** Toggles the spoiler gate on any of the author's own posts. */
+		onToggleSpoiler?: () => void;
 		/** Opens the post's activity page (quotes / reposts / likes). */
 		onViewActivity?: () => void;
 	}
@@ -23,11 +38,13 @@
 		isOwner,
 		isPinned = false,
 		isPrivate = false,
+		isSpoiler = false,
 		onEdit,
 		onDelete,
 		onReport,
 		onTogglePin,
 		onTogglePrivate,
+		onToggleSpoiler,
 		onViewActivity
 	}: Props = $props();
 
@@ -109,6 +126,20 @@
 						{:else}
 							<Lock size={15} />
 							{t('page48.menu.makePrivate')}
+						{/if}
+					</button>
+				{/if}
+				{#if onToggleSpoiler}
+					<button
+						class="w-full flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+						onclick={() => run(onToggleSpoiler)}
+					>
+						{#if isSpoiler}
+							<Eye size={15} />
+							{t('page48.menu.unmarkSpoiler')}
+						{:else}
+							<EyeOff size={15} />
+							{t('page48.menu.markSpoiler')}
 						{/if}
 					</button>
 				{/if}

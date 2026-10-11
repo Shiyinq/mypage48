@@ -2289,13 +2289,26 @@
 			"pin": "Sematkan ke profil",
 			"unpin": "Lepas sematan",
 			"makePrivate": "Jadikan privat",
-			"makePublic": "Jadikan publik"
+			"makePublic": "Jadikan publik",
+			"markSpoiler": "Tandai spoiler",
+			"unmarkSpoiler": "Hapus spoiler"
 		},
 		"private": {
 			"badge": "Hanya kamu",
 			"made": "Postingan sekarang hanya bisa dilihat kamu.",
 			"madePublic": "Postingan kembali publik.",
 			"error": "Gagal mengubah privasi postingan."
+		},
+		"spoiler": {
+			"badge": "Spoiler",
+			"label": "Spoiler",
+			"show": "Lihat spoiler",
+			"tapToShow": "Ketuk untuk membuka postingan ini",
+			"mark": "Tandai sebagai spoiler",
+			"marked": "Ditandai sebagai spoiler.",
+			"unmarked": "Spoiler dihapus.",
+			"error": "Gagal memperbarui spoiler.",
+			"notification": "Postingan spoiler"
 		},
 		"repostMenu": {
 			"repost": "Repost",

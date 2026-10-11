@@ -22,6 +22,7 @@ export interface Page48ThreadPostInput {
 	videos?: { filename: string; width: number; height: number; duration: number }[];
 	poll?: { options: string[] } | null;
 	quotedPostId?: string | null;
+	isSpoiler?: boolean;
 }
 
 export interface Page48ThreadResponse {
@@ -113,6 +114,9 @@ export interface Page48Post {
 
 	/** True when only the author can read this post. */
 	isPrivate: boolean;
+
+	/** True when the content is hidden behind a spoiler gate until revealed. */
+	isSpoiler: boolean;
 
 	/** The post this one quotes, if any. Never nested more than one level. */
 	quotedPost?: Page48Post | null;
@@ -231,6 +235,7 @@ export interface Page48NotificationPost {
 	postId: string;
 	content: string;
 	createdAt: string;
+	isSpoiler: boolean;
 }
 
 export interface Page48Notification {
@@ -472,12 +477,21 @@ export const page48Api = {
 		videos: { filename: string; width: number; height: number; duration: number }[] = [],
 		parentPostId?: string,
 		poll?: { options: string[] } | null,
-		quotedPostId?: string
+		quotedPostId?: string,
+		isSpoiler: boolean = false
 	) => {
 		clearListResponseCache();
 		return client<Page48Post>('/page48/posts', {
 			method: 'POST',
-			body: { content, images, videos, parentPostId, poll: poll ?? null, quotedPostId }
+			body: {
+				content,
+				images,
+				videos,
+				parentPostId,
+				poll: poll ?? null,
+				quotedPostId,
+				isSpoiler
+			}
 		});
 	},
 
@@ -549,11 +563,11 @@ export const page48Api = {
 		return client(`/page48/posts/${postId}`, { method: 'DELETE' });
 	},
 
-	editPost: async (postId: string, content: string): Promise<Page48Post> => {
+	editPost: async (postId: string, content: string, isSpoiler?: boolean): Promise<Page48Post> => {
 		clearListResponseCache();
 		return client<Page48Post>(`/page48/posts/${postId}`, {
 			method: 'PATCH',
-			body: { content }
+			body: isSpoiler === undefined ? { content } : { content, isSpoiler }
 		});
 	},
 
@@ -645,6 +659,13 @@ export const page48Api = {
 		clearListResponseCache();
 		return client<Page48Post>(`/page48/posts/${postId}/private`, {
 			method: isPrivate ? 'POST' : 'DELETE'
+		});
+	},
+
+	setPostSpoiler: async (postId: string, isSpoiler: boolean): Promise<Page48Post> => {
+		clearListResponseCache();
+		return client<Page48Post>(`/page48/posts/${postId}/spoiler`, {
+			method: isSpoiler ? 'POST' : 'DELETE'
 		});
 	},
 

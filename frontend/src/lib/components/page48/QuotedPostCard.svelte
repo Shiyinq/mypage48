@@ -5,10 +5,13 @@
 	import type { Page48Post } from '$lib/api/page48';
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
 	import PostEmbedView from '$lib/components/page48/PostEmbedView.svelte';
+	import SpoilerCover from '$lib/components/page48/SpoilerCover.svelte';
+	import SpoilerText from '$lib/components/page48/SpoilerText.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
+	import { spoilerStore } from '$lib/stores/spoiler.svelte';
 	import {
 		findPostEmbed,
 		formatPostTime,
@@ -44,6 +47,9 @@
 
 	let contentParts = $derived(post?.content ? parseContent(post.content) : []);
 	let postEmbed = $derived(findPostEmbed(contentParts));
+	let spoilerHidden = $derived(
+		post ? !!post.isSpoiler && !spoilerStore.isRevealed(post.postId) : false
+	);
 	let imageUrls = $derived(post?.images?.map((image) => image.url) ?? []);
 
 	let lightboxOpen = $state(false);
@@ -146,51 +152,57 @@
 				</span>
 			</div>
 
-			{#if post.content}
-				<p
-					class="pointer-events-none relative z-[1] mt-1 line-clamp-6 whitespace-pre-wrap break-words text-[14px] leading-relaxed text-gray-700 dark:text-gray-300"
-				>
-					{#each contentParts as part, i (i)}
-						{#if part.tag}
-							<a
-								href={tagUrl(part.tag, activeMedia)}
-								class="pointer-events-auto text-red-500 hover:underline cursor-pointer"
-								>{part.text}</a
-							>
-						{:else if part.mention}
-							<UserHoverCard
-								username={part.mention}
-								href={userUrl(part.mention)}
-								class="pointer-events-auto font-semibold text-red-500 hover:underline cursor-pointer"
-								>{part.text}</UserHoverCard
-							>
-						{:else if part.link}
-							<a
-								href={part.link}
-								target="_blank"
-								rel="noopener noreferrer nofollow"
-								class="pointer-events-auto text-blue-500 hover:underline break-all">{part.text}</a
-							>
-						{:else}
-							{part.text}
-						{/if}
-					{/each}
-				</p>
-			{/if}
+			{#if spoilerHidden}
+				<SpoilerCover postId={post.postId} />
+			{:else}
+				{#if post.content}
+					<p
+						class="pointer-events-none relative z-[1] mt-1 line-clamp-6 whitespace-pre-wrap break-words text-[14px] leading-relaxed text-gray-700 dark:text-gray-300"
+					>
+						{#each contentParts as part, i (i)}
+							{#if part.tag}
+								<a
+									href={tagUrl(part.tag, activeMedia)}
+									class="pointer-events-auto text-red-500 hover:underline cursor-pointer"
+									>{part.text}</a
+								>
+							{:else if part.mention}
+								<UserHoverCard
+									username={part.mention}
+									href={userUrl(part.mention)}
+									class="pointer-events-auto font-semibold text-red-500 hover:underline cursor-pointer"
+									>{part.text}</UserHoverCard
+								>
+							{:else if part.link}
+								<a
+									href={part.link}
+									target="_blank"
+									rel="noopener noreferrer nofollow"
+									class="pointer-events-auto text-blue-500 hover:underline break-all">{part.text}</a
+								>
+							{:else if part.spoiler}
+								<SpoilerText text={part.text} />
+							{:else}
+								{part.text}
+							{/if}
+						{/each}
+					</p>
+				{/if}
 
-			<PostPoll {post} {interactive} />
+				<PostPoll {post} {interactive} />
 
-			<PostMedia
-				images={post.images ?? []}
-				videos={post.videos ?? []}
-				bind:index={lightboxIndex}
-				onOpen={interactive ? openLightbox : undefined}
-			/>
+				<PostMedia
+					images={post.images ?? []}
+					videos={post.videos ?? []}
+					bind:index={lightboxIndex}
+					onOpen={interactive ? openLightbox : undefined}
+				/>
 
-			{#if postEmbed}
-				<div class="pointer-events-auto relative z-[1]">
-					<PostEmbedView embed={postEmbed} compact />
-				</div>
+				{#if postEmbed}
+					<div class="pointer-events-auto relative z-[1]">
+						<PostEmbedView embed={postEmbed} compact />
+					</div>
+				{/if}
 			{/if}
 		</div>
 	{/if}

@@ -113,6 +113,16 @@ class Page48Repository:
             {"$set": {"isPrivate": is_private}},
         )
 
+    async def set_post_spoiler(self, post_id: str, is_spoiler: bool):
+        """Mark one post as a spoiler, or clear it.
+
+        Unlike privacy, this is per post: each thread item can be flagged on its
+        own, and it applies to replies too.
+        """
+        return await self.posts.update_one(
+            {"postId": post_id}, {"$set": {"isSpoiler": is_spoiler}}
+        )
+
     async def get_self_continuation(self, post_id: str, user_id: str) -> Optional[dict]:
         """The author's own next post in a thread, if this one has one."""
         return await self.posts.find_one(
@@ -1062,7 +1072,7 @@ class Page48Repository:
             query = {"$and": [query, visibility]}
         cursor = self.posts.find(
             query,
-            {"_id": 0, "postId": 1, "content": 1, "createdAt": 1},
+            {"_id": 0, "postId": 1, "content": 1, "createdAt": 1, "isSpoiler": 1},
         )
         return await cursor.to_list(length=None)
 

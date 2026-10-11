@@ -33,7 +33,8 @@
 			images,
 			videos,
 			poll: draft.poll,
-			quotedPostId: draft.quotedPostId ?? null
+			quotedPostId: draft.quotedPostId ?? null,
+			isSpoiler: draft.isSpoiler ?? false
 		};
 	}
 
@@ -50,7 +51,8 @@
 		files: File[],
 		video: VideoDraft | null,
 		poll: { options: string[] } | null,
-		quotedPostId: string | null
+		quotedPostId: string | null,
+		isSpoiler: boolean
 	) {
 		try {
 			const images = files.length > 0 ? await uploadPage48Images(files) : [];
@@ -61,7 +63,8 @@
 				videos,
 				undefined,
 				poll,
-				quotedPostId ?? undefined
+				quotedPostId ?? undefined,
+				isSpoiler
 			);
 			if (newPost) {
 				announce(newPost);
