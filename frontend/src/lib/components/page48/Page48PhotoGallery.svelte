@@ -112,7 +112,7 @@
 	</div>
 {:else}
 	<!-- Masonry: CSS columns keep each photo's own ratio without cropping. -->
-	<div class="columns-2 gap-1.5 sm:columns-3 xl:columns-4 [&>*]:mb-1.5">
+	<div class="columns-2 gap-1 sm:columns-3 md:columns-4 lg:columns-5 2xl:columns-6 [&>*]:mb-1">
 		{#each tiles as tile (tile.post.postId + ':' + tile.item.filename)}
 			<button
 				type="button"

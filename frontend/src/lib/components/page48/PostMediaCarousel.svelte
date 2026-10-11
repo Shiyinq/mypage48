@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { ChevronLeft, ChevronRight, Play } from 'lucide-svelte';
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
 	import type { Page48MediaItem } from '$lib/api/page48';
@@ -159,19 +159,47 @@
 		{#each media as item, i (item.filename)}
 			{@const ratio = mediaRatio(item)}
 			{#if item.type === 'video'}
-				<div
-					style={`aspect-ratio: ${ratio}; height: 100%;`}
-					class="pointer-events-auto relative shrink-0 snap-start overflow-hidden rounded-2xl border border-gray-100 bg-black dark:border-white/5"
-				>
-					<VideoPlayer
-						src={item.url ?? ''}
-						width={item.width}
-						height={item.height}
-						controls
-						fill
-						class="h-full w-full"
-					/>
-				</div>
+				{#if onOpen}
+					<!-- In a carousel a video opens the lightbox (which plays it); a lone video
+					     is handled by PostMedia and plays inline instead. -->
+					<button
+						type="button"
+						style={`aspect-ratio: ${ratio}; height: 100%;`}
+						class="pointer-events-auto relative shrink-0 cursor-zoom-in snap-start overflow-hidden rounded-2xl border border-gray-100 bg-black dark:border-white/5"
+						onpointerdown={(event) => (pointerStartX = event.clientX)}
+						onclick={(event) => handleSlideClick(i, event)}
+						aria-label={t('page48.video.play')}
+					>
+						<video
+							src={item.url ?? ''}
+							muted
+							playsinline
+							preload="metadata"
+							class="h-full w-full object-cover"
+						></video>
+						<span class="pointer-events-none absolute inset-0 flex items-center justify-center">
+							<span
+								class="flex h-12 w-12 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm"
+							>
+								<Play size={20} class="translate-x-0.5 text-white" fill="currentColor" />
+							</span>
+						</span>
+					</button>
+				{:else}
+					<div
+						style={`aspect-ratio: ${ratio}; height: 100%;`}
+						class="pointer-events-auto relative shrink-0 snap-start overflow-hidden rounded-2xl border border-gray-100 bg-black dark:border-white/5"
+					>
+						<VideoPlayer
+							src={item.url ?? ''}
+							width={item.width}
+							height={item.height}
+							controls
+							fill
+							class="h-full w-full"
+						/>
+					</div>
+				{/if}
 			{:else}
 				<button
 					type="button"
