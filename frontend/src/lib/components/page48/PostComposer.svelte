@@ -6,7 +6,6 @@
 		Plus,
 		Smile,
 		Trash2,
-		Video as VideoIcon,
 		X,
 		Loader2
 	} from 'lucide-svelte';
@@ -16,7 +15,7 @@
 	import MentionSuggestions from '$lib/components/page48/MentionSuggestions.svelte';
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import PostEmbedView from '$lib/components/page48/PostEmbedView.svelte';
-	import { page48Api, type Page48Image, type Page48Post, type Page48Video } from '$lib/api/page48';
+	import { page48Api, type Page48MediaItem, type Page48Post } from '$lib/api/page48';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -26,7 +25,7 @@
 		parseContent,
 		probeVideo,
 		PAGE48_IMAGE_MAX_BYTES,
-		PAGE48_MAX_IMAGES,
+		PAGE48_MAX_MEDIA,
 		PAGE48_VIDEO_ALLOWED_TYPES,
 		PAGE48_VIDEO_MAX_BYTES,
 		PAGE48_VIDEO_MAX_SECONDS,
@@ -35,9 +34,9 @@
 		POLL_MIN_OPTIONS,
 		searchMentionCandidates,
 		takeQuotedPostLink,
+		type MediaDraft,
 		type MentionCandidate,
-		type PostDraftInput,
-		type VideoDraft
+		type PostDraftInput
 	} from '$lib/utils/page48';
 
 	const { t } = useTranslation();
@@ -46,8 +45,7 @@
 		/** Publish a new post. Omitted in edit mode. */
 		onPost?: (
 			content: string,
-			images: File[],
-			video: VideoDraft | null,
+			media: MediaDraft[],
 			poll: { options: string[] } | null,
 			quotedPostId: string | null,
 			isSpoiler: boolean
@@ -107,15 +105,13 @@
 	// In edit mode these are seeded once from the post being edited.
 	// svelte-ignore state_referenced_locally
 	let content = $state(editingPost?.content ?? '');
-	let images = $state<File[]>([]);
-	let imagePreviews = $state<string[]>([]);
-	let video = $state<VideoDraft | null>(null);
-	let videoPreview = $state<string | null>(null);
+	/** Ordered media picked for this draft, images and videos mixed. */
+	let media = $state<MediaDraft[]>([]);
+	/** Object URLs for `media`, kept in step so a preview can be revoked. */
+	let mediaPreviews = $state<string[]>([]);
 	/** Media already on the post, kept unless removed (seeded in edit mode). */
 	// svelte-ignore state_referenced_locally
-	let existingImages = $state<Page48Image[]>(editingPost?.images ?? []);
-	// svelte-ignore state_referenced_locally
-	let existingVideo = $state<Page48Video | null>(editingPost?.videos?.[0] ?? null);
+	let existingMedia = $state<Page48MediaItem[]>(editingPost?.media ?? []);
 	let probing = $state(false);
 	let isSubmitting = $state(false);
 	let emojiOpen = $state(false);
@@ -134,7 +130,6 @@
 	let textareaEl = $state<HTMLTextAreaElement>();
 	let emojiButton = $state<HTMLButtonElement>();
 	let fileInput = $state<HTMLInputElement>();
-	let videoInput = $state<HTMLInputElement>();
 
 	/** The `@handle` being typed, or null when no suggestion panel should show. */
 	let mentionQuery = $state<string | null>(null);
@@ -312,122 +307,101 @@
 		return false;
 	}
 
-	function handleFileSelect(e: Event) {
+	/** Pick any mix of photos and videos; up to `PAGE48_MAX_MEDIA` in total. */
+	async function handleMediaSelect(e: Event) {
 		const target = e.target as HTMLInputElement;
-		if (!target.files) return;
-
-		const newFiles = Array.from(target.files);
-		if (images.length + newFiles.length > PAGE48_MAX_IMAGES) {
-			alert(t('page48.composer.maxPhotos'));
-			return;
-		}
-
-		for (const file of newFiles) {
-			if (!file.type.startsWith('image/')) continue;
-			if (file.size > PAGE48_IMAGE_MAX_BYTES) {
-				alert(t('page48.composer.maxSize'));
-				continue;
-			}
-			images = [...images, file];
-			imagePreviews = [...imagePreviews, URL.createObjectURL(file)];
-		}
-
-		// Images and a video can't be combined: picking images drops the video.
-		if (images.length > 0) clearVideo();
-
-		// Reset input
+		const files = Array.from(target.files ?? []);
 		target.value = '';
-	}
+		if (files.length === 0) return;
 
-	function removeImage(index: number) {
-		URL.revokeObjectURL(imagePreviews[index]);
-		images = images.filter((_, i) => i !== index);
-		imagePreviews = imagePreviews.filter((_, i) => i !== index);
-	}
-
-	/** Drop one of the post's existing photos (removed from storage on save). */
-	function removeExistingImage(index: number) {
-		existingImages = existingImages.filter((_, i) => i !== index);
-	}
-
-	function clearExistingVideo() {
-		existingVideo = null;
-	}
-
-	async function handleVideoSelect(e: Event) {
-		const target = e.target as HTMLInputElement;
-		const file = target.files?.[0];
-		target.value = '';
-		if (!file) return;
-
-		if (!PAGE48_VIDEO_ALLOWED_TYPES.includes(file.type)) {
-			showToast(t('page48.composer.videoInvalidType'), 'error');
-			return;
-		}
-		if (file.size > PAGE48_VIDEO_MAX_BYTES) {
-			showToast(t('page48.composer.videoTooLarge'), 'error');
+		const room = PAGE48_MAX_MEDIA - media.length - existingMedia.length;
+		if (room <= 0) {
+			showToast(t('page48.composer.maxMedia'), 'error');
 			return;
 		}
 
 		probing = true;
 		try {
-			const meta = await probeVideo(file);
-			if (!Number.isFinite(meta.duration) || meta.duration <= 0) {
-				showToast(t('page48.composer.videoUnreadable'), 'error');
-				return;
+			for (const file of files.slice(0, room)) {
+				const draft = await buildMediaDraft(file);
+				if (!draft) continue;
+				media = [...media, draft];
+				mediaPreviews = [...mediaPreviews, URL.createObjectURL(file)];
 			}
-			if (meta.duration > PAGE48_VIDEO_MAX_SECONDS + 0.5) {
-				showToast(t('page48.composer.videoTooLong'), 'error');
-				return;
-			}
-
-			// A video can't be combined with images: drop any attached photos.
-			images.forEach((_, i) => URL.revokeObjectURL(imagePreviews[i]));
-			images = [];
-			imagePreviews = [];
-
-			clearVideo();
-			video = {
-				file,
-				width: meta.width,
-				height: meta.height,
-				duration: meta.duration
-			};
-			videoPreview = URL.createObjectURL(file);
-		} catch {
-			showToast(t('page48.composer.videoUnreadable'), 'error');
 		} finally {
 			probing = false;
 		}
 	}
 
-	function clearVideo() {
-		if (videoPreview) URL.revokeObjectURL(videoPreview);
-		videoPreview = null;
-		video = null;
+	/** Validate one picked file and shape it for the draft, or null if rejected. */
+	async function buildMediaDraft(file: File): Promise<MediaDraft | null> {
+		if (file.type.startsWith('image/')) {
+			if (file.size > PAGE48_IMAGE_MAX_BYTES) {
+				showToast(t('page48.composer.maxSize'), 'error');
+				return null;
+			}
+			return { type: 'image', file };
+		}
+
+		if (!PAGE48_VIDEO_ALLOWED_TYPES.includes(file.type)) {
+			showToast(t('page48.composer.videoInvalidType'), 'error');
+			return null;
+		}
+		if (file.size > PAGE48_VIDEO_MAX_BYTES) {
+			showToast(t('page48.composer.videoTooLarge'), 'error');
+			return null;
+		}
+		try {
+			const meta = await probeVideo(file);
+			if (!Number.isFinite(meta.duration) || meta.duration <= 0) {
+				showToast(t('page48.composer.videoUnreadable'), 'error');
+				return null;
+			}
+			if (meta.duration > PAGE48_VIDEO_MAX_SECONDS + 0.5) {
+				showToast(t('page48.composer.videoTooLong'), 'error');
+				return null;
+			}
+			return {
+				type: 'video',
+				file,
+				width: meta.width,
+				height: meta.height,
+				duration: meta.duration
+			};
+		} catch {
+			showToast(t('page48.composer.videoUnreadable'), 'error');
+			return null;
+		}
+	}
+
+	function removeMedia(index: number) {
+		URL.revokeObjectURL(mediaPreviews[index]);
+		media = media.filter((_, i) => i !== index);
+		mediaPreviews = mediaPreviews.filter((_, i) => i !== index);
+	}
+
+	/** Drop one of the post's existing media (removed from storage on save). */
+	function removeExistingMedia(index: number) {
+		existingMedia = existingMedia.filter((_, i) => i !== index);
 	}
 
 	/** The post currently being edited, in the shape the API expects. */
 	function currentDraft(): PostDraftInput {
 		return {
 			content,
-			images: [...images],
-			video,
+			media: [...media],
 			poll: pollOpen ? { options: pollDraft } : null,
 			quotedPostId: quote?.postId ?? null,
 			isSpoiler: spoilerOn,
-			existingImages: [...existingImages],
-			existingVideo
+			existingMedia: [...existingMedia]
 		};
 	}
 
 	function draftHasContent(draft: PostDraftInput): boolean {
 		return (
 			draft.content.trim().length > 0 ||
-			draft.images.length > 0 ||
-			!!draft.video ||
-			(draft.existingImages?.length ?? 0) > 0 ||
-			!!draft.existingVideo ||
+			draft.media.length > 0 ||
+			(draft.existingMedia?.length ?? 0) > 0 ||
 			(!!draft.poll && draft.poll.options.length >= POLL_MIN_OPTIONS) ||
 			!!draft.quotedPostId
 		);
@@ -435,12 +409,10 @@
 
 	function resetDraft() {
 		content = '';
-		images = [];
-		imagePreviews.forEach(URL.revokeObjectURL);
-		imagePreviews = [];
-		clearVideo();
-		existingImages = [];
-		existingVideo = null;
+		mediaPreviews.forEach(URL.revokeObjectURL);
+		media = [];
+		mediaPreviews = [];
+		existingMedia = [];
 		closePoll();
 		spoilerOn = false;
 		quoteOverride = undefined;
@@ -465,20 +437,18 @@
 
 	function draftSummary(draft: PostDraftInput): string {
 		const parts: string[] = [];
-		if (draft.images.length > 0)
-			parts.push(t('page48.aria.imageCount', { count: draft.images.length }));
-		if (draft.video) parts.push(t('page48.composer.addVideo'));
+		const mediaCount = draft.media.length + (draft.existingMedia?.length ?? 0);
+		if (mediaCount > 0) parts.push(t('page48.composer.mediaCount', { count: mediaCount }));
 		if (draft.poll) parts.push(t('page48.poll.create'));
 		if (draft.quotedPostId) parts.push(t('page48.repostMenu.quote'));
 		return parts.join(' · ');
 	}
 
-	// Poll editor (a poll can't be combined with images or a video)
+	// Poll editor (a poll can't be combined with media)
 	function dropMedia() {
-		imagePreviews.forEach(URL.revokeObjectURL);
-		images = [];
-		imagePreviews = [];
-		clearVideo();
+		mediaPreviews.forEach(URL.revokeObjectURL);
+		media = [];
+		mediaPreviews = [];
 	}
 
 	function openPoll() {
@@ -584,8 +554,7 @@
 				const [only] = drafts;
 				await onPost?.(
 					only.content,
-					only.images,
-					only.video,
+					only.media,
 					only.poll,
 					only.quotedPostId ?? null,
 					only.isSpoiler ?? false
@@ -814,59 +783,57 @@
 			</div>
 		{/if}
 
-		<!-- Image Previews (the post's own photos + newly picked) -->
-		{#if existingImages.length > 0 || imagePreviews.length > 0}
+		<!-- Media Previews: the post's own media + newly picked, images and videos -->
+		{#if existingMedia.length > 0 || media.length > 0}
 			<div class="flex gap-2 mt-2 mb-2 overflow-x-auto pb-2 snap-x" in:fade>
-				{#each existingImages as image, i}
+				{#each existingMedia as item, i}
 					<div class="relative shrink-0 snap-start">
-						<img
-							src={image.url_small || image.url_medium || image.url}
-							alt={t('page48.composer.previewAlt')}
-							class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
-						/>
+						{#if item.type === 'video'}
+							<video
+								src={item.url ?? ''}
+								muted
+								playsinline
+								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 bg-black"
+							></video>
+						{:else}
+							<img
+								src={item.url_small || item.url_medium || item.url}
+								alt={t('page48.composer.previewAlt')}
+								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
+							/>
+						{/if}
 						<button
 							class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
-							onclick={() => removeExistingImage(i)}
+							onclick={() => removeExistingMedia(i)}
 						>
 							<X size={14} />
 						</button>
 					</div>
 				{/each}
-				{#each imagePreviews as preview, i}
+				{#each media as item, i}
 					<div class="relative shrink-0 snap-start">
-						<img
-							src={preview}
-							alt={t('page48.composer.previewAlt')}
-							class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
-						/>
+						{#if item.type === 'video'}
+							<video
+								src={mediaPreviews[i]}
+								muted
+								playsinline
+								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 bg-black"
+							></video>
+						{:else}
+							<img
+								src={mediaPreviews[i]}
+								alt={t('page48.composer.previewAlt')}
+								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
+							/>
+						{/if}
 						<button
 							class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
-							onclick={() => removeImage(i)}
+							onclick={() => removeMedia(i)}
 						>
 							<X size={14} />
 						</button>
 					</div>
 				{/each}
-			</div>
-		{/if}
-
-		<!-- Video Preview (the post's own video or a newly picked one) -->
-		{#if videoPreview || existingVideo}
-			<div class="relative mt-2 mb-2 w-full max-w-[320px]" in:fade>
-				<video
-					src={videoPreview ?? existingVideo?.url ?? ''}
-					controls
-					playsinline
-					muted
-					class="w-full rounded-xl border border-gray-200 dark:border-zinc-800 bg-black max-h-80"
-				></video>
-				<button
-					class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
-					onclick={() => (videoPreview ? clearVideo() : clearExistingVideo())}
-					aria-label={t('page48.composer.removeVideo')}
-				>
-					<X size={14} />
-				</button>
 			</div>
 		{/if}
 
@@ -879,54 +846,30 @@
 			<!-- Action Bar -->
 			<div class="flex items-center justify-between mt-3 pt-2 border-t border-transparent">
 				<div class="flex items-center gap-1">
-					<!-- Image Input -->
+					<!-- Media: photos and videos, mixed, one picker -->
 					<button
 						class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
 						onclick={() => fileInput?.click()}
-						disabled={images.length + existingImages.length >= PAGE48_MAX_IMAGES ||
-							!!video ||
-							!!existingVideo ||
+						disabled={media.length + existingMedia.length >= PAGE48_MAX_MEDIA ||
 							probing ||
 							isSubmitting ||
 							pollOpen}
-						title={t('page48.composer.addPhoto')}
-					>
-						<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />
-					</button>
-					<input
-						type="file"
-						accept="image/jpeg,image/png,image/webp"
-						multiple
-						class="hidden"
-						bind:this={fileInput}
-						onchange={handleFileSelect}
-					/>
-
-					<!-- Video Input -->
-					<button
-						class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
-						onclick={() => videoInput?.click()}
-						disabled={!!video ||
-							!!existingVideo ||
-							images.length > 0 ||
-							existingImages.length > 0 ||
-							probing ||
-							isSubmitting ||
-							pollOpen}
-						title={t('page48.composer.addVideo')}
+						title={t('page48.composer.addMedia')}
+						aria-label={t('page48.composer.addMedia')}
 					>
 						{#if probing}
 							<Loader2 size={20} class="animate-spin" />
 						{:else}
-							<VideoIcon size={20} class="group-hover:scale-110 transition-transform" />
+							<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />
 						{/if}
 					</button>
 					<input
 						type="file"
-						accept="video/mp4,video/webm"
+						accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+						multiple
 						class="hidden"
-						bind:this={videoInput}
-						onchange={handleVideoSelect}
+						bind:this={fileInput}
+						onchange={handleMediaSelect}
 					/>
 
 					<!-- Emoji Picker -->
@@ -952,7 +895,10 @@
 								pollOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
 							}`}
 							onclick={pollOpen ? closePoll : openPoll}
-							disabled={images.length > 0 || !!video || probing || isSubmitting || isThread}
+							disabled={media.length + existingMedia.length > 0 ||
+								probing ||
+								isSubmitting ||
+								isThread}
 							title={t('page48.poll.create')}
 							aria-label={t('page48.poll.create')}
 							aria-pressed={pollOpen}

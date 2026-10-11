@@ -2,8 +2,9 @@ import {
 	page48Api,
 	type Page48Image,
 	type Page48ImageRef,
-	type Page48Post,
-	type Page48Video
+	type Page48MediaItem,
+	type Page48MediaRef,
+	type Page48Post
 } from '$lib/api/page48';
 import { storageApi } from '$lib/apis/storage';
 import { showToast } from '$lib/stores/toast.svelte';
@@ -15,6 +16,8 @@ export type Page48Interaction = 'like' | 'repost' | 'bookmark';
 export type Page48Media = 'text' | 'image' | 'video';
 
 export const PAGE48_MAX_IMAGES = 10;
+// Images and videos mixed, up to this many per post (mirrors the backend).
+export const PAGE48_MAX_MEDIA = 10;
 export const PAGE48_IMAGE_MAX_BYTES = 3 * 1024 * 1024;
 export const PAGE48_VIDEO_MAX_BYTES = 50 * 1024 * 1024;
 export const PAGE48_VIDEO_MAX_SECONDS = 60;
@@ -27,19 +30,53 @@ export interface VideoDraft {
 	duration: number;
 }
 
+/** A picked photo, before it is uploaded. */
+export interface ImageDraft {
+	type: 'image';
+	file: File;
+}
+
+/** One picked media file, images and videos mixed, in the chosen order. */
+export type MediaDraft = ImageDraft | ({ type: 'video' } & VideoDraft);
+
 /** One post being composed; the composer hands these to the page for publishing. */
 export interface PostDraftInput {
 	content: string;
-	images: File[];
-	video: VideoDraft | null;
+	/** Ordered media picked for this post (images and videos mixed). */
+	media: MediaDraft[];
 	poll: { options: string[] } | null;
 	/** The post this draft quotes, if any. */
 	quotedPostId?: string | null;
 	/** Hide this post's content behind a spoiler gate until the reader opts in. */
 	isSpoiler?: boolean;
 	/** Media already on the post, kept unless removed (edit mode). */
-	existingImages?: Page48Image[];
-	existingVideo?: Page48Video | null;
+	existingMedia?: Page48MediaItem[];
+}
+
+/** Upload every picked file and return the ordered refs the API expects. */
+export async function uploadDraftMedia(media: MediaDraft[]): Promise<Page48MediaRef[]> {
+	const refs: Page48MediaRef[] = [];
+	for (const item of media) {
+		if (item.type === 'video') {
+			const uploaded = await uploadPage48Video(item);
+			refs.push({
+				type: 'video',
+				filename: uploaded.filename,
+				width: uploaded.width,
+				height: uploaded.height,
+				duration: uploaded.duration
+			});
+		} else {
+			const [uploaded] = await uploadPage48Images([item.file]);
+			refs.push({
+				type: 'image',
+				filename: uploaded.filename,
+				width: uploaded.width,
+				height: uploaded.height
+			});
+		}
+	}
+	return refs;
 }
 
 /** Aspect ratio (width / height) of an image; falls back to 16:9 when unknown. */

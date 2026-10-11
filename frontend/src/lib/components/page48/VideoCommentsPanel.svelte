@@ -17,10 +17,9 @@
 		tagUrl,
 		userUrl,
 		togglePostInteraction,
-		uploadPage48Images,
-		uploadPage48Video,
-		type MentionCandidate,
-		type VideoDraft
+		uploadDraftMedia,
+		type MediaDraft,
+		type MentionCandidate
 	} from '$lib/utils/page48';
 
 	interface Props {
@@ -128,26 +127,22 @@
 
 	async function handleReply(
 		content: string,
-		files: File[],
-		video: VideoDraft | null,
+		media: MediaDraft[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
 		isSpoiler: boolean
 	) {
 		const target = replyTarget ?? post;
 		try {
-			const images = files.length > 0 ? await uploadPage48Images(files) : [];
-			const videos = video ? [await uploadPage48Video(video)] : [];
 			// Replies can't carry a poll (server rule), so `poll` is always null here.
-			const created = await page48Api.createPost(
+			const created = await page48Api.createPost({
 				content,
-				images,
-				videos,
-				target.postId,
+				media: await uploadDraftMedia(media),
+				parentPostId: target.postId,
 				poll,
-				quotedPostId ?? undefined,
+				quotedPostId: quotedPostId ?? undefined,
 				isSpoiler
-			);
+			});
 			showToast(t('page48.post.replySent'), 'success');
 			// The server only bumps the direct parent's replyCount.
 			target.replyCount += 1;

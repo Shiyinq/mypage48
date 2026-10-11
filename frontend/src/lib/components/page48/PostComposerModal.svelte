@@ -6,12 +6,7 @@
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import {
-		uploadPage48Images,
-		uploadPage48Video,
-		type PostDraftInput,
-		type VideoDraft
-	} from '$lib/utils/page48';
+	import { uploadDraftMedia, type MediaDraft, type PostDraftInput } from '$lib/utils/page48';
 
 	interface Props {
 		onClose: () => void;
@@ -29,12 +24,9 @@
 
 	/** Upload one composed draft and return the payload the API expects. */
 	async function buildThreadItem(draft: PostDraftInput) {
-		const images = draft.images.length > 0 ? await uploadPage48Images(draft.images) : [];
-		const videos = draft.video ? [await uploadPage48Video(draft.video)] : [];
 		return {
 			content: draft.content,
-			images,
-			videos,
+			media: await uploadDraftMedia(draft.media),
 			poll: draft.poll,
 			quotedPostId: draft.quotedPostId ?? null,
 			isSpoiler: draft.isSpoiler ?? false
@@ -51,24 +43,19 @@
 
 	async function handlePost(
 		content: string,
-		files: File[],
-		video: VideoDraft | null,
+		media: MediaDraft[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
 		isSpoiler: boolean
 	) {
 		try {
-			const images = files.length > 0 ? await uploadPage48Images(files) : [];
-			const videos = video ? [await uploadPage48Video(video)] : [];
-			const newPost = await page48Api.createPost(
+			const newPost = await page48Api.createPost({
 				content,
-				images,
-				videos,
-				undefined,
+				media: await uploadDraftMedia(media),
 				poll,
-				quotedPostId ?? undefined,
+				quotedPostId: quotedPostId ?? undefined,
 				isSpoiler
-			);
+			});
 			if (newPost) {
 				announce(newPost);
 				showToast(t('page48.feed.postSuccess'), 'success');
@@ -85,34 +72,19 @@
 	async function handleEdit(draft: PostDraftInput) {
 		if (!editingPost) return;
 		try {
-			const newImages = draft.images.length > 0 ? await uploadPage48Images(draft.images) : [];
-			const newVideo = draft.video ? await uploadPage48Video(draft.video) : null;
-
-			const images = [
-				...(draft.existingImages ?? []).map((image) => ({
-					filename: image.filename,
-					width: image.width,
-					height: image.height
+			const media = [
+				...(draft.existingMedia ?? []).map((item) => ({
+					type: item.type,
+					filename: item.filename,
+					width: item.width,
+					height: item.height,
+					duration: item.duration
 				})),
-				...newImages
-			];
-			const videos = [
-				...(draft.existingVideo
-					? [
-							{
-								filename: draft.existingVideo.filename,
-								width: draft.existingVideo.width,
-								height: draft.existingVideo.height,
-								duration: draft.existingVideo.duration
-							}
-						]
-					: []),
-				...(newVideo ? [newVideo] : [])
+				...(await uploadDraftMedia(draft.media))
 			];
 
 			const updated = await page48Api.editPost(editingPost.postId, draft.content.trim(), {
-				images,
-				videos,
+				media,
 				isSpoiler: draft.isSpoiler ?? false
 			});
 			onSaved?.(updated);

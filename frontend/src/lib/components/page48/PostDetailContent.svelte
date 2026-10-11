@@ -12,11 +12,10 @@
 	import {
 		sharePost,
 		togglePostInteraction,
-		uploadPage48Images,
-		uploadPage48Video,
+		uploadDraftMedia,
+		type MediaDraft,
 		type MentionCandidate,
-		type Page48Interaction,
-		type VideoDraft
+		type Page48Interaction
 	} from '$lib/utils/page48';
 
 	interface Props {
@@ -261,8 +260,7 @@
 
 	async function handleReply(
 		content: string,
-		files: File[],
-		video: VideoDraft | null,
+		media: MediaDraft[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
 		isSpoiler: boolean
@@ -270,18 +268,15 @@
 		const target = replyTarget ?? focused;
 		if (!target) return;
 		try {
-			const images = files.length > 0 ? await uploadPage48Images(files) : [];
-			const videos = video ? [await uploadPage48Video(video)] : [];
 			// Replies can't carry a poll (server rule), so `poll` is always null here.
-			const created = await page48Api.createPost(
+			const created = await page48Api.createPost({
 				content,
-				images,
-				videos,
-				target.postId,
+				media: await uploadDraftMedia(media),
+				parentPostId: target.postId,
 				poll,
-				quotedPostId ?? undefined,
+				quotedPostId: quotedPostId ?? undefined,
 				isSpoiler
-			);
+			});
 			showToast(t('page48.post.replySent'), 'success');
 			// Every card in this view stays mounted, so the answer can be placed under
 			// whichever one it replies to — no refetch, no navigation.

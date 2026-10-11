@@ -15,10 +15,9 @@
 	import {
 		sharePost,
 		togglePostInteraction,
-		uploadPage48Images,
-		uploadPage48Video,
-		type PostDraftInput,
-		type VideoDraft
+		uploadDraftMedia,
+		type MediaDraft,
+		type PostDraftInput
 	} from '$lib/utils/page48';
 
 	interface Props {
@@ -147,12 +146,9 @@
 
 	/** Upload one composed draft and return the payload the API expects. */
 	async function buildThreadItem(draft: PostDraftInput) {
-		const images = draft.images.length > 0 ? await uploadPage48Images(draft.images) : [];
-		const videos = draft.video ? [await uploadPage48Video(draft.video)] : [];
 		return {
 			content: draft.content,
-			images,
-			videos,
+			media: await uploadDraftMedia(draft.media),
 			poll: draft.poll,
 			quotedPostId: draft.quotedPostId ?? null,
 			isSpoiler: draft.isSpoiler ?? false
@@ -182,24 +178,19 @@
 
 	async function handleCreatePost(
 		content: string,
-		files: File[],
-		video: VideoDraft | null,
+		media: MediaDraft[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
 		isSpoiler: boolean
 	) {
 		try {
-			const images = files.length > 0 ? await uploadPage48Images(files) : [];
-			const videos = video ? [await uploadPage48Video(video)] : [];
-			const newPost = await page48Api.createPost(
+			const newPost = await page48Api.createPost({
 				content,
-				images,
-				videos,
-				undefined,
+				media: await uploadDraftMedia(media),
 				poll,
-				quotedPostId ?? undefined,
+				quotedPostId: quotedPostId ?? undefined,
 				isSpoiler
-			);
+			});
 			if (newPost) {
 				posts = [newPost, ...posts];
 				showToast(t('page48.feed.postSuccess'), 'success');

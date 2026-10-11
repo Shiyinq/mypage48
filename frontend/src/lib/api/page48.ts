@@ -18,8 +18,7 @@ export interface Page48ImageRef {
 
 export interface Page48ThreadPostInput {
 	content: string;
-	images?: Page48ImageRef[];
-	videos?: { filename: string; width: number; height: number; duration: number }[];
+	media?: Page48MediaRef[];
 	poll?: { options: string[] } | null;
 	quotedPostId?: string | null;
 	isSpoiler?: boolean;
@@ -46,6 +45,28 @@ export interface Page48Video {
 	width: number;
 	height: number;
 	duration: number;
+}
+
+/** One media item sent when creating or editing a post (ordered). */
+export interface Page48MediaRef {
+	type: 'image' | 'video';
+	filename: string;
+	width: number;
+	height: number;
+	duration?: number;
+}
+
+/** One resolved media item, in the order the author posted it. */
+export interface Page48MediaItem {
+	type: 'image' | 'video';
+	filename: string;
+	url?: string | null;
+	url_medium?: string | null;
+	url_small?: string | null;
+	blurHash?: string | null;
+	width: number;
+	height: number;
+	duration?: number;
 }
 
 export interface VideoUploadResponse {
@@ -88,6 +109,8 @@ export interface Page48Post {
 	page48AccountType?: Page48AccountType | null;
 
 	content: string;
+	/** Ordered media (images and videos mixed); images/videos are derived views. */
+	media: Page48MediaItem[];
 	images: Page48Image[];
 	videos: Page48Video[];
 	tags: string[];
@@ -471,26 +494,24 @@ export const page48Api = {
 		return cachedListGet(url, () => client<PostUserListResponse>(url));
 	},
 
-	createPost: async (
-		content: string,
-		images: Page48ImageRef[] = [],
-		videos: { filename: string; width: number; height: number; duration: number }[] = [],
-		parentPostId?: string,
-		poll?: { options: string[] } | null,
-		quotedPostId?: string,
-		isSpoiler: boolean = false
-	) => {
+	createPost: async (payload: {
+		content: string;
+		media?: Page48MediaRef[];
+		parentPostId?: string;
+		poll?: { options: string[] } | null;
+		quotedPostId?: string;
+		isSpoiler?: boolean;
+	}) => {
 		clearListResponseCache();
 		return client<Page48Post>('/page48/posts', {
 			method: 'POST',
 			body: {
-				content,
-				images,
-				videos,
-				parentPostId,
-				poll: poll ?? null,
-				quotedPostId,
-				isSpoiler
+				content: payload.content,
+				media: payload.media ?? [],
+				parentPostId: payload.parentPostId,
+				poll: payload.poll ?? null,
+				quotedPostId: payload.quotedPostId,
+				isSpoiler: payload.isSpoiler ?? false
 			}
 		});
 	},
@@ -566,17 +587,12 @@ export const page48Api = {
 	editPost: async (
 		postId: string,
 		content: string,
-		opts: {
-			images?: Page48ImageRef[];
-			videos?: { filename: string; width: number; height: number; duration: number }[];
-			isSpoiler?: boolean;
-		} = {}
+		opts: { media?: Page48MediaRef[]; isSpoiler?: boolean } = {}
 	): Promise<Page48Post> => {
 		clearListResponseCache();
 		const body: Record<string, unknown> = { content };
-		// Omitting a field leaves it untouched; an empty list clears it.
-		if (opts.images !== undefined) body.images = opts.images;
-		if (opts.videos !== undefined) body.videos = opts.videos;
+		// Omitting media leaves it untouched; an empty list clears it.
+		if (opts.media !== undefined) body.media = opts.media;
 		if (opts.isSpoiler !== undefined) body.isSpoiler = opts.isSpoiler;
 		return client<Page48Post>(`/page48/posts/${postId}`, { method: 'PATCH', body });
 	},
