@@ -41,6 +41,8 @@
 	let wrapperEl: HTMLDivElement | undefined = $state();
 	let videoEl: HTMLVideoElement | undefined = $state();
 	let playing = $state(false);
+	/** True while the browser is fetching/decoding enough data to keep playing. */
+	let buffering = $state(false);
 	let progress = $state(0);
 	let duration = $state(0);
 
@@ -152,7 +154,18 @@
 		preload="metadata"
 		class={`${immersive ? 'relative' : ''} w-full h-full object-contain`}
 		onplay={() => (playing = true)}
-		onpause={() => (playing = false)}
+		onplaying={() => {
+			playing = true;
+			buffering = false;
+		}}
+		onpause={() => {
+			playing = false;
+			buffering = false;
+		}}
+		onwaiting={() => (buffering = true)}
+		onstalled={() => (buffering = true)}
+		onseeking={() => (buffering = true)}
+		oncanplay={() => (buffering = false)}
 		ontimeupdate={onTimeUpdate}
 		onloadedmetadata={() => {
 			if (videoEl && Number.isFinite(videoEl.duration)) duration = videoEl.duration;
@@ -175,6 +188,14 @@
 			</span>
 		{/if}
 	</button>
+
+	<!-- Buffering spinner: shows while a lagging/seeking video catches up. -->
+	{#if buffering && playing}
+		<span class="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center">
+			<span class="h-10 w-10 animate-spin rounded-full border-[3px] border-white/30 border-t-white"
+			></span>
+		</span>
+	{/if}
 
 	<!-- Always-visible mute toggle (hover-only controls were hard to reach) -->
 	<button
