@@ -8,12 +8,7 @@
 	import PostComposerModal from '$lib/components/page48/PostComposerModal.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
-	import YouTubeEmbed from '$lib/components/page48/YouTubeEmbed.svelte';
-	import XEmbed from '$lib/components/page48/XEmbed.svelte';
-	import InstagramEmbed from '$lib/components/page48/InstagramEmbed.svelte';
-	import InstagramStoryCard from '$lib/components/page48/InstagramStoryCard.svelte';
-	import TikTokEmbed from '$lib/components/page48/TikTokEmbed.svelte';
-	import ShortLinkEmbed from '$lib/components/page48/ShortLinkEmbed.svelte';
+	import PostEmbedView from '$lib/components/page48/PostEmbedView.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
@@ -460,37 +455,10 @@
 			/>
 		{/if}
 
-		<!-- Embeddable link (YouTube/X/Instagram/TikTok): lite, click-to-load -->
+		<!-- Embeddable link (YouTube/X/Instagram/TikTok/Spotify): lite, click-to-load -->
 		{#if postEmbed}
 			<div class="pointer-events-none relative z-[1] mt-3">
-				{#if postEmbed.type === 'youtube'}
-					<YouTubeEmbed
-						videoId={postEmbed.videoId}
-						start={postEmbed.start}
-						class="pointer-events-auto"
-					/>
-				{:else if postEmbed.type === 'x'}
-					<XEmbed tweetId={postEmbed.tweetId} class="pointer-events-auto" />
-				{:else if postEmbed.type === 'instagram'}
-					<InstagramEmbed
-						shortcode={postEmbed.shortcode}
-						kind={postEmbed.kind}
-						class="pointer-events-auto"
-					/>
-				{:else if postEmbed.type === 'instagram-story'}
-					<InstagramStoryCard
-						url={postEmbed.url}
-						class="pointer-events-auto mx-auto max-w-[540px]"
-					/>
-				{:else if postEmbed.type === 'tiktok'}
-					<TikTokEmbed
-						videoId={postEmbed.videoId}
-						kind={postEmbed.kind}
-						class="pointer-events-auto"
-					/>
-				{:else}
-					<ShortLinkEmbed url={postEmbed.url} class="pointer-events-auto mx-auto max-w-[540px]" />
-				{/if}
+				<PostEmbedView embed={postEmbed} class="pointer-events-auto" />
 			</div>
 		{/if}
 

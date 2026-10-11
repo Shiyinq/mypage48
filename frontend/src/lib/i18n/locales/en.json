@@ -1999,7 +1999,8 @@
 			"userPreview": "User preview",
 			"xPost": "X post",
 			"instagramPost": "Instagram post",
-			"tiktokPost": "TikTok post"
+			"tiktokPost": "TikTok post",
+			"spotifyEmbed": "Spotify embed"
 		},
 		"embed": {
 			"viewOnX": "View post on X",
@@ -2010,7 +2011,10 @@
 			"storyNotice": "Stories disappear after 24 hours",
 			"viewOnTikTok": "View on TikTok",
 			"tiktokLoads": "The video loads from TikTok",
-			"tiktokShortNotice": "Opens the video on TikTok"
+			"tiktokShortNotice": "Opens the video on TikTok",
+			"listenOnSpotify": "Listen on Spotify",
+			"spotifyLoads": "The player loads from Spotify",
+			"spotifyShortNotice": "Opens on Spotify"
 		},
 		"mentions": {
 			"noResults": "No users found",

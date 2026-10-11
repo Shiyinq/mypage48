@@ -1997,7 +1997,8 @@
 			"userPreview": "ユーザーのプレビュー",
 			"xPost": "X の投稿",
 			"instagramPost": "Instagram の投稿",
-			"tiktokPost": "TikTok の投稿"
+			"tiktokPost": "TikTok の投稿",
+			"spotifyEmbed": "Spotify 埋め込み"
 		},
 		"embed": {
 			"viewOnX": "X で投稿を表示",
@@ -2008,7 +2009,10 @@
 			"storyNotice": "ストーリーは 24 時間で消えます",
 			"viewOnTikTok": "TikTok で見る",
 			"tiktokLoads": "動画は TikTok から読み込みます",
-			"tiktokShortNotice": "TikTok で動画を開きます"
+			"tiktokShortNotice": "TikTok で動画を開きます",
+			"listenOnSpotify": "Spotify で聴く",
+			"spotifyLoads": "プレーヤーは Spotify から読み込みます",
+			"spotifyShortNotice": "Spotify で開きます"
 		},
 		"mentions": {
 			"noResults": "ユーザーが見つかりません",

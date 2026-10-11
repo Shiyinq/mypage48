@@ -2003,7 +2003,8 @@
 			"userPreview": "Pratinjau pengguna",
 			"xPost": "Postingan X",
 			"instagramPost": "Postingan Instagram",
-			"tiktokPost": "Postingan TikTok"
+			"tiktokPost": "Postingan TikTok",
+			"spotifyEmbed": "Embed Spotify"
 		},
 		"embed": {
 			"viewOnX": "Lihat post di X",
@@ -2014,7 +2015,10 @@
 			"storyNotice": "Story hilang setelah 24 jam",
 			"viewOnTikTok": "Lihat di TikTok",
 			"tiktokLoads": "Video dimuat dari TikTok",
-			"tiktokShortNotice": "Membuka video di TikTok"
+			"tiktokShortNotice": "Membuka video di TikTok",
+			"listenOnSpotify": "Dengar di Spotify",
+			"spotifyLoads": "Player dimuat dari Spotify",
+			"spotifyShortNotice": "Membuka di Spotify"
 		},
 		"mentions": {
 			"noResults": "Pengguna tidak ditemukan",

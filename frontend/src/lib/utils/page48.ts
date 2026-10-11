@@ -334,6 +334,46 @@ export function extractTikTokLink(url: string): TikTokLink | null {
 	return { url };
 }
 
+/** A kind of Spotify resource the embed player accepts. */
+export type SpotifyKind = 'track' | 'album' | 'playlist' | 'episode' | 'artist' | 'show';
+
+/** An embeddable Spotify track, album, playlist, episode, artist or show. */
+export interface SpotifyEmbed {
+	kind: SpotifyKind;
+	spotifyId: string;
+}
+
+/**
+ * Matches an `open.spotify.com` permalink (with an optional `intl-xx` region
+ * prefix) and captures the 22-character id. The leading `//` keeps lookalike
+ * hosts such as `notspotify.com` from matching.
+ */
+const SPOTIFY_ID_PATTERN =
+	/(?:^|\/\/)(?:open\.)?spotify\.com\/(?:intl-[a-z]{2}\/)?(track|album|playlist|episode|artist|show)\/([A-Za-z0-9]{22})/i;
+
+/** The kind and id inside a Spotify permalink, or null for any other URL. */
+export function extractSpotifyEmbed(url: string): SpotifyEmbed | null {
+	const match = url.match(SPOTIFY_ID_PATTERN);
+	if (!match) return null;
+	return { kind: match[1].toLowerCase() as SpotifyKind, spotifyId: match[2] };
+}
+
+/**
+ * A Spotify share link (`spotify.link/...`). Like the TikTok one, it carries no
+ * id; the backend resolver turns it into a canonical `open.spotify.com` URL.
+ */
+export interface SpotifyLink {
+	url: string;
+}
+
+const SPOTIFY_SHORT_PATTERN = /(?:^|\/\/)spotify\.link\/[A-Za-z0-9]{4,30}/i;
+
+/** The cleaned share link, or null for any other URL. */
+export function extractSpotifyLink(url: string): SpotifyLink | null {
+	if (!SPOTIFY_SHORT_PATTERN.test(url)) return null;
+	return { url };
+}
+
 /** An embeddable (or link-card) link found in a post: one per post, first wins. */
 export type PostEmbed =
 	| ({ type: 'youtube' } & YouTubeEmbed)
@@ -341,7 +381,9 @@ export type PostEmbed =
 	| ({ type: 'instagram' } & InstagramEmbed)
 	| ({ type: 'instagram-story' } & InstagramStory)
 	| ({ type: 'tiktok' } & TikTokEmbed)
-	| ({ type: 'tiktok-link' } & TikTokLink);
+	| ({ type: 'tiktok-link' } & TikTokLink)
+	| ({ type: 'spotify' } & SpotifyEmbed)
+	| ({ type: 'spotify-link' } & SpotifyLink);
 
 /**
  * The first embeddable link among already-parsed content parts. Only one embed is
@@ -368,6 +410,12 @@ export function findPostEmbed(parts: ContentPart[]): PostEmbed | null {
 
 		const tiktokLink = extractTikTokLink(part.link);
 		if (tiktokLink) return { type: 'tiktok-link', ...tiktokLink };
+
+		const spotify = extractSpotifyEmbed(part.link);
+		if (spotify) return { type: 'spotify', ...spotify };
+
+		const spotifyLink = extractSpotifyLink(part.link);
+		if (spotifyLink) return { type: 'spotify-link', ...spotifyLink };
 	}
 	return null;
 }
