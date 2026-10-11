@@ -2036,6 +2036,8 @@
 			"maxPhotos": "Maximum 10 photos per post.",
 			"maxMedia": "Maximum 10 media items per post.",
 			"addMedia": "Add photos or videos",
+			"dragToReorder": "Drag to reorder",
+			"dropToUpload": "Drop photos or videos to add them",
 			"mediaCount": "{count} media",
 			"maxSize": "Maximum photo size is 3MB.",
 			"previewAlt": "Upload preview",

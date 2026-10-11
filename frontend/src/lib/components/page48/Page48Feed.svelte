@@ -15,8 +15,8 @@
 	import {
 		sharePost,
 		togglePostInteraction,
-		uploadDraftMedia,
-		type MediaDraft,
+		resolveDraftMedia,
+		type DraftMedia,
 		type PostDraftInput
 	} from '$lib/utils/page48';
 
@@ -148,7 +148,7 @@
 	async function buildThreadItem(draft: PostDraftInput) {
 		return {
 			content: draft.content,
-			media: await uploadDraftMedia(draft.media),
+			media: await resolveDraftMedia(draft.media),
 			poll: draft.poll,
 			quotedPostId: draft.quotedPostId ?? null,
 			isSpoiler: draft.isSpoiler ?? false
@@ -178,7 +178,7 @@
 
 	async function handleCreatePost(
 		content: string,
-		media: MediaDraft[],
+		media: DraftMedia[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
 		isSpoiler: boolean
@@ -186,7 +186,7 @@
 		try {
 			const newPost = await page48Api.createPost({
 				content,
-				media: await uploadDraftMedia(media),
+				media: await resolveDraftMedia(media),
 				poll,
 				quotedPostId: quotedPostId ?? undefined,
 				isSpoiler

@@ -6,7 +6,7 @@
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { uploadDraftMedia, type MediaDraft, type PostDraftInput } from '$lib/utils/page48';
+	import { resolveDraftMedia, type DraftMedia, type PostDraftInput } from '$lib/utils/page48';
 
 	interface Props {
 		onClose: () => void;
@@ -26,7 +26,7 @@
 	async function buildThreadItem(draft: PostDraftInput) {
 		return {
 			content: draft.content,
-			media: await uploadDraftMedia(draft.media),
+			media: await resolveDraftMedia(draft.media),
 			poll: draft.poll,
 			quotedPostId: draft.quotedPostId ?? null,
 			isSpoiler: draft.isSpoiler ?? false
@@ -43,7 +43,7 @@
 
 	async function handlePost(
 		content: string,
-		media: MediaDraft[],
+		media: DraftMedia[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
 		isSpoiler: boolean
@@ -51,7 +51,7 @@
 		try {
 			const newPost = await page48Api.createPost({
 				content,
-				media: await uploadDraftMedia(media),
+				media: await resolveDraftMedia(media),
 				poll,
 				quotedPostId: quotedPostId ?? undefined,
 				isSpoiler
@@ -72,19 +72,8 @@
 	async function handleEdit(draft: PostDraftInput) {
 		if (!editingPost) return;
 		try {
-			const media = [
-				...(draft.existingMedia ?? []).map((item) => ({
-					type: item.type,
-					filename: item.filename,
-					width: item.width,
-					height: item.height,
-					duration: item.duration
-				})),
-				...(await uploadDraftMedia(draft.media))
-			];
-
 			const updated = await page48Api.editPost(editingPost.postId, draft.content.trim(), {
-				media,
+				media: await resolveDraftMedia(draft.media),
 				isSpoiler: draft.isSpoiler ?? false
 			});
 			onSaved?.(updated);

@@ -2034,6 +2034,8 @@
 			"maxPhotos": "1投稿につき最大10枚まで。",
 			"maxMedia": "1投稿につき最大10個のメディア。",
 			"addMedia": "写真または動画を追加",
+			"dragToReorder": "ドラッグして並べ替え",
+			"dropToUpload": "写真や動画をドロップして追加",
 			"mediaCount": "メディア {count} 個",
 			"maxSize": "写真は最大3MBまで。",
 			"previewAlt": "アップロードのプレビュー",

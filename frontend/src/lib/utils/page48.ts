@@ -39,26 +39,42 @@ export interface ImageDraft {
 /** One picked media file, images and videos mixed, in the chosen order. */
 export type MediaDraft = ImageDraft | ({ type: 'video' } & VideoDraft);
 
+/** One item in the composer's media strip: already on the post, or newly picked. */
+export type DraftMedia =
+	| { kind: 'existing'; item: Page48MediaItem }
+	| { kind: 'new'; draft: MediaDraft; preview: string };
+
 /** One post being composed; the composer hands these to the page for publishing. */
 export interface PostDraftInput {
 	content: string;
-	/** Ordered media picked for this post (images and videos mixed). */
-	media: MediaDraft[];
+	/** Ordered media (existing and new mixed) in the order shown in the composer. */
+	media: DraftMedia[];
 	poll: { options: string[] } | null;
 	/** The post this draft quotes, if any. */
 	quotedPostId?: string | null;
 	/** Hide this post's content behind a spoiler gate until the reader opts in. */
 	isSpoiler?: boolean;
-	/** Media already on the post, kept unless removed (edit mode). */
-	existingMedia?: Page48MediaItem[];
 }
 
-/** Upload every picked file and return the ordered refs the API expects. */
-export async function uploadDraftMedia(media: MediaDraft[]): Promise<Page48MediaRef[]> {
+/** Upload the new items and return every item as an ordered ref the API expects. */
+export async function resolveDraftMedia(media: DraftMedia[]): Promise<Page48MediaRef[]> {
 	const refs: Page48MediaRef[] = [];
-	for (const item of media) {
-		if (item.type === 'video') {
-			const uploaded = await uploadPage48Video(item);
+	for (const entry of media) {
+		if (entry.kind === 'existing') {
+			const { item } = entry;
+			refs.push({
+				type: item.type,
+				filename: item.filename,
+				width: item.width,
+				height: item.height,
+				duration: item.duration
+			});
+			continue;
+		}
+
+		const draft = entry.draft;
+		if (draft.type === 'video') {
+			const uploaded = await uploadPage48Video(draft);
 			refs.push({
 				type: 'video',
 				filename: uploaded.filename,
@@ -67,7 +83,7 @@ export async function uploadDraftMedia(media: MediaDraft[]): Promise<Page48Media
 				duration: uploaded.duration
 			});
 		} else {
-			const [uploaded] = await uploadPage48Images([item.file]);
+			const [uploaded] = await uploadPage48Images([draft.file]);
 			refs.push({
 				type: 'image',
 				filename: uploaded.filename,

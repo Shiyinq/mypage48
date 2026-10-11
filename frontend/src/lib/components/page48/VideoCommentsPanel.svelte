@@ -17,8 +17,8 @@
 		tagUrl,
 		userUrl,
 		togglePostInteraction,
-		uploadDraftMedia,
-		type MediaDraft,
+		resolveDraftMedia,
+		type DraftMedia,
 		type MentionCandidate
 	} from '$lib/utils/page48';
 
@@ -127,7 +127,7 @@
 
 	async function handleReply(
 		content: string,
-		media: MediaDraft[],
+		media: DraftMedia[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
 		isSpoiler: boolean
@@ -137,7 +137,7 @@
 			// Replies can't carry a poll (server rule), so `poll` is always null here.
 			const created = await page48Api.createPost({
 				content,
-				media: await uploadDraftMedia(media),
+				media: await resolveDraftMedia(media),
 				parentPostId: target.postId,
 				poll,
 				quotedPostId: quotedPostId ?? undefined,

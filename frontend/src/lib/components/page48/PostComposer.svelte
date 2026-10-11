@@ -15,7 +15,7 @@
 	import MentionSuggestions from '$lib/components/page48/MentionSuggestions.svelte';
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import PostEmbedView from '$lib/components/page48/PostEmbedView.svelte';
-	import { page48Api, type Page48MediaItem, type Page48Post } from '$lib/api/page48';
+	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -34,6 +34,7 @@
 		POLL_MIN_OPTIONS,
 		searchMentionCandidates,
 		takeQuotedPostLink,
+		type DraftMedia,
 		type MediaDraft,
 		type MentionCandidate,
 		type PostDraftInput
@@ -45,7 +46,7 @@
 		/** Publish a new post. Omitted in edit mode. */
 		onPost?: (
 			content: string,
-			media: MediaDraft[],
+			media: DraftMedia[],
 			poll: { options: string[] } | null,
 			quotedPostId: string | null,
 			isSpoiler: boolean
@@ -105,14 +106,16 @@
 	// In edit mode these are seeded once from the post being edited.
 	// svelte-ignore state_referenced_locally
 	let content = $state(editingPost?.content ?? '');
-	/** Ordered media picked for this draft, images and videos mixed. */
-	let media = $state<MediaDraft[]>([]);
-	/** Object URLs for `media`, kept in step so a preview can be revoked. */
-	let mediaPreviews = $state<string[]>([]);
-	/** Media already on the post, kept unless removed (seeded in edit mode). */
+	/** Ordered media strip: the post's own media (edit) plus newly picked files. */
 	// svelte-ignore state_referenced_locally
-	let existingMedia = $state<Page48MediaItem[]>(editingPost?.media ?? []);
+	let media = $state<DraftMedia[]>(
+		(editingPost?.media ?? []).map((item) => ({ kind: 'existing', item }) as DraftMedia)
+	);
 	let probing = $state(false);
+	/** Highlight the composer while files are dragged over it. */
+	let dragOver = $state(false);
+	/** Index of the media tile being dragged, to reorder it. */
+	let dragIndex = $state<number | null>(null);
 	let isSubmitting = $state(false);
 	let emojiOpen = $state(false);
 	let pollOpen = $state(false);
@@ -307,14 +310,11 @@
 		return false;
 	}
 
-	/** Pick any mix of photos and videos; up to `PAGE48_MAX_MEDIA` in total. */
-	async function handleMediaSelect(e: Event) {
-		const target = e.target as HTMLInputElement;
-		const files = Array.from(target.files ?? []);
-		target.value = '';
+	/** Add any mix of photos and videos; up to `PAGE48_MAX_MEDIA` in total. */
+	async function addMediaFiles(files: File[]) {
 		if (files.length === 0) return;
 
-		const room = PAGE48_MAX_MEDIA - media.length - existingMedia.length;
+		const room = PAGE48_MAX_MEDIA - media.length;
 		if (room <= 0) {
 			showToast(t('page48.composer.maxMedia'), 'error');
 			return;
@@ -322,15 +322,70 @@
 
 		probing = true;
 		try {
+			const picked: DraftMedia[] = [];
 			for (const file of files.slice(0, room)) {
 				const draft = await buildMediaDraft(file);
 				if (!draft) continue;
-				media = [...media, draft];
-				mediaPreviews = [...mediaPreviews, URL.createObjectURL(file)];
+				picked.push({ kind: 'new', draft, preview: URL.createObjectURL(file) });
 			}
+			media = [...media, ...picked];
 		} finally {
 			probing = false;
 		}
+	}
+
+	async function handleMediaSelect(e: Event) {
+		const target = e.target as HTMLInputElement;
+		const files = Array.from(target.files ?? []);
+		target.value = '';
+		await addMediaFiles(files);
+	}
+
+	// --- Drag & drop: files to add, tiles to reorder ---
+
+	function handleDragOver(e: DragEvent) {
+		if (!e.dataTransfer?.types.includes('Files')) return;
+		e.preventDefault();
+		dragOver = true;
+	}
+
+	function handleDragLeave() {
+		dragOver = false;
+	}
+
+	function handleDrop(e: DragEvent) {
+		dragOver = false;
+		const files = Array.from(e.dataTransfer?.files ?? []);
+		if (files.length === 0) return;
+		e.preventDefault();
+		void addMediaFiles(files);
+	}
+
+	function handleMediaDragStart(index: number, e: DragEvent) {
+		dragIndex = index;
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/plain', String(index));
+		}
+	}
+
+	function handleMediaDragOver(index: number, e: DragEvent) {
+		if (dragIndex === null || dragIndex === index) return;
+		e.preventDefault();
+	}
+
+	function handleMediaDrop(index: number, e: DragEvent) {
+		if (dragIndex === null) return;
+		e.preventDefault();
+		e.stopPropagation();
+		const from = dragIndex;
+		dragIndex = null;
+		if (from === index) return;
+
+		const next = [...media];
+		const [moved] = next.splice(from, 1);
+		next.splice(index, 0, moved);
+		media = next;
 	}
 
 	/** Validate one picked file and shape it for the draft, or null if rejected. */
@@ -375,14 +430,9 @@
 	}
 
 	function removeMedia(index: number) {
-		URL.revokeObjectURL(mediaPreviews[index]);
+		const entry = media[index];
+		if (entry?.kind === 'new') URL.revokeObjectURL(entry.preview);
 		media = media.filter((_, i) => i !== index);
-		mediaPreviews = mediaPreviews.filter((_, i) => i !== index);
-	}
-
-	/** Drop one of the post's existing media (removed from storage on save). */
-	function removeExistingMedia(index: number) {
-		existingMedia = existingMedia.filter((_, i) => i !== index);
 	}
 
 	/** The post currently being edited, in the shape the API expects. */
@@ -392,8 +442,7 @@
 			media: [...media],
 			poll: pollOpen ? { options: pollDraft } : null,
 			quotedPostId: quote?.postId ?? null,
-			isSpoiler: spoilerOn,
-			existingMedia: [...existingMedia]
+			isSpoiler: spoilerOn
 		};
 	}
 
@@ -401,7 +450,6 @@
 		return (
 			draft.content.trim().length > 0 ||
 			draft.media.length > 0 ||
-			(draft.existingMedia?.length ?? 0) > 0 ||
 			(!!draft.poll && draft.poll.options.length >= POLL_MIN_OPTIONS) ||
 			!!draft.quotedPostId
 		);
@@ -409,10 +457,10 @@
 
 	function resetDraft() {
 		content = '';
-		mediaPreviews.forEach(URL.revokeObjectURL);
+		media.forEach((entry) => {
+			if (entry.kind === 'new') URL.revokeObjectURL(entry.preview);
+		});
 		media = [];
-		mediaPreviews = [];
-		existingMedia = [];
 		closePoll();
 		spoilerOn = false;
 		quoteOverride = undefined;
@@ -437,7 +485,7 @@
 
 	function draftSummary(draft: PostDraftInput): string {
 		const parts: string[] = [];
-		const mediaCount = draft.media.length + (draft.existingMedia?.length ?? 0);
+		const mediaCount = draft.media.length;
 		if (mediaCount > 0) parts.push(t('page48.composer.mediaCount', { count: mediaCount }));
 		if (draft.poll) parts.push(t('page48.poll.create'));
 		if (draft.quotedPostId) parts.push(t('page48.repostMenu.quote'));
@@ -446,9 +494,10 @@
 
 	// Poll editor (a poll can't be combined with media)
 	function dropMedia() {
-		mediaPreviews.forEach(URL.revokeObjectURL);
+		media.forEach((entry) => {
+			if (entry.kind === 'new') URL.revokeObjectURL(entry.preview);
+		});
 		media = [];
-		mediaPreviews = [];
 	}
 
 	function openPoll() {
@@ -608,8 +657,13 @@
 	</button>
 {/snippet}
 
+<!-- A drop target for files, not a landmark; the textarea/submit stay the controls. -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="flex gap-4 py-5 px-5 sm:px-6 border-b border-gray-100 dark:border-white/10 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl transition-all"
+	class={`flex gap-4 py-5 px-5 sm:px-6 border-b border-gray-100 dark:border-white/10 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl transition-all ${dragOver ? 'ring-2 ring-inset ring-red-400/70' : ''}`}
+	ondragover={handleDragOver}
+	ondragleave={handleDragLeave}
+	ondrop={handleDrop}
 >
 	<!-- Avatar -->
 	<div class="shrink-0 pt-1">
@@ -784,44 +838,38 @@
 		{/if}
 
 		<!-- Media Previews: the post's own media + newly picked, images and videos -->
-		{#if existingMedia.length > 0 || media.length > 0}
+		{#if media.length > 0}
 			<div class="flex gap-2 mt-2 mb-2 overflow-x-auto pb-2 snap-x" in:fade>
-				{#each existingMedia as item, i}
-					<div class="relative shrink-0 snap-start">
-						{#if item.type === 'video'}
+				{#each media as entry, i (entry.kind === 'existing' ? entry.item.filename : entry.preview)}
+					{@const isVideo =
+						entry.kind === 'existing' ? entry.item.type === 'video' : entry.draft.type === 'video'}
+					{@const src =
+						entry.kind === 'existing'
+							? entry.item.url_small || entry.item.url_medium || entry.item.url
+							: entry.preview}
+					<!-- Each tile is a movable handle; the remove button stays the control. -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div
+						class={`relative shrink-0 snap-start cursor-grab active:cursor-grabbing ${
+							dragIndex === i ? 'opacity-40' : ''
+						}`}
+						draggable="true"
+						ondragstart={(event) => handleMediaDragStart(i, event)}
+						ondragover={(event) => handleMediaDragOver(i, event)}
+						ondrop={(event) => handleMediaDrop(i, event)}
+						ondragend={() => (dragIndex = null)}
+						title={t('page48.composer.dragToReorder')}
+					>
+						{#if isVideo}
 							<video
-								src={item.url ?? ''}
+								{src}
 								muted
 								playsinline
 								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 bg-black"
 							></video>
 						{:else}
 							<img
-								src={item.url_small || item.url_medium || item.url}
-								alt={t('page48.composer.previewAlt')}
-								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
-							/>
-						{/if}
-						<button
-							class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
-							onclick={() => removeExistingMedia(i)}
-						>
-							<X size={14} />
-						</button>
-					</div>
-				{/each}
-				{#each media as item, i}
-					<div class="relative shrink-0 snap-start">
-						{#if item.type === 'video'}
-							<video
-								src={mediaPreviews[i]}
-								muted
-								playsinline
-								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 bg-black"
-							></video>
-						{:else}
-							<img
-								src={mediaPreviews[i]}
+								{src}
 								alt={t('page48.composer.previewAlt')}
 								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
 							/>
@@ -850,10 +898,7 @@
 					<button
 						class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
 						onclick={() => fileInput?.click()}
-						disabled={media.length + existingMedia.length >= PAGE48_MAX_MEDIA ||
-							probing ||
-							isSubmitting ||
-							pollOpen}
+						disabled={media.length >= PAGE48_MAX_MEDIA || probing || isSubmitting || pollOpen}
 						title={t('page48.composer.addMedia')}
 						aria-label={t('page48.composer.addMedia')}
 					>
@@ -895,10 +940,7 @@
 								pollOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
 							}`}
 							onclick={pollOpen ? closePoll : openPoll}
-							disabled={media.length + existingMedia.length > 0 ||
-								probing ||
-								isSubmitting ||
-								isThread}
+							disabled={media.length > 0 || probing || isSubmitting || isThread}
 							title={t('page48.poll.create')}
 							aria-label={t('page48.poll.create')}
 							aria-pressed={pollOpen}

@@ -2040,6 +2040,8 @@
 			"maxPhotos": "Maksimal 10 foto per postingan.",
 			"maxMedia": "Maksimal 10 media per postingan.",
 			"addMedia": "Tambah foto atau video",
+			"dragToReorder": "Geser untuk ubah urutan",
+			"dropToUpload": "Lepas foto atau video untuk menambahkannya",
 			"mediaCount": "{count} media",
 			"maxSize": "Ukuran foto maksimal 3MB.",
 			"previewAlt": "Pratinjau foto",
