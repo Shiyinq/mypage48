@@ -39,6 +39,30 @@ class Page48Video(BaseModel):
     duration: Optional[float] = 0.0
 
 
+class MediaRef(BaseModel):
+    """One ordered media item, sent when creating or editing a post."""
+
+    type: Literal["image", "video"]
+    filename: str
+    width: Optional[int] = 0
+    height: Optional[int] = 0
+    duration: Optional[float] = 0.0
+
+
+class Page48Media(BaseModel):
+    """One resolved media item, in the order the author posted it."""
+
+    type: Literal["image", "video"]
+    filename: str
+    url: Optional[str] = None
+    url_medium: Optional[str] = None
+    url_small: Optional[str] = None
+    blurHash: Optional[str] = None
+    width: Optional[int] = 0
+    height: Optional[int] = 0
+    duration: Optional[float] = 0.0
+
+
 class VideoUploadResponse(BaseModel):
     filename: str
     url: Optional[str] = None
@@ -84,6 +108,8 @@ class ThreadPostItem(BaseModel):
     quotedPostId: Optional[str] = None
     # Hide this post's content behind a spoiler gate until the reader opts in.
     isSpoiler: bool = False
+    # Ordered media (images and videos mixed), up to `MAX_MEDIA` items.
+    media: list[MediaRef] = Field(default_factory=list)
 
 
 class CreateThreadRequest(BaseModel):
@@ -104,6 +130,8 @@ class CreatePostRequest(BaseModel):
     quotedPostId: Optional[str] = None
     # Hide this post's content behind a spoiler gate until the reader opts in.
     isSpoiler: bool = False
+    # Ordered media (images and videos mixed), up to `MAX_MEDIA` items.
+    media: list[MediaRef] = Field(default_factory=list)
 
 
 class EditPostRequest(BaseModel):
@@ -114,6 +142,8 @@ class EditPostRequest(BaseModel):
     # None leaves the current media untouched; a list (even empty) replaces it.
     images: Optional[list[ImageRef]] = None
     videos: Optional[list[VideoRef]] = None
+    # Ordered media (images and videos mixed). Preferred over images/videos.
+    media: Optional[list[MediaRef]] = None
 
 
 class PostResponse(BaseModel):
@@ -133,6 +163,8 @@ class PostResponse(BaseModel):
     page48AccountType: Optional[str] = None
 
     content: str
+    # Ordered media as posted; `images`/`videos` below stay as convenient views.
+    media: list[Page48Media] = []
     images: list[Page48Image] = []
     videos: list[Page48Video] = []
     tags: list[str] = []

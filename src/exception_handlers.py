@@ -142,6 +142,7 @@ from src.page48.exceptions import (
     InvalidReportTargetError,
     InvalidVideoError,
     InvalidVideoTypeError,
+    MaxMediaExceededError,
     MaxVideoExceededError,
     MediaConflictError,
     PollAlreadyVotedError,
@@ -176,6 +177,7 @@ from src.page48.http_exceptions import (
     InvalidReportTarget,
     InvalidVideo,
     InvalidVideoType,
+    MaxMediaExceeded,
     MaxVideoExceeded,
     MediaConflict,
     PollAlreadyVoted,
@@ -558,6 +560,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, VideoTooLarge())
     if isinstance(exc, InvalidVideoTypeError):
         return await detailed_http_exception_handler(request, InvalidVideoType())
+    if isinstance(exc, MaxMediaExceededError):
+        return await detailed_http_exception_handler(request, MaxMediaExceeded())
     if isinstance(exc, MaxVideoExceededError):
         return await detailed_http_exception_handler(request, MaxVideoExceeded())
     if isinstance(exc, MediaConflictError):

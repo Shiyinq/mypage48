@@ -1,3 +1,7 @@
+# A post may hold up to this many media items, images and videos combined.
+MAX_MEDIA = 10
+
+
 class Info:
     POST_CREATED = "Post created successfully."
     POST_UPDATED = "Post updated successfully."
@@ -70,6 +74,7 @@ class DomainErrorCode:
     VIDEO_UPLOAD_FAILED = "Failed to upload video."
     VIDEO_TOO_LARGE = "Video exceeds the maximum size of 50MB."
     INVALID_VIDEO_TYPE = "Unsupported video format. Allowed: MP4 or WebM."
+    MAX_MEDIA_EXCEEDED = "Maximum number of media allowed per post is 10."
     MAX_VIDEO_EXCEEDED = "Maximum number of videos allowed per post is 1."
     INVALID_MEDIA_COMBINATION = "A post cannot contain both images and a video."
     INVALID_VIDEO = "The video reference is invalid."

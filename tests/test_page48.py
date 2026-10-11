@@ -1116,6 +1116,72 @@ async def test_delete_post_removes_media_files(
     )
 
 
+@pytest.mark.asyncio
+async def test_create_post_with_mixed_media(client, create_user, make_post, storage_service):
+    _, _, author = await create_user("p48_mixed_media_author")
+    user_id = (await make_post(author, "seed"))["userId"]
+    img1 = f"page48/{user_id}/a.png"
+    img2 = f"page48/{user_id}/b.png"
+    vid = f"page48/{user_id}/c.mp4"
+
+    res = await client.post(
+        "/api/page48/posts",
+        json={
+            "content": "mixed",
+            "media": [
+                {"type": "image", "filename": img1, "width": 4, "height": 4},
+                {
+                    "type": "video",
+                    "filename": vid,
+                    "width": 4,
+                    "height": 4,
+                    "duration": 3,
+                },
+                {"type": "image", "filename": img2, "width": 4, "height": 4},
+            ],
+        },
+        headers=author,
+    )
+    assert res.status_code == 201, res.text
+    body = res.json()
+    # Order is kept, and the split views are derived from it.
+    assert [(m["type"], m["filename"]) for m in body["media"]] == [
+        ("image", img1),
+        ("video", vid),
+        ("image", img2),
+    ]
+    assert [i["filename"] for i in body["images"]] == [img1, img2]
+    assert [v["filename"] for v in body["videos"]] == [vid]
+
+    # The mixed post shows up under both the photo and the video filter.
+    for media in ("image", "video"):
+        feed = await client.get(f"/api/page48/feed?media={media}")
+        assert feed.status_code == 200
+        assert any(p["postId"] == body["postId"] for p in feed.json()["data"])
+
+
+@pytest.mark.asyncio
+async def test_create_post_media_limit(client, create_user, make_post):
+    _, _, author = await create_user("p48_media_limit_author")
+    user_id = (await make_post(author, "seed"))["userId"]
+
+    media = [
+        {
+            "type": "image",
+            "filename": f"page48/{user_id}/{i}.png",
+            "width": 1,
+            "height": 1,
+        }
+        for i in range(11)
+    ]
+    res = await client.post(
+        "/api/page48/posts",
+        json={"content": "too many", "media": media},
+        headers=author,
+    )
+    assert res.status_code == 400
+
+
 # --------------------------------------------------------------------------- #
 # Social: like / repost / bookmark / report / follows
 # --------------------------------------------------------------------------- #

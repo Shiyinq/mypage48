@@ -62,6 +62,10 @@ class InvalidImageError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.INVALID_IMAGE
 
 
+class MaxMediaExceededError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.MAX_MEDIA_EXCEEDED
+
+
 class PollNotFoundError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.POLL_NOT_FOUND
 
