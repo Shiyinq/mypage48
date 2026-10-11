@@ -2156,7 +2156,8 @@
 		},
 		"photos": {
 			"emptyTitle": "まだ画像がありません",
-			"emptyText": "画像を含む投稿がここに表示されます。"
+			"emptyText": "画像を含む投稿がここに表示されます。",
+			"loadError": "画像を読み込めませんでした。"
 		},
 		"videos": {
 			"emptyTitle": "まだ動画がありません",

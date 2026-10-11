@@ -2162,7 +2162,8 @@
 		},
 		"photos": {
 			"emptyTitle": "Belum ada gambar",
-			"emptyText": "Postingan yang berisi gambar akan muncul di sini."
+			"emptyText": "Postingan yang berisi gambar akan muncul di sini.",
+			"loadError": "Gagal memuat gambar."
 		},
 		"videos": {
 			"emptyTitle": "Belum ada video",

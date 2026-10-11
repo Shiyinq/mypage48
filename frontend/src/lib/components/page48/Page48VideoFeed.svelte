@@ -24,6 +24,9 @@
 	const { t } = useTranslation();
 
 	let posts = $state<Page48Post[]>([]);
+	// One feed item per video, so a post with several videos is scrolled one by one;
+	// every item keeps its post, so the caption/author follow along.
+	let items = $derived(posts.flatMap((post) => post.videos.map((video) => ({ post, video }))));
 	let loading = $state(true);
 	let loadingMore = $state(false);
 	let error = $state<string | null>(null);
@@ -70,7 +73,7 @@
 		currentIndex = Math.round(el.scrollTop / (el.clientHeight || 1));
 		// Keep the open comments panel in sync with the clip being viewed.
 		if (commentPost) {
-			const current = posts[currentIndex];
+			const current = items[currentIndex]?.post;
 			if (current && current.postId !== commentPost.postId) commentPost = current;
 		}
 	}
@@ -78,7 +81,7 @@
 	function goTo(index: number) {
 		const el = scroller;
 		if (!el) return;
-		const target = Math.max(0, Math.min(index, posts.length - 1));
+		const target = Math.max(0, Math.min(index, items.length - 1));
 		el.scrollTo({ top: target * el.clientHeight, behavior: 'smooth' });
 	}
 
@@ -200,7 +203,7 @@
 					onRetry={loadFeed}
 				/>
 			</div>
-		{:else if posts.length === 0}
+		{:else if items.length === 0}
 			<div
 				class="h-full flex flex-col items-center justify-center gap-3 text-gray-400 dark:text-gray-500 p-6 text-center"
 			>
@@ -208,8 +211,9 @@
 				<p class="text-sm">{t('page48.videosFeed.emptyText')}</p>
 			</div>
 		{:else}
-			{#each posts as post (post.postId)}
-				{@const video = post.videos[0]}
+			{#each items as item (item.post.postId + ':' + item.video.filename)}
+				{@const post = item.post}
+				{@const video = item.video}
 				{@const ratio =
 					video.width > 0 && video.height > 0
 						? Math.min(Math.max(video.width / video.height, 0.5625), 1.91)
@@ -296,7 +300,7 @@
 	</div>
 
 	<!-- Desktop: arrow navigation (replaces the scrollbar, like TikTok web) -->
-	{#if !loading && !error && posts.length > 0}
+	{#if !loading && !error && items.length > 0}
 		<div class="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-[5] flex-col gap-3">
 			<button
 				class="w-11 h-11 rounded-full border border-gray-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur shadow-sm flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
@@ -309,7 +313,7 @@
 			<button
 				class="w-11 h-11 rounded-full border border-gray-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur shadow-sm flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
 				onclick={() => goTo(currentIndex + 1)}
-				disabled={currentIndex >= posts.length - 1 && !hasMore}
+				disabled={currentIndex >= items.length - 1 && !hasMore}
 				aria-label={t('page48.video.next')}
 			>
 				<ChevronDown size={20} />
