@@ -1996,7 +1996,12 @@
 			"nextImage": "Next image",
 			"close": "Close",
 			"mentionSuggestions": "User suggestions",
-			"userPreview": "User preview"
+			"userPreview": "User preview",
+			"xPost": "X post"
+		},
+		"embed": {
+			"viewOnX": "View post on X",
+			"xLoads": "The post loads from X"
 		},
 		"mentions": {
 			"noResults": "No users found",

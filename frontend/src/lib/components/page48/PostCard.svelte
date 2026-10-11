@@ -9,6 +9,7 @@
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
 	import YouTubeEmbed from '$lib/components/page48/YouTubeEmbed.svelte';
+	import XEmbed from '$lib/components/page48/XEmbed.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
@@ -22,7 +23,7 @@
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import {
-		findYouTubeEmbed,
+		findPostEmbed,
 		formatPostTime,
 		getActiveMedia,
 		parseContent,
@@ -278,8 +279,8 @@
 
 	// Hashtags and mentions inside the content, so neither needs a duplicated chip.
 	let contentParts = $derived(post.content ? parseContent(post.content) : []);
-	// A YouTube link anywhere in the text is embedded inline (first one only).
-	let youtubeEmbed = $derived(findYouTubeEmbed(contentParts));
+	// A YouTube or X link anywhere in the text is embedded inline (first one only).
+	let postEmbed = $derived(findPostEmbed(contentParts));
 	let inlineTags = $derived(
 		new Set(contentParts.filter((part) => part.tag).map((part) => part.tag as string))
 	);
@@ -455,14 +456,18 @@
 			/>
 		{/if}
 
-		<!-- YouTube link: embedded lite player below the media, X/Twitter style -->
-		{#if youtubeEmbed}
+		<!-- Embeddable link (YouTube or X): lite, click-to-load, below the media -->
+		{#if postEmbed}
 			<div class="pointer-events-none relative z-[1] mt-3">
-				<YouTubeEmbed
-					videoId={youtubeEmbed.videoId}
-					start={youtubeEmbed.start}
-					class="pointer-events-auto"
-				/>
+				{#if postEmbed.type === 'youtube'}
+					<YouTubeEmbed
+						videoId={postEmbed.videoId}
+						start={postEmbed.start}
+						class="pointer-events-auto"
+					/>
+				{:else}
+					<XEmbed tweetId={postEmbed.tweetId} class="pointer-events-auto" />
+				{/if}
 			</div>
 		{/if}
 

@@ -5,12 +5,13 @@
 	import type { Page48Post } from '$lib/api/page48';
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
 	import YouTubeEmbed from '$lib/components/page48/YouTubeEmbed.svelte';
+	import XEmbed from '$lib/components/page48/XEmbed.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import {
-		findYouTubeEmbed,
+		findPostEmbed,
 		formatPostTime,
 		getActiveMedia,
 		parseContent,
@@ -43,7 +44,7 @@
 	let activeMedia = $derived(getActiveMedia($page.url.pathname, $page.url.search));
 
 	let contentParts = $derived(post?.content ? parseContent(post.content) : []);
-	let youtubeEmbed = $derived(findYouTubeEmbed(contentParts));
+	let postEmbed = $derived(findPostEmbed(contentParts));
 	let imageUrls = $derived(post?.images?.map((image) => image.url) ?? []);
 
 	let lightboxOpen = $state(false);
@@ -187,9 +188,13 @@
 				onOpen={interactive ? openLightbox : undefined}
 			/>
 
-			{#if youtubeEmbed}
+			{#if postEmbed}
 				<div class="pointer-events-auto relative z-[1]">
-					<YouTubeEmbed videoId={youtubeEmbed.videoId} start={youtubeEmbed.start} maxHeight={300} />
+					{#if postEmbed.type === 'youtube'}
+						<YouTubeEmbed videoId={postEmbed.videoId} start={postEmbed.start} maxHeight={300} />
+					{:else}
+						<XEmbed tweetId={postEmbed.tweetId} />
+					{/if}
 				</div>
 			{/if}
 		</div>

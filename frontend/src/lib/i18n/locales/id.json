@@ -2000,7 +2000,12 @@
 			"nextImage": "Gambar berikutnya",
 			"close": "Tutup",
 			"mentionSuggestions": "Saran pengguna",
-			"userPreview": "Pratinjau pengguna"
+			"userPreview": "Pratinjau pengguna",
+			"xPost": "Postingan X"
+		},
+		"embed": {
+			"viewOnX": "Lihat post di X",
+			"xLoads": "Post dimuat dari X"
 		},
 		"mentions": {
 			"noResults": "Pengguna tidak ditemukan",

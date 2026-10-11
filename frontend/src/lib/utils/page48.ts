@@ -189,10 +189,11 @@ export interface YouTubeEmbed {
 /**
  * Matches the many shapes of a YouTube URL and captures the 11-character video id:
  * `watch?v=`, `youtu.be/`, `/shorts/`, `/embed/`, `/live/` and `/v/`. Extra query
- * parameters (playlists, share tokens, timestamps) are ignored.
+ * parameters (playlists, share tokens, timestamps) are ignored. The leading
+ * `//` keeps lookalike hosts such as `notyoutube.com` from matching.
  */
 const YOUTUBE_ID_PATTERN =
-	/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#\s]*&)?v=|shorts\/|embed\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i;
+	/(?:^|\/\/)(?:www\.|m\.|music\.)?(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#\s]*&)?v=|shorts\/|embed\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i;
 
 /**
  * Reads the playback offset from `t`/`start`, accepting both `90` and the `1m30s`
@@ -226,15 +227,43 @@ export function extractYouTubeEmbed(url: string): YouTubeEmbed | null {
 	return { videoId: match[1], start: youTubeStartSeconds(url) };
 }
 
+/** An embedded X (Twitter) post. */
+export interface XEmbed {
+	tweetId: string;
+}
+
 /**
- * The first YouTube link among already-parsed content parts. Only one video is
- * embedded per post, matching how a link preview behaves elsewhere.
+ * Matches an X/Twitter status URL and captures the numeric tweet id. Covers the
+ * `x.com` and `twitter.com` hosts (with `www.`/`mobile.` subdomains) and the
+ * `i/web/status` form. The id length is bounded so the pattern stays linear, and
+ * the leading `//` keeps lookalike hosts such as `evil-x.com` from matching.
  */
-export function findYouTubeEmbed(parts: ContentPart[]): YouTubeEmbed | null {
+const X_ID_PATTERN =
+	/(?:^|\/\/)(?:www\.|mobile\.)?(?:twitter|x)\.com\/(?:[A-Za-z0-9_]+\/status(?:es)?|i\/web\/status)\/(\d{1,20})/i;
+
+/** The tweet id inside an X/Twitter link, or null for any other URL. */
+export function extractXEmbed(url: string): XEmbed | null {
+	const match = url.match(X_ID_PATTERN);
+	if (!match) return null;
+	return { tweetId: match[1] };
+}
+
+/** An embeddable link found in a post: one is shown per post, first match wins. */
+export type PostEmbed = ({ type: 'youtube' } & YouTubeEmbed) | ({ type: 'x' } & XEmbed);
+
+/**
+ * The first embeddable link among already-parsed content parts. Only one embed is
+ * shown per post, matching how a link preview behaves elsewhere.
+ */
+export function findPostEmbed(parts: ContentPart[]): PostEmbed | null {
 	for (const part of parts) {
 		if (!part.link) continue;
-		const embed = extractYouTubeEmbed(part.link);
-		if (embed) return embed;
+
+		const youtube = extractYouTubeEmbed(part.link);
+		if (youtube) return { type: 'youtube', ...youtube };
+
+		const x = extractXEmbed(part.link);
+		if (x) return { type: 'x', ...x };
 	}
 	return null;
 }
