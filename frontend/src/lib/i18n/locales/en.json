@@ -2335,7 +2335,9 @@
 			"lockedTitle": "Lock Page48 profile",
 			"lockedSubtitle": "When on, only followers you approve can see your posts.",
 			"lockedOn": "Your posts are now follower-only.",
-			"lockedOff": "Anyone can see your posts again."
+			"lockedOff": "Anyone can see your posts again.",
+			"embedsTitle": "Load embeds automatically",
+			"embedsSubtitle": "Load X, Instagram and TikTok posts as they scroll into view. YouTube keeps its thumbnail."
 		},
 		"blockUser": "Block",
 		"unblockUser": "Unblock",

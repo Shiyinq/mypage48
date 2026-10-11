@@ -2333,7 +2333,9 @@
 			"lockedTitle": "Page48プロフィールをロック",
 			"lockedSubtitle": "オンにすると、承認したフォロワーだけが投稿を見られます。",
 			"lockedOn": "投稿はフォロワー限定になりました。",
-			"lockedOff": "誰でも投稿を見られるようになりました。"
+			"lockedOff": "誰でも投稿を見られるようになりました。",
+			"embedsTitle": "埋め込みを自動で読み込む",
+			"embedsSubtitle": "X・Instagram・TikTok の投稿を画面に入った時点で読み込みます。YouTube はサムネイルのままです。"
 		},
 		"blockUser": "ブロック",
 		"unblockUser": "ブロック解除",

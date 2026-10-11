@@ -2,8 +2,9 @@
 	import { onMount } from 'svelte';
 	import { portal } from '$lib/actions/portal';
 	import { fade } from 'svelte/transition';
-	import { Ban, Lock, LoaderCircle, VolumeX, X } from 'lucide-svelte';
+	import { Ban, Lock, LoaderCircle, Sparkles, VolumeX, X } from 'lucide-svelte';
 	import { page48Api, type PostUserItem, type PostUserListResponse } from '$lib/api/page48';
+	import { embedPreferences } from '$lib/stores/embed.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -212,6 +213,35 @@
 					></span>
 				</button>
 			{/if}
+		</div>
+
+		<!-- Auto-load embeds (X, Instagram, TikTok) -->
+		<div class="flex items-start gap-3 py-3.5">
+			<Sparkles class="mt-0.5 w-5 h-5 shrink-0 text-gray-500 dark:text-gray-400" />
+			<div class="min-w-0 flex-1">
+				<p class="text-[15px] font-semibold text-gray-900 dark:text-gray-100">
+					{t('page48.settings.embedsTitle')}
+				</p>
+				<p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+					{t('page48.settings.embedsSubtitle')}
+				</p>
+			</div>
+			<button
+				type="button"
+				role="switch"
+				aria-checked={embedPreferences.autoLoad}
+				aria-label={t('page48.settings.embedsTitle')}
+				onclick={() => embedPreferences.toggle()}
+				class={`relative mt-1 h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${
+					embedPreferences.autoLoad ? 'bg-red-600' : 'bg-gray-300 dark:bg-zinc-700'
+				}`}
+			>
+				<span
+					class={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+						embedPreferences.autoLoad ? 'left-[22px]' : 'left-0.5'
+					}`}
+				></span>
+			</button>
 		</div>
 
 		<!-- Blocked accounts -->

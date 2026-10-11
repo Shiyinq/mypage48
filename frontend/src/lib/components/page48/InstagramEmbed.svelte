@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { loadOnView } from '$lib/actions/loadOnView';
+	import { embedPreferences } from '$lib/stores/embed.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { InstagramKind } from '$lib/utils/page48';
 
@@ -32,7 +34,10 @@
 	}
 </script>
 
-<div class={`mx-auto w-full max-w-[540px] ${klass}`}>
+<div
+	class={`mx-auto w-full max-w-[540px] ${klass}`}
+	use:loadOnView={{ enabled: embedPreferences.autoLoad, onLoad: () => (playing = true) }}
+>
 	<div
 		class="relative w-full overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
 	>

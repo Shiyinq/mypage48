@@ -2339,7 +2339,9 @@
 			"lockedTitle": "Kunci Profil Page48",
 			"lockedSubtitle": "Saat aktif, hanya pengikut yang kamu setujui yang bisa melihat postinganmu.",
 			"lockedOn": "Postingan kamu sekarang hanya untuk pengikut.",
-			"lockedOff": "Postingan kamu sekarang bisa dilihat semua orang."
+			"lockedOff": "Postingan kamu sekarang bisa dilihat semua orang.",
+			"embedsTitle": "Muat embed otomatis",
+			"embedsSubtitle": "Muat post X, Instagram, dan TikTok saat masuk layar. YouTube tetap pakai thumbnail."
 		},
 		"blockUser": "Blokir",
 		"unblockUser": "Buka blokir",

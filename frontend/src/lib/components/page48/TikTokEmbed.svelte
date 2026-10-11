@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { Music2 } from 'lucide-svelte';
+	import { loadOnView } from '$lib/actions/loadOnView';
+	import { embedPreferences } from '$lib/stores/embed.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { TikTokKind } from '$lib/utils/page48';
 
@@ -41,7 +43,11 @@
 	}
 </script>
 
-<div class={`mx-auto w-full ${klass}`} style={`max-width: ${maxWidth}px`}>
+<div
+	class={`mx-auto w-full ${klass}`}
+	style={`max-width: ${maxWidth}px`}
+	use:loadOnView={{ enabled: embedPreferences.autoLoad, onLoad: () => (playing = true) }}
+>
 	<div
 		class="relative w-full overflow-hidden rounded-2xl border border-gray-200 bg-black dark:border-zinc-700"
 		style="aspect-ratio: 9 / 16"
