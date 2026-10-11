@@ -563,12 +563,22 @@ export const page48Api = {
 		return client(`/page48/posts/${postId}`, { method: 'DELETE' });
 	},
 
-	editPost: async (postId: string, content: string, isSpoiler?: boolean): Promise<Page48Post> => {
+	editPost: async (
+		postId: string,
+		content: string,
+		opts: {
+			images?: Page48ImageRef[];
+			videos?: { filename: string; width: number; height: number; duration: number }[];
+			isSpoiler?: boolean;
+		} = {}
+	): Promise<Page48Post> => {
 		clearListResponseCache();
-		return client<Page48Post>(`/page48/posts/${postId}`, {
-			method: 'PATCH',
-			body: isSpoiler === undefined ? { content } : { content, isSpoiler }
-		});
+		const body: Record<string, unknown> = { content };
+		// Omitting a field leaves it untouched; an empty list clears it.
+		if (opts.images !== undefined) body.images = opts.images;
+		if (opts.videos !== undefined) body.videos = opts.videos;
+		if (opts.isSpoiler !== undefined) body.isSpoiler = opts.isSpoiler;
+		return client<Page48Post>(`/page48/posts/${postId}`, { method: 'PATCH', body });
 	},
 
 	createReport: async (payload: ReportCreate): Promise<ReportResponse> => {

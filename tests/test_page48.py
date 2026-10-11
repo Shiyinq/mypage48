@@ -1015,6 +1015,107 @@ async def test_post_spoiler_reply_edit_and_ownership(client, create_user, make_p
     assert res.status_code in (403, 404)
 
 
+@pytest.mark.asyncio
+async def test_edit_post_replaces_media(client, create_user, make_post):
+    _, _, author = await create_user("p48_edit_media_author")
+    post = await make_post(author, "with media")
+    user_id = post["userId"]
+    first = f"page48/{user_id}/a.png"
+    second = f"page48/{user_id}/b.png"
+
+    def image(name):
+        return {"filename": name, "width": 4, "height": 4}
+
+    added = await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={"content": "with media", "images": [image(first)]},
+        headers=author,
+    )
+    assert added.status_code == 200, added.text
+    assert [i["filename"] for i in added.json()["images"]] == [first]
+
+    replaced = await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={"content": "with media", "images": [image(first), image(second)]},
+        headers=author,
+    )
+    assert replaced.status_code == 200
+    assert [i["filename"] for i in replaced.json()["images"]] == [first, second]
+
+    cleared = await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={"content": "with media", "images": []},
+        headers=author,
+    )
+    assert cleared.status_code == 200
+    assert cleared.json()["images"] == []
+
+    # Omitting media leaves it untouched.
+    await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={"content": "with media", "images": [image(first)]},
+        headers=author,
+    )
+    untouched = await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={"content": "edited text only"},
+        headers=author,
+    )
+    assert [i["filename"] for i in untouched.json()["images"]] == [first]
+
+
+@pytest.mark.asyncio
+async def test_edit_post_cannot_add_media_to_poll(client, create_user, make_post):
+    _, _, author = await create_user("p48_edit_poll_media_author")
+    post = await make_post(author, "question?", poll={"options": ["a", "b"]})
+    user_id = post["userId"]
+
+    res = await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={
+            "content": "question?",
+            "images": [
+                {"filename": f"page48/{user_id}/x.png", "width": 1, "height": 1}
+            ],
+        },
+        headers=author,
+    )
+    assert res.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_delete_post_removes_media_files(
+    client, create_user, make_post, storage_service
+):
+    _, _, author = await create_user("p48_delete_media_author")
+    post = await make_post(author, "bye")
+    filename = f"page48/{post['userId']}/gone.png"
+
+    await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={
+            "content": "bye",
+            "images": [{"filename": filename, "width": 1, "height": 1}],
+        },
+        headers=author,
+    )
+
+    res = await client.delete(f"/api/page48/posts/{post['postId']}", headers=author)
+    assert res.status_code == 200
+
+    # The cleanup runs as a background task; wait briefly for it to land.
+    deleted = storage_service.repository.delete_file
+    for _ in range(40):
+        if any(
+            call.args and call.args[0] == filename for call in deleted.await_args_list
+        ):
+            break
+        await asyncio.sleep(0.05)
+    assert any(
+        call.args and call.args[0] == filename for call in deleted.await_args_list
+    )
+
+
 # --------------------------------------------------------------------------- #
 # Social: like / repost / bookmark / report / follows
 # --------------------------------------------------------------------------- #

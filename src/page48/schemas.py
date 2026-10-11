@@ -111,6 +111,9 @@ class EditPostRequest(BaseModel):
     tags: list[str] = Field(default_factory=list)
     # None leaves the current spoiler flag untouched.
     isSpoiler: Optional[bool] = None
+    # None leaves the current media untouched; a list (even empty) replaces it.
+    images: Optional[list[ImageRef]] = None
+    videos: Optional[list[VideoRef]] = None
 
 
 class PostResponse(BaseModel):

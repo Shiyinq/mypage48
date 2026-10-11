@@ -18,9 +18,12 @@
 		/** When set, the composer publishes a quote of this post. */
 		quotedPost?: Page48Post | null;
 		onRemoveQuote?: () => void;
+		/** When set, the composer edits this post instead of publishing a new one. */
+		editingPost?: Page48Post | null;
+		onSaved?: (post: Page48Post) => void;
 	}
 
-	let { onClose, quotedPost = null, onRemoveQuote }: Props = $props();
+	let { onClose, quotedPost = null, onRemoveQuote, editingPost = null, onSaved }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -78,6 +81,50 @@
 		}
 	}
 
+	/** Save the edited post: upload any new files, keep the kept media, PATCH. */
+	async function handleEdit(draft: PostDraftInput) {
+		if (!editingPost) return;
+		try {
+			const newImages = draft.images.length > 0 ? await uploadPage48Images(draft.images) : [];
+			const newVideo = draft.video ? await uploadPage48Video(draft.video) : null;
+
+			const images = [
+				...(draft.existingImages ?? []).map((image) => ({
+					filename: image.filename,
+					width: image.width,
+					height: image.height
+				})),
+				...newImages
+			];
+			const videos = [
+				...(draft.existingVideo
+					? [
+							{
+								filename: draft.existingVideo.filename,
+								width: draft.existingVideo.width,
+								height: draft.existingVideo.height,
+								duration: draft.existingVideo.duration
+							}
+						]
+					: []),
+				...(newVideo ? [newVideo] : [])
+			];
+
+			const updated = await page48Api.editPost(editingPost.postId, draft.content.trim(), {
+				images,
+				videos,
+				isSpoiler: draft.isSpoiler ?? false
+			});
+			onSaved?.(updated);
+			showToast(t('page48.edit.success'), 'success');
+			onClose();
+		} catch (err: unknown) {
+			const e = err as { message?: string; detail?: string };
+			showToast(e?.detail || e?.message || t('page48.edit.error'), 'error');
+			throw err;
+		}
+	}
+
 	async function handleThread(drafts: PostDraftInput[]) {
 		try {
 			const items = [];
@@ -128,7 +175,11 @@
 			class="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-4 dark:border-white/10 sm:px-6"
 		>
 			<h2 class="text-[15px] font-bold text-gray-900 dark:text-gray-100">
-				{quotedPost ? t('page48.repostMenu.quote') : t('page48.composer.newPost')}
+				{editingPost
+					? t('page48.edit.title')
+					: quotedPost
+						? t('page48.repostMenu.quote')
+						: t('page48.composer.newPost')}
 			</h2>
 			<button
 				class="-mr-2 p-2 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer"
@@ -140,13 +191,22 @@
 		</div>
 
 		<div class="flex-1 overflow-y-auto overscroll-contain">
-			<PostComposer
-				onPost={handlePost}
-				onPostThread={quotedPost ? undefined : handleThread}
-				{quotedPost}
-				{onRemoveQuote}
-				autofocus
-			/>
+			{#if editingPost}
+				<PostComposer
+					{editingPost}
+					onEdit={handleEdit}
+					quotedPost={editingPost.quotedPost ?? null}
+					autofocus
+				/>
+			{:else}
+				<PostComposer
+					onPost={handlePost}
+					onPostThread={quotedPost ? undefined : handleThread}
+					{quotedPost}
+					{onRemoveQuote}
+					autofocus
+				/>
+			{/if}
 		</div>
 	</div>
 </div>

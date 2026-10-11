@@ -57,6 +57,7 @@ from src.page48.schemas import (
     CreateThreadResponse,
     EditPostRequest,
     FollowResponse,
+    ImageRef,
     MarkNotificationsReadResponse,
     MuteResponse,
     NotificationCountsResponse,
@@ -87,6 +88,7 @@ from src.page48.schemas import (
     ToggleResponse,
     TrendingTag,
     TrendingTagsResponse,
+    VideoRef,
     VideoUploadResponse,
 )
 from src.storage.service import StorageService
@@ -1171,6 +1173,84 @@ class Page48Service:
             logger.exception(f"Error uploading video: {str(e)}")
             raise VideoUploadError()
 
+    async def _validate_media(
+        self,
+        user_id: str,
+        images: List[ImageRef],
+        videos: List[VideoRef],
+    ) -> tuple[list, list]:
+        """Validate a post's media refs and shape them for storage.
+
+        Shared by create and edit. Every image must live under the uploader's own
+        prefix (an unvalidated ref would turn a public post into a signed-URL
+        oracle for arbitrary stored objects), and a post is either images or a
+        single video, never both.
+        """
+        image_prefix = f"page48/{user_id}/"
+        images_data = []
+        for ref in images:
+            filename = (ref.filename or "").strip()
+            if not filename.startswith(image_prefix) or ".." in filename:
+                raise InvalidImageError()
+            images_data.append(
+                {
+                    "filename": filename,
+                    "width": ref.width or 0,
+                    "height": ref.height or 0,
+                }
+            )
+
+        video_refs = list(videos or [])
+        if images_data and video_refs:
+            raise MediaConflictError()
+        if len(video_refs) > 1:
+            raise MaxVideoExceededError()
+
+        videos_data = []
+        for ref in video_refs:
+            # The object must live under the uploader's own prefix.
+            if not ref.filename.startswith(f"page48/{user_id}/"):
+                raise InvalidVideoError()
+            if not await self.storage_service.repository.file_exists(ref.filename):
+                raise InvalidVideoError()
+            videos_data.append(
+                {
+                    "filename": ref.filename,
+                    "width": ref.width or 0,
+                    "height": ref.height or 0,
+                    "duration": ref.duration or 0.0,
+                }
+            )
+
+        return images_data, videos_data
+
+    async def _cleanup_media(self, filenames: List[str]) -> None:
+        """Remove media objects from storage, best effort (no ghost files).
+
+        Runs off the request path, and deletes the files in parallel: each
+        `delete_image` is independent (and already deletes that image's variants
+        with its own `asyncio.gather`).
+        """
+        if not filenames:
+            return
+
+        async def delete_one(filename: str) -> None:
+            try:
+                await self.storage_service.delete_image(filename)
+            except Exception as e:
+                logger.warning(f"Failed to delete media {filename}: {e}")
+
+        await asyncio.gather(*(delete_one(name) for name in filenames))
+
+    def _queue_media_cleanup(self, filenames: List[str]) -> None:
+        """Delete dropped media off the request path."""
+        if not filenames:
+            return
+        if self.background_tasks:
+            self.background_tasks.add_task(self._cleanup_media, filenames)
+        else:
+            asyncio.ensure_future(self._cleanup_media(filenames))
+
     async def _build_post_document(
         self,
         data: Union[CreatePostRequest, ThreadPostItem],
@@ -1214,42 +1294,9 @@ class Page48Service:
         # unvalidated reference would turn a public post into a signed-URL
         # oracle for arbitrary stored objects (other users' files, other
         # services) and let external/data: URLs into the feed.
-        image_prefix = f"page48/{user.userId}/"
-        images_data = []
-        for ref in data.images:
-            filename = (ref.filename or "").strip()
-            if not filename.startswith(image_prefix) or ".." in filename:
-                raise InvalidImageError()
-            images_data.append(
-                {
-                    "filename": filename,
-                    "width": ref.width or 0,
-                    "height": ref.height or 0,
-                }
-            )
-        video_refs = data.videos or []
-
-        # A post is either images or a single video, never both.
-        if images_data and video_refs:
-            raise MediaConflictError()
-        if len(video_refs) > 1:
-            raise MaxVideoExceededError()
-
-        videos_data = []
-        for ref in video_refs:
-            # The object must live under the uploader's own prefix.
-            if not ref.filename.startswith(f"page48/{user.userId}/"):
-                raise InvalidVideoError()
-            if not await self.storage_service.repository.file_exists(ref.filename):
-                raise InvalidVideoError()
-            videos_data.append(
-                {
-                    "filename": ref.filename,
-                    "width": ref.width or 0,
-                    "height": ref.height or 0,
-                    "duration": ref.duration or 0.0,
-                }
-            )
+        images_data, videos_data = await self._validate_media(
+            user.userId, data.images, data.videos or []
+        )
 
         tags = self._extract_tags(data.content, data.tags)
 
@@ -2076,7 +2123,26 @@ class Page48Service:
         # None means "leave the spoiler flag as it is".
         if data.isSpoiler is not None:
             update["isSpoiler"] = data.isSpoiler
+
+        # None means "leave the media as it is"; a list (even empty) replaces it.
+        removed_media: List[str] = []
+        if data.images is not None or data.videos is not None:
+            old_media = [*(post.get("images") or []), *(post.get("videos") or [])]
+            images_data, videos_data = await self._validate_media(
+                user_id, data.images or [], data.videos or []
+            )
+            # A poll post cannot gain media: that would be two attachments.
+            if post.get("poll") and (images_data or videos_data):
+                raise PollMediaConflictError()
+            update["images"] = images_data
+            update["videos"] = videos_data
+            kept = {item["filename"] for item in [*images_data, *videos_data]}
+            removed_media = [
+                item["filename"] for item in old_media if item["filename"] not in kept
+            ]
+
         await self.repository.update_post(post_id, update)
+        self._queue_media_cleanup(removed_media)
 
         updated = await self.repository.get_post_by_id(post_id)
         enriched = await self._enrich_posts([updated], user_id)
@@ -2336,8 +2402,15 @@ class Page48Service:
                 # The continuation now answers what the deleted post answered.
                 await self.repository.increment_post_stats(parent_id, "replyCount", 1)
 
+        media = [
+            item["filename"]
+            for item in [*(post.get("images") or []), *(post.get("videos") or [])]
+        ]
+
         await self.repository.delete_post(post_id)
         await self.repository.delete_poll_votes(post_id)
+        # Drop the post's media too, so deleting never leaves ghost files.
+        self._queue_media_cleanup(media)
 
         if post.get("parentPostId"):
             await self.repository.increment_post_stats(

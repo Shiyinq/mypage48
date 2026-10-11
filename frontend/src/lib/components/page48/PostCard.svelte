@@ -13,7 +13,6 @@
 	import SpoilerText from '$lib/components/page48/SpoilerText.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
-	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
 	import { portal } from '$lib/actions/portal';
@@ -177,6 +176,8 @@
 	function handleEditSaved(updated: Page48Post) {
 		post.content = updated.content;
 		post.tags = updated.tags;
+		post.images = updated.images;
+		post.videos = updated.videos;
 		post.isSpoiler = updated.isSpoiler;
 		post.isEdited = updated.isEdited;
 		post.updatedAt = updated.updatedAt;
@@ -656,7 +657,11 @@
 	{/if}
 
 	{#if showEdit}
-		<EditPostModal {post} onClose={() => (showEdit = false)} onSaved={handleEditSaved} />
+		<PostComposerModal
+			editingPost={post}
+			onClose={() => (showEdit = false)}
+			onSaved={handleEditSaved}
+		/>
 	{/if}
 
 	{#if showDelete}

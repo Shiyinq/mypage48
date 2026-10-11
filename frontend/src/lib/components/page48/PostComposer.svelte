@@ -16,7 +16,7 @@
 	import MentionSuggestions from '$lib/components/page48/MentionSuggestions.svelte';
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import PostEmbedView from '$lib/components/page48/PostEmbedView.svelte';
-	import { page48Api, type Page48Post } from '$lib/api/page48';
+	import { page48Api, type Page48Image, type Page48Post, type Page48Video } from '$lib/api/page48';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -43,7 +43,8 @@
 	const { t } = useTranslation();
 
 	interface Props {
-		onPost: (
+		/** Publish a new post. Omitted in edit mode. */
+		onPost?: (
 			content: string,
 			images: File[],
 			video: VideoDraft | null,
@@ -53,6 +54,10 @@
 		) => Promise<void>;
 		/** Only provided where threads make sense (the feed, not the reply composer). */
 		onPostThread?: (drafts: PostDraftInput[]) => Promise<void>;
+		/** Seed the composer with an existing post and save edits instead. */
+		editingPost?: Page48Post | null;
+		/** Save an edit (edit mode). */
+		onEdit?: (draft: PostDraftInput) => Promise<void>;
 		isReply?: boolean;
 		placeholder?: string;
 		/** Focus the textarea on mount (e.g. when the composer is opened in a modal). */
@@ -70,6 +75,8 @@
 	let {
 		onPost,
 		onPostThread,
+		editingPost = null,
+		onEdit,
 		isReply = false,
 		placeholder,
 		autofocus = false,
@@ -77,6 +84,9 @@
 		onRemoveQuote,
 		mentionCandidates = []
 	}: Props = $props();
+
+	/** Edit mode: same composer, but it saves an existing post. */
+	let editing = $derived(!!editingPost);
 
 	let resolvedPlaceholder = $derived(placeholder ?? t('page48.composer.placeholder'));
 
@@ -94,17 +104,25 @@
 	const CONTENT_TEXT_CLASS =
 		'text-[17px] sm:text-[20px] leading-relaxed whitespace-pre-wrap break-words';
 
-	let content = $state('');
+	// In edit mode these are seeded once from the post being edited.
+	// svelte-ignore state_referenced_locally
+	let content = $state(editingPost?.content ?? '');
 	let images = $state<File[]>([]);
 	let imagePreviews = $state<string[]>([]);
 	let video = $state<VideoDraft | null>(null);
 	let videoPreview = $state<string | null>(null);
+	/** Media already on the post, kept unless removed (seeded in edit mode). */
+	// svelte-ignore state_referenced_locally
+	let existingImages = $state<Page48Image[]>(editingPost?.images ?? []);
+	// svelte-ignore state_referenced_locally
+	let existingVideo = $state<Page48Video | null>(editingPost?.videos?.[0] ?? null);
 	let probing = $state(false);
 	let isSubmitting = $state(false);
 	let emojiOpen = $state(false);
 	let pollOpen = $state(false);
 	/** Mark the active draft as a spoiler (each thread item carries its own flag). */
-	let spoilerOn = $state(false);
+	// svelte-ignore state_referenced_locally
+	let spoilerOn = $state(editingPost?.isSpoiler ?? false);
 	/** Reply mode hides the tool row until the user engages the composer. */
 	let composerActive = $state(false);
 	let pollOptions = $state<string[]>(['', '']);
@@ -131,8 +149,12 @@
 	// modal is portalled (its node is moved to <body> right after mount), and moving a
 	// node in the DOM blurs anything focused inside it during that same mount pass.
 	onMount(() => {
-		if (!autofocus) return;
-		requestAnimationFrame(() => textareaEl?.focus());
+		// Grow once for any seeded content (edit mode), and focus if requested.
+		requestAnimationFrame(() => {
+			if (!textareaEl) return;
+			autoGrow(textareaEl);
+			if (autofocus) textareaEl.focus();
+		});
 	});
 
 	function autoGrow(el: HTMLTextAreaElement) {
@@ -323,6 +345,15 @@
 		imagePreviews = imagePreviews.filter((_, i) => i !== index);
 	}
 
+	/** Drop one of the post's existing photos (removed from storage on save). */
+	function removeExistingImage(index: number) {
+		existingImages = existingImages.filter((_, i) => i !== index);
+	}
+
+	function clearExistingVideo() {
+		existingVideo = null;
+	}
+
 	async function handleVideoSelect(e: Event) {
 		const target = e.target as HTMLInputElement;
 		const file = target.files?.[0];
@@ -384,7 +415,9 @@
 			video,
 			poll: pollOpen ? { options: pollDraft } : null,
 			quotedPostId: quote?.postId ?? null,
-			isSpoiler: spoilerOn
+			isSpoiler: spoilerOn,
+			existingImages: [...existingImages],
+			existingVideo
 		};
 	}
 
@@ -393,6 +426,8 @@
 			draft.content.trim().length > 0 ||
 			draft.images.length > 0 ||
 			!!draft.video ||
+			(draft.existingImages?.length ?? 0) > 0 ||
+			!!draft.existingVideo ||
 			(!!draft.poll && draft.poll.options.length >= POLL_MIN_OPTIONS) ||
 			!!draft.quotedPostId
 		);
@@ -404,6 +439,8 @@
 		imagePreviews.forEach(URL.revokeObjectURL);
 		imagePreviews = [];
 		clearVideo();
+		existingImages = [];
+		existingVideo = null;
 		closePoll();
 		spoilerOn = false;
 		quoteOverride = undefined;
@@ -471,6 +508,8 @@
 	 * the text and the post is fetched for the preview.
 	 */
 	async function handlePaste(event: ClipboardEvent) {
+		// An edit keeps its original quote; pasting a link must not change it.
+		if (editing) return;
 		const text = event.clipboardData?.getData('text') ?? '';
 		const taken = takeQuotedPostLink(text);
 		if (!taken) return;
@@ -509,7 +548,24 @@
 	let pollReady = $derived(!pollOpen || pollDraft.length >= POLL_MIN_OPTIONS);
 
 	async function handleSubmit() {
-		if (!pollReady || isSubmitting) return;
+		if (isSubmitting) return;
+
+		// Edit mode: save this single post instead of publishing a new one.
+		if (editing) {
+			const draft = currentDraft();
+			if (!draftHasContent(draft)) return;
+			try {
+				isSubmitting = true;
+				await onEdit?.(draft);
+			} catch (error) {
+				console.error(error);
+			} finally {
+				isSubmitting = false;
+			}
+			return;
+		}
+
+		if (!pollReady) return;
 
 		const drafts = [...threadItems];
 		const active = currentDraft();
@@ -526,7 +582,7 @@
 				await onPostThread?.(drafts);
 			} else {
 				const [only] = drafts;
-				await onPost(
+				await onPost?.(
 					only.content,
 					only.images,
 					only.video,
@@ -573,11 +629,13 @@
 		{#if isSubmitting}
 			<Loader2 size={16} class="animate-spin" />
 		{/if}
-		{isThread
-			? t('page48.thread.publish')
-			: isReply
-				? t('page48.composer.reply')
-				: t('page48.composer.submit')}
+		{editing
+			? t('page48.edit.save')
+			: isThread
+				? t('page48.thread.publish')
+				: isReply
+					? t('page48.composer.reply')
+					: t('page48.composer.submit')}
 	</button>
 {/snippet}
 
@@ -756,9 +814,24 @@
 			</div>
 		{/if}
 
-		<!-- Image Previews -->
-		{#if imagePreviews.length > 0}
+		<!-- Image Previews (the post's own photos + newly picked) -->
+		{#if existingImages.length > 0 || imagePreviews.length > 0}
 			<div class="flex gap-2 mt-2 mb-2 overflow-x-auto pb-2 snap-x" in:fade>
+				{#each existingImages as image, i}
+					<div class="relative shrink-0 snap-start">
+						<img
+							src={image.url_small || image.url_medium || image.url}
+							alt={t('page48.composer.previewAlt')}
+							class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
+						/>
+						<button
+							class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
+							onclick={() => removeExistingImage(i)}
+						>
+							<X size={14} />
+						</button>
+					</div>
+				{/each}
 				{#each imagePreviews as preview, i}
 					<div class="relative shrink-0 snap-start">
 						<img
@@ -777,11 +850,11 @@
 			</div>
 		{/if}
 
-		<!-- Video Preview -->
-		{#if videoPreview}
+		<!-- Video Preview (the post's own video or a newly picked one) -->
+		{#if videoPreview || existingVideo}
 			<div class="relative mt-2 mb-2 w-full max-w-[320px]" in:fade>
 				<video
-					src={videoPreview}
+					src={videoPreview ?? existingVideo?.url ?? ''}
 					controls
 					playsinline
 					muted
@@ -789,7 +862,7 @@
 				></video>
 				<button
 					class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
-					onclick={clearVideo}
+					onclick={() => (videoPreview ? clearVideo() : clearExistingVideo())}
 					aria-label={t('page48.composer.removeVideo')}
 				>
 					<X size={14} />
@@ -799,7 +872,7 @@
 
 		<!-- Quoted post being replied to by this composer -->
 		{#if quote}
-			<QuotedPostCard post={quote} removable onRemove={removeQuote} />
+			<QuotedPostCard post={quote} removable={!editing} onRemove={removeQuote} />
 		{/if}
 
 		{#if showToolRow}
@@ -810,8 +883,9 @@
 					<button
 						class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
 						onclick={() => fileInput?.click()}
-						disabled={images.length >= PAGE48_MAX_IMAGES ||
+						disabled={images.length + existingImages.length >= PAGE48_MAX_IMAGES ||
 							!!video ||
+							!!existingVideo ||
 							probing ||
 							isSubmitting ||
 							pollOpen}
@@ -832,7 +906,13 @@
 					<button
 						class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
 						onclick={() => videoInput?.click()}
-						disabled={!!video || images.length > 0 || probing || isSubmitting || pollOpen}
+						disabled={!!video ||
+							!!existingVideo ||
+							images.length > 0 ||
+							existingImages.length > 0 ||
+							probing ||
+							isSubmitting ||
+							pollOpen}
 						title={t('page48.composer.addVideo')}
 					>
 						{#if probing}
@@ -865,8 +945,8 @@
 						<Smile size={20} class="group-hover:scale-110 transition-transform" />
 					</button>
 
-					<!-- Poll (not available on replies or quotes) -->
-					{#if !isReply && !quotedPost}
+					<!-- Poll (not available on replies, quotes or edits) -->
+					{#if !isReply && !quotedPost && !editing}
 						<button
 							class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
 								pollOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'

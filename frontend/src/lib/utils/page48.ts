@@ -1,4 +1,10 @@
-import { page48Api, type Page48Image, type Page48ImageRef, type Page48Post } from '$lib/api/page48';
+import {
+	page48Api,
+	type Page48Image,
+	type Page48ImageRef,
+	type Page48Post,
+	type Page48Video
+} from '$lib/api/page48';
 import { storageApi } from '$lib/apis/storage';
 import { showToast } from '$lib/stores/toast.svelte';
 import { locale, t } from '$lib/i18n';
@@ -31,6 +37,9 @@ export interface PostDraftInput {
 	quotedPostId?: string | null;
 	/** Hide this post's content behind a spoiler gate until the reader opts in. */
 	isSpoiler?: boolean;
+	/** Media already on the post, kept unless removed (edit mode). */
+	existingImages?: Page48Image[];
+	existingVideo?: Page48Video | null;
 }
 
 /** Aspect ratio (width / height) of an image; falls back to 16:9 when unknown. */
