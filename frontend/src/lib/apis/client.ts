@@ -84,7 +84,8 @@ export async function client<T>(
 		'/page48/feed',
 		'/page48/posts/',
 		'/page48/users/',
-		'/page48/tags/'
+		'/page48/tags/',
+		'/link/resolve'
 	];
 
 	const isPublic = publicEndpoints.some((p) => endpoint.startsWith(p));

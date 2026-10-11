@@ -32,6 +32,8 @@ from src.health.repository import HealthRepository
 from src.health.service import HealthService
 from src.http_exceptions import AdminRequired
 from src.infrastructure import AsyncBackgroundRunner
+from src.link_resolver.repository import LinkResolverRepository
+from src.link_resolver.service import LinkResolverService
 from src.live.service import LiveService
 from src.live_history.repository import LiveHistoryRepository
 from src.live_history.service import LiveHistoryService
@@ -87,6 +89,14 @@ def get_storage_service(
     config: Settings = Depends(get_settings),
 ) -> StorageService:
     return StorageService(repo, config)
+
+
+# Shared so the in-memory resolution cache survives across requests.
+_link_resolver_repository = LinkResolverRepository()
+
+
+def get_link_resolver_service() -> LinkResolverService:
+    return LinkResolverService(_link_resolver_repository)
 
 
 def get_api_key_repository(db=Depends(get_db)) -> ApiKeyRepository:

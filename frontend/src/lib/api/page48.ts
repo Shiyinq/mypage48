@@ -410,6 +410,18 @@ export const page48Api = {
 		return client<Page48Post>(`/page48/posts/${postId}`);
 	},
 
+	/**
+	 * Resolve an allow-listed short link (TikTok/Spotify) to its canonical URL, so the
+	 * post can embed the real media instead of just showing a link.
+	 */
+	resolveShortLink: async (url: string): Promise<string> => {
+		const result = await client<{ url: string }>('/link/resolve', {
+			method: 'POST',
+			body: { url }
+		});
+		return result.url;
+	},
+
 	getThread: async (postId: string): Promise<ThreadResponse> => {
 		return client<ThreadResponse>(`/page48/posts/${postId}/thread`);
 	},

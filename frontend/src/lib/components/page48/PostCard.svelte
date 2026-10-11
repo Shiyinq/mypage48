@@ -13,7 +13,7 @@
 	import InstagramEmbed from '$lib/components/page48/InstagramEmbed.svelte';
 	import InstagramStoryCard from '$lib/components/page48/InstagramStoryCard.svelte';
 	import TikTokEmbed from '$lib/components/page48/TikTokEmbed.svelte';
-	import TikTokLinkCard from '$lib/components/page48/TikTokLinkCard.svelte';
+	import ShortLinkEmbed from '$lib/components/page48/ShortLinkEmbed.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
@@ -489,7 +489,7 @@
 						class="pointer-events-auto"
 					/>
 				{:else}
-					<TikTokLinkCard url={postEmbed.url} class="pointer-events-auto mx-auto max-w-[540px]" />
+					<ShortLinkEmbed url={postEmbed.url} class="pointer-events-auto mx-auto max-w-[540px]" />
 				{/if}
 			</div>
 		{/if}

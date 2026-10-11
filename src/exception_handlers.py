@@ -85,6 +85,8 @@ from src.feedback.http_exceptions import (
 from src.feedback.http_exceptions import FeedbackNotFound as HttpFeedbackNotFound
 from src.feedback.http_exceptions import FeedbackUpdateFailed
 from src.http_exceptions import DetailedHTTPException
+from src.link_resolver.exceptions import InvalidLinkError, LinkResolveError
+from src.link_resolver.http_exceptions import InvalidLink, LinkResolveFailed
 from src.live.exceptions import (
     CommentsFetchError,
     FetchIdnError,
@@ -600,6 +602,12 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, CannotMuteSelf())
     if isinstance(exc, TooManyRelationsError):
         return await detailed_http_exception_handler(request, TooManyRelations())
+
+    # Link resolver errors
+    if isinstance(exc, InvalidLinkError):
+        return await detailed_http_exception_handler(request, InvalidLink())
+    if isinstance(exc, LinkResolveError):
+        return await detailed_http_exception_handler(request, LinkResolveFailed())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

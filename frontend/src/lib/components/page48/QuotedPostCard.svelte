@@ -9,7 +9,7 @@
 	import InstagramEmbed from '$lib/components/page48/InstagramEmbed.svelte';
 	import InstagramStoryCard from '$lib/components/page48/InstagramStoryCard.svelte';
 	import TikTokEmbed from '$lib/components/page48/TikTokEmbed.svelte';
-	import TikTokLinkCard from '$lib/components/page48/TikTokLinkCard.svelte';
+	import ShortLinkEmbed from '$lib/components/page48/ShortLinkEmbed.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
@@ -205,7 +205,7 @@
 					{:else if postEmbed.type === 'tiktok'}
 						<TikTokEmbed videoId={postEmbed.videoId} kind={postEmbed.kind} maxWidth={280} />
 					{:else}
-						<TikTokLinkCard url={postEmbed.url} class="max-w-[540px]" />
+						<ShortLinkEmbed url={postEmbed.url} class="max-w-[540px]" />
 					{/if}
 				</div>
 			{/if}

@@ -10,6 +10,7 @@ from src.events.route import router as events_router
 from src.export.router import router as export_router
 from src.feedback.route import router as feedback_router
 from src.health.route import router as health_router
+from src.link_resolver.route import router as link_resolver_router
 from src.live.route import router as live_router
 from src.live_history.route import router as live_history_router
 from src.llm.route import router as llm_router
@@ -55,3 +56,4 @@ router.include_router(playground_router, prefix="/playground", tags=["Playground
 router.include_router(replay_router, tags=["Replay"])
 router.include_router(concerts_router, prefix="/theater/concerts", tags=["Concerts"])
 router.include_router(page48_router, prefix="/page48", tags=["Page48"])
+router.include_router(link_resolver_router, prefix="/link", tags=["Link Resolver"])
