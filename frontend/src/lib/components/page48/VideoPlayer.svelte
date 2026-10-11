@@ -18,6 +18,8 @@
 		 * copy of itself (TikTok-style), instead of cropping it.
 		 */
 		immersive?: boolean;
+		/** Fill the parent box instead of sizing by the video's ratio (carousel slide). */
+		fill?: boolean;
 		class?: string;
 	}
 
@@ -30,6 +32,7 @@
 		controls = true,
 		maxHeight = 0,
 		immersive = false,
+		fill = false,
 		class: klass = ''
 	}: Props = $props();
 
@@ -51,7 +54,7 @@
 
 	// With a height cap, constrain the width instead so the box stays centered.
 	let wrapperStyle = $derived(
-		immersive
+		fill || immersive
 			? ''
 			: maxHeight > 0
 				? `aspect-ratio: ${clampedRatio}; max-width: ${Math.round(maxHeight * clampedRatio)}px`
@@ -124,7 +127,7 @@
 
 <div
 	bind:this={wrapperEl}
-	class={`relative w-full ${!immersive && maxHeight > 0 ? 'mx-auto' : ''} bg-gray-100 dark:bg-zinc-800 ${immersive ? '' : 'rounded-2xl'} overflow-hidden group/vid ${klass}`}
+	class={`relative w-full ${!immersive && !fill && maxHeight > 0 ? 'mx-auto' : ''} bg-gray-100 dark:bg-zinc-800 ${immersive || fill ? '' : 'rounded-2xl'} overflow-hidden group/vid ${klass}`}
 	style={wrapperStyle}
 >
 	{#if immersive}

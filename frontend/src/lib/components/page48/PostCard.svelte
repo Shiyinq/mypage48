@@ -512,12 +512,7 @@
 
 			<!-- Post media: photos (one inline, several as a carousel) and video -->
 			{#if !hideMedia}
-				<PostMedia
-					images={post.images ?? []}
-					videos={post.videos ?? []}
-					bind:index={lightboxIndex}
-					onOpen={openLightbox}
-				/>
+				<PostMedia media={post.media ?? []} bind:index={lightboxIndex} onOpen={openLightbox} />
 			{/if}
 
 			<!-- Embeddable link (YouTube/X/Instagram/TikTok/Spotify): lite, click-to-load -->

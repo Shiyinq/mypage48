@@ -89,7 +89,15 @@ export function imageRatio(image: Page48Image): number {
  * Mutates the passed items, so the caller can rely on `imageRatio()` afterwards.
  * Returns a cleanup function for use inside an effect.
  */
-export function measureMissingImageSizes(images: Page48Image[]): () => void {
+export interface MeasurableImage {
+	width?: number | null;
+	height?: number | null;
+	url?: string | null;
+	url_medium?: string | null;
+	url_small?: string | null;
+}
+
+export function measureMissingImageSizes(images: MeasurableImage[]): () => void {
 	let cancelled = false;
 
 	for (const image of images) {
@@ -120,6 +128,22 @@ export function measureMissingImageSizes(images: Page48Image[]): () => void {
  */
 export function carouselRatio(images: Page48Image[]): number {
 	const ratios = images.map(imageRatio).filter((ratio) => ratio > 0);
+	if (ratios.length === 0) return 16 / 9;
+
+	const logMean = ratios.reduce((sum, ratio) => sum + Math.log(ratio), 0) / ratios.length;
+
+	return Math.min(Math.max(Math.exp(logMean), 9 / 16), 16 / 9);
+}
+
+/** Aspect ratio of one media item; a video is clamped to a sane portrait/landscape. */
+export function mediaRatio(item: Page48MediaItem): number {
+	const raw = item.width && item.height ? item.width / item.height : 16 / 9;
+	return item.type === 'video' ? Math.min(Math.max(raw, 9 / 16), 16 / 9) : raw;
+}
+
+/** Reference ratio for a mixed carousel: the geometric mean of its media. */
+export function carouselMediaRatio(media: Page48MediaItem[]): number {
+	const ratios = media.map(mediaRatio).filter((ratio) => ratio > 0);
 	if (ratios.length === 0) return 16 / 9;
 
 	const logMean = ratios.reduce((sum, ratio) => sum + Math.log(ratio), 0) / ratios.length;

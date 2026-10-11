@@ -12,6 +12,7 @@
 	} from 'lucide-svelte';
 	import type { Page48Post } from '$lib/api/page48';
 	import PostDetailContent from '$lib/components/page48/PostDetailContent.svelte';
+	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
 	import { viewportStore } from '$lib/stores/viewport.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -30,8 +31,9 @@
 	let index = $state(0);
 	/** Whether the post + comments pane is shown; toggled from the top-right corner. */
 	let detailVisible = $state(true);
-	let images = $derived(post.images ?? []);
-	let currentUrl = $derived(images[index]?.url ?? '');
+	let media = $derived(post.media ?? []);
+	let current = $derived(media[index] ?? null);
+	let currentUrl = $derived(current?.type === 'image' ? (current.url ?? '') : '');
 
 	/** The detail pane only exists where there is room for it; mobile shows the photo alone. */
 	let showDetailPane = $derived(viewportStore.isWide && detailVisible);
@@ -50,7 +52,7 @@
 	});
 
 	function goTo(next: number) {
-		index = Math.max(0, Math.min(next, images.length - 1));
+		index = Math.max(0, Math.min(next, media.length - 1));
 	}
 
 	/** Same behaviour as the single-image lightbox: save the shown photo. */
@@ -109,7 +111,19 @@
 			<!-- Clicking the empty space around the photo closes the viewer. -->
 			<div class="absolute inset-0" onclick={onClose} role="presentation"></div>
 
-			{#if currentUrl}
+			{#if current?.type === 'video'}
+				<div class="relative max-h-[94vh] w-full max-w-[min(94vw,520px)]">
+					<VideoPlayer
+						src={current.url ?? ''}
+						width={current.width}
+						height={current.height}
+						maxHeight={760}
+						autoplay
+						controls
+						class="pointer-events-auto"
+					/>
+				</div>
+			{:else if currentUrl}
 				<img
 					src={currentUrl}
 					alt={t('page48.aria.media')}
@@ -127,21 +141,23 @@
 				>
 					<X class="h-5 w-5" />
 				</button>
-				{#if images.length > 1}
+				{#if media.length > 1}
 					<span
 						class="rounded-full border border-white/10 bg-zinc-900/80 px-3 py-1.5 font-mono text-xs font-bold tabular-nums text-white backdrop-blur-md"
 					>
-						{index + 1} / {images.length}
+						{index + 1} / {media.length}
 					</span>
 				{/if}
-				<button
-					class="flex cursor-pointer items-center rounded-full border border-white/10 bg-zinc-900/80 p-2.5 text-white backdrop-blur-md transition-colors hover:bg-zinc-800"
-					onclick={downloadImage}
-					aria-label={t('page48.mediaViewer.download')}
-					title={t('page48.mediaViewer.download')}
-				>
-					<Download class="h-5 w-5" />
-				</button>
+				{#if current?.type === 'image'}
+					<button
+						class="flex cursor-pointer items-center rounded-full border border-white/10 bg-zinc-900/80 p-2.5 text-white backdrop-blur-md transition-colors hover:bg-zinc-800"
+						onclick={downloadImage}
+						aria-label={t('page48.mediaViewer.download')}
+						title={t('page48.mediaViewer.download')}
+					>
+						<Download class="h-5 w-5" />
+					</button>
+				{/if}
 			</div>
 
 			<!-- Toggle the post + comments pane (wide screens only) -->
@@ -162,7 +178,7 @@
 				</div>
 			{/if}
 
-			{#if images.length > 1}
+			{#if media.length > 1}
 				<button
 					class="absolute left-4 top-1/2 -translate-y-1/2 cursor-pointer rounded-full border border-white/10 bg-zinc-900/80 p-2.5 text-white backdrop-blur-md transition-all hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-20"
 					onclick={() => goTo(index - 1)}
@@ -174,7 +190,7 @@
 				<button
 					class="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer rounded-full border border-white/10 bg-zinc-900/80 p-2.5 text-white backdrop-blur-md transition-all hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-20"
 					onclick={() => goTo(index + 1)}
-					disabled={index >= images.length - 1}
+					disabled={index >= media.length - 1}
 					aria-label={t('page48.aria.nextImage')}
 				>
 					<ChevronRight class="h-6 w-6" />

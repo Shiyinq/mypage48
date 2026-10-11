@@ -1,49 +1,40 @@
 <script lang="ts">
-	import type { Page48Image, Page48Video } from '$lib/api/page48';
+	import type { Page48MediaItem } from '$lib/api/page48';
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
-	import PostImageCarousel from '$lib/components/page48/PostImageCarousel.svelte';
+	import PostMediaCarousel from '$lib/components/page48/PostMediaCarousel.svelte';
 	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
-	import { imageRatio, measureMissingImageSizes } from '$lib/utils/page48';
+	import { measureMissingImageSizes, mediaRatio } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
-		images?: Page48Image[];
-		videos?: Page48Video[];
+		/** Ordered media (images and videos mixed); empty renders nothing. */
+		media?: Page48MediaItem[];
 		/** Opens the media viewer at this index. Omit to render the media read-only. */
 		onOpen?: (index: number) => void;
 		/** Carousel position, shared with the caller's media viewer. */
 		index?: number;
 	}
 
-	let { images = [], videos = [], onOpen, index = $bindable(0) }: Props = $props();
+	let { media = [], onOpen, index = $bindable(0) }: Props = $props();
 
 	const { t } = useTranslation();
 
-	// A lone photo may not get taller than this; the box is capped by width
-	// instead (see below) so its ratio always matches the photo.
+	// A lone photo may not get taller than this; the box is capped by width instead.
 	const IMAGE_MAX_HEIGHT = 500;
 
-	// Older posts stored no dimensions; measure the photo in the browser instead.
+	// Older posts stored no dimensions; measure the photos in the browser instead.
 	$effect(() => {
+		const images = media.filter((item) => item.type === 'image');
 		if (images.length) return measureMissingImageSizes(images);
-	});
-
-	let singleImageRatio = $derived(images.length === 1 ? imageRatio(images[0]) : 16 / 9);
-
-	// Only a video that actually has a URL can play; the stored one is nullable.
-	let video = $derived.by(() => {
-		const found = videos.find((item) => item.url);
-		if (!found?.url) return null;
-		return { url: found.url, width: found.width, height: found.height };
 	});
 </script>
 
-{#snippet photo(image: Page48Image)}
+{#snippet photo(item: Page48MediaItem)}
 	<OptimizedImage
-		src={image.url}
-		srcMedium={image.url_medium}
-		srcSmall={image.url_small}
-		blurHash={image.blurHash}
+		src={item.url}
+		srcMedium={item.url_medium}
+		srcSmall={item.url_small}
+		blurHash={item.blurHash}
 		alt={t('page48.aria.media')}
 		class="w-full h-full object-cover"
 		objectFit="cover"
@@ -51,55 +42,47 @@
 	/>
 {/snippet}
 
-<!-- Images: a single one inline, several as a swipeable carousel. The wrapper is
-     decoration so the empty margins beside a centred photo still open the card; the
-     media itself opts back in. -->
-{#if images.length > 0}
+{#if media.length === 1 && media[0].type === 'image'}
+	{@const ratio = mediaRatio(media[0])}
+	{@const box =
+		'relative mx-auto block w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 dark:border-white/5 dark:bg-zinc-800'}
+	{@const boxStyle = `aspect-ratio: ${ratio}; max-width: min(100%, ${Math.round(
+		IMAGE_MAX_HEIGHT * ratio
+	)}px);`}
+	<!-- Keep the photo's own ratio and cap the box by width, so it fills exactly. -->
 	<div class="pointer-events-none relative z-[1] mt-3">
-		{#if images.length === 1}
-			{@const image = images[0]}
-			{@const box =
-				'relative mx-auto block w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 dark:border-white/5 dark:bg-zinc-800'}
-			{@const boxStyle = `aspect-ratio: ${singleImageRatio}; max-width: min(100%, ${Math.round(
-				IMAGE_MAX_HEIGHT * singleImageRatio
-			)}px);`}
-			<!-- Same trick as VideoPlayer: keep the photo's own ratio and cap the box by
-			     width, so the photo fills it exactly (no crop, no letterbox bars). -->
-			{#if onOpen}
-				<button
-					type="button"
-					class={`pointer-events-auto cursor-zoom-in ${box}`}
-					style={boxStyle}
-					onclick={() => onOpen(0)}
-					aria-label={t('page48.aria.viewImage', { index: 1, total: 1 })}
-				>
-					{@render photo(image)}
-				</button>
-			{:else}
-				<div class={`pointer-events-auto ${box}`} style={boxStyle}>
-					{@render photo(image)}
-				</div>
-			{/if}
+		{#if onOpen}
+			<button
+				type="button"
+				class={`pointer-events-auto cursor-zoom-in ${box}`}
+				style={boxStyle}
+				onclick={() => onOpen(0)}
+				aria-label={t('page48.aria.viewImage', { index: 1, total: 1 })}
+			>
+				{@render photo(media[0])}
+			</button>
 		{:else}
-			<!-- Not interactive itself: the empty space beside the slides has to fall
-			     through to the card, so only the slides and arrows opt in. -->
-			<div class="pointer-events-none">
-				<PostImageCarousel {images} bind:index onOpen={(i) => onOpen?.(i)} />
+			<div class={`pointer-events-auto ${box}`} style={boxStyle}>
+				{@render photo(media[0])}
 			</div>
 		{/if}
 	</div>
-{/if}
-
-<!-- Video (single, X/Twitter style: click to play) -->
-{#if video}
+{:else if media.length === 1 && media[0].type === 'video'}
 	<div class="pointer-events-none relative z-[1] mt-3">
 		<VideoPlayer
-			src={video.url}
-			width={video.width}
-			height={video.height}
+			src={media[0].url ?? ''}
+			width={media[0].width}
+			height={media[0].height}
 			maxHeight={510}
 			controls
 			class="pointer-events-auto"
 		/>
+	</div>
+{:else if media.length > 1}
+	<!-- Mixed or multiple: a swipeable carousel; photo slides open the viewer. -->
+	<div class="pointer-events-none relative z-[1] mt-3">
+		<div class="pointer-events-none">
+			<PostMediaCarousel {media} bind:index onOpen={(i) => onOpen?.(i)} />
+		</div>
 	</div>
 {/if}

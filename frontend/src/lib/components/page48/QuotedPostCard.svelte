@@ -190,8 +190,7 @@
 				<PostPoll {post} {interactive} />
 
 				<PostMedia
-					images={post.images ?? []}
-					videos={post.videos ?? []}
+					media={post.media ?? []}
 					bind:index={lightboxIndex}
 					onOpen={interactive ? openLightbox : undefined}
 				/>
