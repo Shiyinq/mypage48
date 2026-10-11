@@ -1977,6 +1977,8 @@
 		},
 		"aria": {
 			"profile": "Profile",
+			"profilePhoto": "Profile photo",
+			"banner": "Profile banner",
 			"openPost": "Open post",
 			"more": "More options",
 			"like": "Like",

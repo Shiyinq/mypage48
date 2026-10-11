@@ -1981,6 +1981,8 @@
 		},
 		"aria": {
 			"profile": "Profil",
+			"profilePhoto": "Foto profil",
+			"banner": "Banner profil",
 			"openPost": "Buka postingan",
 			"more": "Opsi lainnya",
 			"like": "Suka",

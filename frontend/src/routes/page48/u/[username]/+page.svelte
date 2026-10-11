@@ -14,6 +14,8 @@
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
+	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
+	import { portal } from '$lib/actions/portal';
 	import { page48NavbarStore, page48Reads } from '$lib/stores/page48.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
@@ -49,6 +51,18 @@
 
 	// Whether this profile has a Page48 cover image to render.
 	let hasBanner = $derived(!!profile?.bannerPicture);
+
+	/** Profile photo / banner open full size in the shared image lightbox. */
+	let lightboxSrc = $state('');
+	let lightboxAlt = $state('');
+	let lightboxOpen = $state(false);
+
+	function openImage(src: string | null | undefined, alt: string) {
+		if (!src) return;
+		lightboxSrc = src;
+		lightboxAlt = alt;
+		lightboxOpen = true;
+	}
 
 	// A block cuts the posts both ways, so there is nothing to list here.
 	let canViewPosts = $derived(!profile?.isBlocked && !profile?.isBlockedBy);
@@ -488,18 +502,26 @@
 		</div>
 	{:else if profile}
 		{#if hasBanner}
-			<!-- Banner (Page48 cover) -->
-			<div class="w-full aspect-[3/1] overflow-hidden">
-				<OptimizedImage
-					src={profile.bannerPicture}
-					srcMedium={profile.bannerPicture_medium}
-					srcSmall={profile.bannerPicture_small}
-					blurHash={profile.bannerBlurHash}
-					alt={profile.name}
-					class="w-full h-full object-cover"
-					sizes="(max-width: 640px) 100vw, 620px"
-				/>
-			</div>
+			<!-- Banner (Page48 cover); click opens it full size. The inner div keeps
+			     the original layout (a button is inline-block and would add height). -->
+			<button
+				type="button"
+				class="block w-full cursor-zoom-in"
+				onclick={() => openImage(profile?.bannerPicture, t('page48.aria.banner'))}
+				aria-label={t('page48.aria.banner')}
+			>
+				<div class="w-full aspect-[3/1] overflow-hidden">
+					<OptimizedImage
+						src={profile.bannerPicture}
+						srcMedium={profile.bannerPicture_medium}
+						srcSmall={profile.bannerPicture_small}
+						blurHash={profile.bannerBlurHash}
+						alt={profile.name}
+						class="w-full h-full object-cover"
+						sizes="(max-width: 640px) 100vw, 620px"
+					/>
+				</div>
+			</button>
 		{/if}
 
 		<!-- Profile header -->
@@ -601,21 +623,39 @@
 					{/if}
 				</div>
 
-				<!-- Profile photo (right) -->
-				<div
-					class="w-36 h-36 relative z-10 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 ring-2 ring-white shadow-sm dark:ring-zinc-900"
+				<!-- Profile photo (right); click opens it full size -->
+				<button
+					type="button"
+					class="relative z-10 shrink-0 rounded-full cursor-zoom-in"
+					onclick={() => openImage(profile?.profilePicture, profile?.name ?? '')}
+					aria-label={t('page48.aria.profilePhoto')}
 				>
-					<OptimizedImage
-						src={getAvatarUrl(profile)}
-						srcMedium={profile.profilePicture_medium}
-						srcSmall={profile.profilePicture_small}
-						blurHash={profile.blurHash}
-						alt={profile.name}
-						class="w-full h-full object-cover"
-						sizes="144px"
-					/>
-				</div>
+					<div
+						class="w-36 h-36 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 ring-2 ring-white shadow-sm dark:ring-zinc-900"
+					>
+						<OptimizedImage
+							src={getAvatarUrl(profile)}
+							srcMedium={profile.profilePicture_medium}
+							srcSmall={profile.profilePicture_small}
+							blurHash={profile.blurHash}
+							alt={profile.name}
+							class="w-full h-full object-cover"
+							sizes="144px"
+						/>
+					</div>
+				</button>
 			</div>
+		</div>
+
+		<!-- Portalled: the profile panel is backdrop-blurred, which would otherwise
+		     become the containing block and shrink this fixed overlay. -->
+		<div use:portal>
+			<ImageLightbox
+				src={lightboxSrc}
+				alt={lightboxAlt}
+				isOpen={lightboxOpen}
+				onClose={() => (lightboxOpen = false)}
+			/>
 		</div>
 
 		<!-- Mobile: full-width follow CTA above the tabs, so it never squeezes the name -->
