@@ -437,7 +437,7 @@
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<p
 					bind:this={contentEl}
-					class={`relative z-[1] cursor-pointer text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'max-h-[250px] overflow-hidden' : ''}`}
+					class={`pointer-events-auto relative z-[1] cursor-pointer text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'max-h-[250px] overflow-hidden' : ''}`}
 					onclick={handleContentClick}
 				>
 					{#each contentParts as part, i (i)}
@@ -472,7 +472,7 @@
 				{#if showContentToggle}
 					<button
 						type="button"
-						class="relative z-[1] self-start mt-1 text-[14px] font-semibold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
+						class="pointer-events-auto relative z-[1] self-start mt-1 text-[14px] font-semibold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
 						onclick={toggleContent}
 					>
 						{contentExpanded ? t('page48.post.showLess') : t('page48.post.showMore')}
@@ -534,16 +534,21 @@
 			{/if}
 		{/snippet}
 
-		{#if spoilerHidden}
-			<div class="relative min-h-[88px] overflow-hidden rounded-2xl">
-				<div class="spoiler-media pointer-events-none select-none opacity-80 blur-[6px]" inert>
-					{@render postBody()}
-				</div>
-				<SpoilerCover postId={post.postId} />
+		<!-- One subtree, only the blur/overlay toggles, so revealing never remounts
+		     the media/embed inside (that caused the iframe to reload and flicker). -->
+		<div
+			class={`pointer-events-none relative ${spoilerHidden ? 'min-h-[88px] overflow-hidden rounded-2xl' : ''}`}
+		>
+			<div
+				class={`pointer-events-none ${spoilerHidden ? 'spoiler-media select-none opacity-80 blur-[6px]' : ''}`}
+				inert={spoilerHidden}
+			>
+				{@render postBody()}
 			</div>
-		{:else}
-			{@render postBody()}
-		{/if}
+			{#if spoilerHidden}
+				<SpoilerCover postId={post.postId} />
+			{/if}
+		</div>
 
 		<!-- Thread continuation: opens the detail page where the chain is shown -->
 		{#if showThreadLink && post.threadCount > 0}

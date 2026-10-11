@@ -203,16 +203,20 @@
 				{/if}
 			{/snippet}
 
-			{#if spoilerHidden}
-				<div class="relative min-h-[64px] overflow-hidden rounded-2xl">
-					<div class="spoiler-media pointer-events-none select-none opacity-80 blur-[6px]" inert>
-						{@render postBody()}
-					</div>
-					<SpoilerCover postId={post.postId} />
+			<!-- One subtree so revealing never remounts the media/embed. -->
+			<div
+				class={`pointer-events-none relative ${spoilerHidden ? 'min-h-[64px] overflow-hidden rounded-2xl' : ''}`}
+			>
+				<div
+					class={`pointer-events-none ${spoilerHidden ? 'spoiler-media select-none opacity-80 blur-[6px]' : ''}`}
+					inert={spoilerHidden}
+				>
+					{@render postBody()}
 				</div>
-			{:else}
-				{@render postBody()}
-			{/if}
+				{#if spoilerHidden}
+					<SpoilerCover postId={post.postId} />
+				{/if}
+			</div>
 		</div>
 	{/if}
 </div>

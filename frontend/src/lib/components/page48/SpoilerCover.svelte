@@ -22,7 +22,7 @@
      spoiler (a real blur, not a box). -->
 <button
 	type="button"
-	class="absolute inset-0 z-[3] flex cursor-pointer items-center justify-center rounded-2xl transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
+	class="pointer-events-auto absolute inset-0 z-[3] flex cursor-pointer items-center justify-center rounded-2xl transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
 	onclick={reveal}
 	aria-label={t('page48.spoiler.show')}
 >

@@ -46,7 +46,9 @@
 </script>
 
 {#if post.poll}
-	<div class="relative z-[1] mt-3 flex flex-col gap-1.5">
+	<div
+		class={`relative z-[1] mt-3 flex flex-col gap-1.5 ${interactive ? 'pointer-events-auto' : ''}`}
+	>
 		{#each post.poll.options as option (option.id)}
 			{@const percentage = pollPercentage(option.votes, post.poll.totalVotes)}
 			{@const mine = option.id === post.poll.myOptionId}
