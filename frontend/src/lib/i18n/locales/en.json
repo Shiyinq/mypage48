@@ -1998,7 +1998,8 @@
 			"mentionSuggestions": "User suggestions",
 			"userPreview": "User preview",
 			"xPost": "X post",
-			"instagramPost": "Instagram post"
+			"instagramPost": "Instagram post",
+			"tiktokPost": "TikTok post"
 		},
 		"embed": {
 			"viewOnX": "View post on X",
@@ -2006,7 +2007,10 @@
 			"viewOnInstagram": "View post on Instagram",
 			"instagramLoads": "The post loads from Instagram",
 			"viewStoryOnInstagram": "View story on Instagram",
-			"storyNotice": "Stories disappear after 24 hours"
+			"storyNotice": "Stories disappear after 24 hours",
+			"viewOnTikTok": "View on TikTok",
+			"tiktokLoads": "The video loads from TikTok",
+			"tiktokShortNotice": "Opens the video on TikTok"
 		},
 		"mentions": {
 			"noResults": "No users found",

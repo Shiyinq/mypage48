@@ -293,12 +293,55 @@ export function extractInstagramStory(url: string): InstagramStory | null {
 	return { url: `https://www.instagram.com/stories/${match[1]}/${match[2]}/` };
 }
 
+/** A kind of TikTok post the player can render. */
+export type TikTokKind = 'video' | 'photo';
+
+/** An embeddable TikTok video or photo post. */
+export interface TikTokEmbed {
+	videoId: string;
+	kind: TikTokKind;
+}
+
+/**
+ * Matches a TikTok video/photo permalink and captures the numeric id. The leading
+ * `//` keeps lookalike hosts such as `nottiktok.com` from matching. Share links
+ * (`vm.tiktok.com/...`) carry no id and are handled by `extractTikTokLink`.
+ */
+const TIKTOK_POST_PATTERN =
+	/(?:^|\/\/)(?:www\.|m\.)?tiktok\.com\/@[A-Za-z0-9_.]{1,30}\/(video|photo)\/(\d{6,25})/i;
+
+/** The id and kind inside a TikTok permalink, or null for any other URL. */
+export function extractTikTokEmbed(url: string): TikTokEmbed | null {
+	const match = url.match(TIKTOK_POST_PATTERN);
+	if (!match) return null;
+	return { kind: match[1].toLowerCase() as TikTokKind, videoId: match[2] };
+}
+
+/**
+ * A TikTok share link. It only carries an opaque code, so the video id cannot be
+ * resolved from the browser (CORS blocks the redirect); this becomes a link card.
+ */
+export interface TikTokLink {
+	url: string;
+}
+
+const TIKTOK_SHORT_PATTERN =
+	/(?:^|\/\/)(?:(?:vm|vt)\.tiktok\.com\/[A-Za-z0-9]{4,20}|(?:www\.)?tiktok\.com\/t\/[A-Za-z0-9]{4,20})/i;
+
+/** The cleaned share link, or null for any other URL. */
+export function extractTikTokLink(url: string): TikTokLink | null {
+	if (!TIKTOK_SHORT_PATTERN.test(url)) return null;
+	return { url };
+}
+
 /** An embeddable (or link-card) link found in a post: one per post, first wins. */
 export type PostEmbed =
 	| ({ type: 'youtube' } & YouTubeEmbed)
 	| ({ type: 'x' } & XEmbed)
 	| ({ type: 'instagram' } & InstagramEmbed)
-	| ({ type: 'instagram-story' } & InstagramStory);
+	| ({ type: 'instagram-story' } & InstagramStory)
+	| ({ type: 'tiktok' } & TikTokEmbed)
+	| ({ type: 'tiktok-link' } & TikTokLink);
 
 /**
  * The first embeddable link among already-parsed content parts. Only one embed is
@@ -319,6 +362,12 @@ export function findPostEmbed(parts: ContentPart[]): PostEmbed | null {
 
 		const story = extractInstagramStory(part.link);
 		if (story) return { type: 'instagram-story', ...story };
+
+		const tiktok = extractTikTokEmbed(part.link);
+		if (tiktok) return { type: 'tiktok', ...tiktok };
+
+		const tiktokLink = extractTikTokLink(part.link);
+		if (tiktokLink) return { type: 'tiktok-link', ...tiktokLink };
 	}
 	return null;
 }

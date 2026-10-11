@@ -18,6 +18,8 @@
 	import XEmbed from '$lib/components/page48/XEmbed.svelte';
 	import InstagramEmbed from '$lib/components/page48/InstagramEmbed.svelte';
 	import InstagramStoryCard from '$lib/components/page48/InstagramStoryCard.svelte';
+	import TikTokEmbed from '$lib/components/page48/TikTokEmbed.svelte';
+	import TikTokLinkCard from '$lib/components/page48/TikTokLinkCard.svelte';
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
@@ -675,7 +677,7 @@
 			{/if}
 		</div>
 
-		<!-- Embeddable link preview (YouTube/X/Instagram) -->
+		<!-- Embeddable link preview (YouTube/X/Instagram/TikTok) -->
 		{#if postEmbed}
 			<div class="mt-2" in:fade>
 				{#if postEmbed.type === 'youtube'}
@@ -684,8 +686,12 @@
 					<XEmbed tweetId={postEmbed.tweetId} />
 				{:else if postEmbed.type === 'instagram'}
 					<InstagramEmbed shortcode={postEmbed.shortcode} kind={postEmbed.kind} height={420} />
-				{:else}
+				{:else if postEmbed.type === 'instagram-story'}
 					<InstagramStoryCard url={postEmbed.url} class="max-w-[540px]" />
+				{:else if postEmbed.type === 'tiktok'}
+					<TikTokEmbed videoId={postEmbed.videoId} kind={postEmbed.kind} maxWidth={280} />
+				{:else}
+					<TikTokLinkCard url={postEmbed.url} class="max-w-[540px]" />
 				{/if}
 			</div>
 		{/if}

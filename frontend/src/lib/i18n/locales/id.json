@@ -2002,7 +2002,8 @@
 			"mentionSuggestions": "Saran pengguna",
 			"userPreview": "Pratinjau pengguna",
 			"xPost": "Postingan X",
-			"instagramPost": "Postingan Instagram"
+			"instagramPost": "Postingan Instagram",
+			"tiktokPost": "Postingan TikTok"
 		},
 		"embed": {
 			"viewOnX": "Lihat post di X",
@@ -2010,7 +2011,10 @@
 			"viewOnInstagram": "Lihat post di Instagram",
 			"instagramLoads": "Post dimuat dari Instagram",
 			"viewStoryOnInstagram": "Lihat story di Instagram",
-			"storyNotice": "Story hilang setelah 24 jam"
+			"storyNotice": "Story hilang setelah 24 jam",
+			"viewOnTikTok": "Lihat di TikTok",
+			"tiktokLoads": "Video dimuat dari TikTok",
+			"tiktokShortNotice": "Membuka video di TikTok"
 		},
 		"mentions": {
 			"noResults": "Pengguna tidak ditemukan",

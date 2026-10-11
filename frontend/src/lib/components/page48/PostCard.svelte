@@ -12,6 +12,8 @@
 	import XEmbed from '$lib/components/page48/XEmbed.svelte';
 	import InstagramEmbed from '$lib/components/page48/InstagramEmbed.svelte';
 	import InstagramStoryCard from '$lib/components/page48/InstagramStoryCard.svelte';
+	import TikTokEmbed from '$lib/components/page48/TikTokEmbed.svelte';
+	import TikTokLinkCard from '$lib/components/page48/TikTokLinkCard.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
@@ -458,7 +460,7 @@
 			/>
 		{/if}
 
-		<!-- Embeddable link (YouTube/X/Instagram): lite, click-to-load -->
+		<!-- Embeddable link (YouTube/X/Instagram/TikTok): lite, click-to-load -->
 		{#if postEmbed}
 			<div class="pointer-events-none relative z-[1] mt-3">
 				{#if postEmbed.type === 'youtube'}
@@ -475,11 +477,19 @@
 						kind={postEmbed.kind}
 						class="pointer-events-auto"
 					/>
-				{:else}
+				{:else if postEmbed.type === 'instagram-story'}
 					<InstagramStoryCard
 						url={postEmbed.url}
 						class="pointer-events-auto mx-auto max-w-[540px]"
 					/>
+				{:else if postEmbed.type === 'tiktok'}
+					<TikTokEmbed
+						videoId={postEmbed.videoId}
+						kind={postEmbed.kind}
+						class="pointer-events-auto"
+					/>
+				{:else}
+					<TikTokLinkCard url={postEmbed.url} class="pointer-events-auto mx-auto max-w-[540px]" />
 				{/if}
 			</div>
 		{/if}

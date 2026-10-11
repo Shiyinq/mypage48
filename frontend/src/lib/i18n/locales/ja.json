@@ -1996,7 +1996,8 @@
 			"mentionSuggestions": "ユーザーの候補",
 			"userPreview": "ユーザーのプレビュー",
 			"xPost": "X の投稿",
-			"instagramPost": "Instagram の投稿"
+			"instagramPost": "Instagram の投稿",
+			"tiktokPost": "TikTok の投稿"
 		},
 		"embed": {
 			"viewOnX": "X で投稿を表示",
@@ -2004,7 +2005,10 @@
 			"viewOnInstagram": "Instagram で投稿を表示",
 			"instagramLoads": "投稿は Instagram から読み込みます",
 			"viewStoryOnInstagram": "Instagram でストーリーを表示",
-			"storyNotice": "ストーリーは 24 時間で消えます"
+			"storyNotice": "ストーリーは 24 時間で消えます",
+			"viewOnTikTok": "TikTok で見る",
+			"tiktokLoads": "動画は TikTok から読み込みます",
+			"tiktokShortNotice": "TikTok で動画を開きます"
 		},
 		"mentions": {
 			"noResults": "ユーザーが見つかりません",
