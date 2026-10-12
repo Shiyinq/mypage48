@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import {
 		Heart,
 		MessageCircle,
@@ -11,7 +11,7 @@
 		Video
 	} from 'lucide-svelte';
 	import type { Page48Post } from '$lib/api/page48';
-	import { page48Reads } from '$lib/stores/page48.svelte';
+	import { page48FeedStore } from '$lib/stores/page48Feed.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
 	import VideoCommentsPanel from '$lib/components/page48/VideoCommentsPanel.svelte';
@@ -23,15 +23,20 @@
 
 	const { t } = useTranslation();
 
-	let posts = $state<Page48Post[]>([]);
+	// The video feed keeps its items and the clip being watched while the viewer is
+	// on another page, and refreshes the head in the background on return.
+	const feed = page48FeedStore;
+	const feedKey = 'videos';
+	const params = { media: 'video' as const, limit: 10 };
+	const bucket = feed.bucket(feedKey);
+
+	let posts = $derived(bucket.posts);
 	// One feed item per video, so a post with several videos is scrolled one by one;
 	// every item keeps its post, so the caption/author follow along.
 	let items = $derived(posts.flatMap((post) => post.videos.map((video) => ({ post, video }))));
-	let loading = $state(true);
-	let loadingMore = $state(false);
-	let error = $state<string | null>(null);
-	let hasMore = $state(false);
-	let nextCursor = $state<string | null>(null);
+	let loading = $derived(!bucket.isLoaded && !bucket.error);
+	let error = $derived(bucket.error);
+	let hasMore = $derived(bucket.hasMore);
 	let sentinel: HTMLDivElement | undefined = $state();
 	let scroller: HTMLDivElement | undefined = $state();
 	let currentIndex = $state(0);
@@ -39,6 +44,8 @@
 	let commentPost = $state<Page48Post | null>(null);
 	// Mobile: full-bleed TikTok look (cover). Desktop: letterboxed & centered.
 	let isMobile = $state(true);
+
+	let positionFrame = 0;
 
 	onMount(() => {
 		// Matches the action rail's breakpoint (`sm`) so the immersive layout and the
@@ -48,10 +55,41 @@
 		update();
 		mq.addEventListener('change', update);
 
-		void loadFeed();
+		window.addEventListener('focus', backgroundRefresh);
+		document.addEventListener('visibilitychange', backgroundRefresh);
+		window.addEventListener('resize', keepClip);
 
-		return () => mq.removeEventListener('change', update);
+		if (bucket.isLoaded) {
+			// Resume the clip that was playing; no spinner, no jump to the top.
+			const resume = bucket.position;
+			requestAnimationFrame(() => {
+				currentIndex = resume;
+				setClipScroll(resume);
+			});
+			backgroundRefresh();
+		} else {
+			void feed.ensure(feedKey, params);
+		}
+
+		return () => {
+			mq.removeEventListener('change', update);
+			window.removeEventListener('focus', backgroundRefresh);
+			document.removeEventListener('visibilitychange', backgroundRefresh);
+			window.removeEventListener('resize', keepClip);
+			if (positionFrame) cancelAnimationFrame(positionFrame);
+		};
 	});
+
+	/** Put the scroller on the clip at `index`. */
+	function setClipScroll(index: number) {
+		const el = scroller;
+		if (el) el.scrollTop = index * el.clientHeight;
+	}
+
+	/** Re-apply the offset after a height change (rotate/resize) so the clip stays. */
+	function keepClip() {
+		setClipScroll(currentIndex);
+	}
 
 	// Infinite scroll: load the next page when the sentinel enters view.
 	$effect(() => {
@@ -59,7 +97,7 @@
 		if (!el) return;
 		const observer = new IntersectionObserver(
 			(entries) => {
-				if (entries.some((e) => e.isIntersecting)) void loadMore();
+				if (entries.some((e) => e.isIntersecting)) void feed.loadMore(feedKey, params);
 			},
 			{ root: scroller ?? null, rootMargin: '600px' }
 		);
@@ -76,6 +114,12 @@
 			const current = items[currentIndex]?.post;
 			if (current && current.postId !== commentPost.postId) commentPost = current;
 		}
+		if (!positionFrame) {
+			positionFrame = requestAnimationFrame(() => {
+				positionFrame = 0;
+				feed.savePosition(feedKey, currentIndex);
+			});
+		}
 	}
 
 	function goTo(index: number) {
@@ -85,35 +129,22 @@
 		el.scrollTo({ top: target * el.clientHeight, behavior: 'smooth' });
 	}
 
-	async function loadFeed() {
-		try {
-			loading = true;
-			error = null;
-			const res = await page48Reads.getFeed(10, null, 'video');
-			posts = res.data.filter((p) => p.videos.length > 0);
-			hasMore = res.meta.hasMore;
-			nextCursor = res.meta.nextCursor;
-		} catch (err: unknown) {
-			const e = err as { message?: string };
-			error = e?.message || t('page48.videosFeed.loadError');
-		} finally {
-			loading = false;
-		}
-	}
+	/**
+	 * Refresh the head in the background and keep the current clip: new videos are
+	 * prepended and the offset shifts by the same count, so the video that is
+	 * playing never changes. The newer clips are then reachable by scrolling up.
+	 */
+	async function backgroundRefresh() {
+		if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
+		await feed.refresh(feedKey, params);
+		const added = bucket.pending.length;
+		if (added === 0) return;
 
-	async function loadMore() {
-		if (loadingMore || loading || !hasMore || !nextCursor) return;
-		try {
-			loadingMore = true;
-			const res = await page48Reads.getFeed(10, nextCursor, 'video');
-			posts = [...posts, ...res.data.filter((p) => p.videos.length > 0)];
-			hasMore = res.meta.hasMore;
-			nextCursor = res.meta.nextCursor;
-		} catch (err) {
-			console.error(err);
-		} finally {
-			loadingMore = false;
-		}
+		feed.applyPending(feedKey);
+		currentIndex += added;
+		feed.savePosition(feedKey, currentIndex);
+		await tick();
+		setClipScroll(currentIndex);
 	}
 
 	function findPost(postId: string): Page48Post | undefined {
@@ -200,7 +231,7 @@
 				<ErrorState
 					title={t('page48.videosFeed.loadError')}
 					description={error}
-					onRetry={loadFeed}
+					onRetry={() => feed.ensure(feedKey, params, true)}
 				/>
 			</div>
 		{:else if items.length === 0}

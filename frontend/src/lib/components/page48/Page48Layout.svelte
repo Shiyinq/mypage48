@@ -147,7 +147,12 @@
 	function guardFeedNav(href: string | null | undefined, event: MouseEvent): boolean {
 		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
 			return false;
-		const restores = [basePath, `${basePath}/following`, `${basePath}/photos`];
+		const restores = [
+			basePath,
+			`${basePath}/following`,
+			`${basePath}/photos`,
+			`${basePath}/videos`
+		];
 		if (!href || !restores.includes(href)) return false;
 		void goto(href, { noScroll: true });
 		return true;

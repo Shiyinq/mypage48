@@ -29,6 +29,8 @@ interface FeedBucket {
 	error: string | null;
 	/** Last known window scroll offset, so returning restores the position. */
 	scrollY: number;
+	/** Last known item index, for a feed that scrolls by snap (the video feed). */
+	position: number;
 	/** Posts found by a background refresh, waiting to be shown on demand. */
 	pending: Page48Post[];
 }
@@ -53,6 +55,7 @@ function createBucket(): FeedBucket {
 		isRefreshing: false,
 		error: null,
 		scrollY: 0,
+		position: 0,
 		pending: []
 	};
 }
@@ -174,6 +177,10 @@ function saveScroll(key: string, scrollY: number): void {
 	bucket(key).scrollY = scrollY;
 }
 
+function savePosition(key: string, position: number): void {
+	bucket(key).position = position;
+}
+
 export const page48FeedStore = {
 	bucket,
 	ensure,
@@ -182,5 +189,6 @@ export const page48FeedStore = {
 	applyPending,
 	prepend,
 	removePost,
-	saveScroll
+	saveScroll,
+	savePosition
 };
