@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { X, Heart, MessageCircle, CornerDownRight } from 'lucide-svelte';
-	import { page48Api, type Page48Post, type ThreadResponse } from '$lib/api/page48';
+	import { X, Heart, MessageCircle, CornerDownRight, Lock } from 'lucide-svelte';
+	import {
+		page48Api,
+		type Page48Post,
+		type Page48ReplySetting,
+		type ThreadResponse
+	} from '$lib/api/page48';
 	import { page48Reads } from '$lib/stores/page48.svelte';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
@@ -18,6 +23,7 @@
 		userUrl,
 		togglePostInteraction,
 		resolveDraftMedia,
+		replyAudienceLockedText,
 		type DraftMedia,
 		type MentionCandidate
 	} from '$lib/utils/page48';
@@ -118,6 +124,10 @@
 
 	function startReply(comment: Page48Post) {
 		if (!canInteract) return;
+		if (!comment.canReply) {
+			showToast(replyAudienceLockedText(comment.replySettings), 'info');
+			return;
+		}
 		replyTarget = comment;
 	}
 
@@ -130,7 +140,8 @@
 		media: DraftMedia[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
-		isSpoiler: boolean
+		isSpoiler: boolean,
+		replySettings: Page48ReplySetting
 	) {
 		const target = replyTarget ?? post;
 		try {
@@ -141,7 +152,8 @@
 				parentPostId: target.postId,
 				poll,
 				quotedPostId: quotedPostId ?? undefined,
-				isSpoiler
+				isSpoiler,
+				replySettings
 			});
 			showToast(t('page48.post.replySent'), 'success');
 			// The server only bumps the direct parent's replyCount.
@@ -370,14 +382,25 @@
 					</button>
 				</div>
 			{/if}
-			<PostComposer
-				isReply
-				placeholder={t('page48.composer.replyPlaceholder', {
-					username: (replyTarget ?? post).username
-				})}
-				onPost={handleReply}
-				{mentionCandidates}
-			/>
+			{#if (replyTarget ?? post).canReply}
+				<PostComposer
+					isReply
+					placeholder={t('page48.composer.replyPlaceholder', {
+						username: (replyTarget ?? post).username
+					})}
+					onPost={handleReply}
+					{mentionCandidates}
+				/>
+			{:else}
+				<div class="p-3">
+					<div
+						class="flex items-center gap-2 rounded-2xl bg-gray-100 px-4 py-3 text-[13px] font-medium text-gray-500 dark:bg-zinc-900 dark:text-gray-400"
+					>
+						<Lock size={16} class="shrink-0" />
+						<span>{replyAudienceLockedText((replyTarget ?? post).replySettings)}</span>
+					</div>
+				</div>
+			{/if}
 		{:else}
 			<div class="p-4">
 				<a

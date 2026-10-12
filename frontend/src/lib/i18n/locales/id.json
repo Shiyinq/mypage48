@@ -2322,6 +2322,23 @@
 			"error": "Gagal memperbarui spoiler.",
 			"notification": "Postingan spoiler"
 		},
+		"replyAudience": {
+			"title": "Siapa yang bisa membalas?",
+			"everyone": "Semua orang",
+			"following": "Akun yang kamu ikuti",
+			"followers": "Hanya pengikut",
+			"following_and_followers": "Akun yang kamu ikuti dan pengikutmu",
+			"only_me": "Hanya saya",
+			"mentioned": "Hanya akun yang kamu sebut",
+			"lockedViewer": "Kamu tidak bisa membalas postingan ini.",
+			"locked": {
+				"following": "Hanya akun yang diikutinya yang bisa membalas.",
+				"followers": "Hanya pengikutnya yang bisa membalas.",
+				"following_and_followers": "Hanya akun yang diikutinya dan pengikutnya yang bisa membalas.",
+				"only_me": "Hanya dia yang bisa membalas.",
+				"mentioned": "Hanya akun yang disebutnya yang bisa membalas."
+			}
+		},
 		"repostMenu": {
 			"repost": "Repost",
 			"undo": "Batalkan repost",

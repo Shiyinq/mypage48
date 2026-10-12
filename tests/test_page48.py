@@ -2377,3 +2377,398 @@ async def test_mute_relation_limit(client, create_user, monkeypatch):
     await client.delete("/api/page48/users/p48_mu_bob/mute", headers=alice)
     third = await client.post("/api/page48/users/p48_mu_carol/mute", headers=alice)
     assert third.status_code == 200
+
+
+# --------------------------------------------------------------------------- #
+# Who can reply
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_default_is_everyone(client, create_user, make_post):
+    _, _, author = await create_user("p48_rs_default_a")
+    _, _, other = await create_user("p48_rs_default_b")
+    post = await make_post(author, "hello everyone")
+
+    assert post["replySettings"] == "everyone"
+    assert post["canReply"] is True
+
+    reply = await make_post(other, "my reply", parentPostId=post["postId"])
+    assert reply["parentPostId"] == post["postId"]
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_only_me_blocks_others(client, create_user, make_post):
+    _, _, author = await create_user("p48_rs_onlyme_a")
+    _, _, other = await create_user("p48_rs_onlyme_b")
+    post = await make_post(author, "just me", replySettings="only_me")
+
+    blocked = await client.post(
+        "/api/page48/posts",
+        json={"content": "nope", "parentPostId": post["postId"]},
+        headers=other,
+    )
+    assert blocked.status_code == 400
+
+    # The author may always reply to their own post.
+    allowed = await client.post(
+        "/api/page48/posts",
+        json={"content": "mine", "parentPostId": post["postId"]},
+        headers=author,
+    )
+    assert allowed.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_followers(client, create_user, make_post, follow):
+    _, _, author = await create_user("p48_rs_fol_a")
+    _, _, follower = await create_user("p48_rs_fol_b")
+    _, _, stranger = await create_user("p48_rs_fol_c")
+    post = await make_post(author, "followers only", replySettings="followers")
+
+    await follow(follower, "p48_rs_fol_a")  # follower -> author
+
+    allowed = await client.post(
+        "/api/page48/posts",
+        json={"content": "hi", "parentPostId": post["postId"]},
+        headers=follower,
+    )
+    assert allowed.status_code == 201
+
+    blocked = await client.post(
+        "/api/page48/posts",
+        json={"content": "hi", "parentPostId": post["postId"]},
+        headers=stranger,
+    )
+    assert blocked.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_following(client, create_user, make_post, follow):
+    _, _, author = await create_user("p48_rs_fing_a")
+    _, _, followed = await create_user("p48_rs_fing_b")
+    _, _, stranger = await create_user("p48_rs_fing_c")
+    post = await make_post(author, "people i follow", replySettings="following")
+
+    await follow(author, "p48_rs_fing_b")  # author -> followed
+
+    allowed = await client.post(
+        "/api/page48/posts",
+        json={"content": "hi", "parentPostId": post["postId"]},
+        headers=followed,
+    )
+    assert allowed.status_code == 201
+
+    blocked = await client.post(
+        "/api/page48/posts",
+        json={"content": "hi", "parentPostId": post["postId"]},
+        headers=stranger,
+    )
+    assert blocked.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_following_and_followers(
+    client, create_user, make_post, follow
+):
+    _, _, author = await create_user("p48_rs_ff_a")
+    _, _, follower = await create_user("p48_rs_ff_b")
+    _, _, followed = await create_user("p48_rs_ff_c")
+    _, _, stranger = await create_user("p48_rs_ff_d")
+    post = await make_post(
+        author, "either way", replySettings="following_and_followers"
+    )
+
+    await follow(follower, "p48_rs_ff_a")  # follower -> author
+    await follow(author, "p48_rs_ff_c")  # author -> followed
+
+    for headers in (follower, followed):
+        res = await client.post(
+            "/api/page48/posts",
+            json={"content": "hi", "parentPostId": post["postId"]},
+            headers=headers,
+        )
+        assert res.status_code == 201
+
+    blocked = await client.post(
+        "/api/page48/posts",
+        json={"content": "hi", "parentPostId": post["postId"]},
+        headers=stranger,
+    )
+    assert blocked.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_mentioned(client, create_user, make_post):
+    _, _, author = await create_user("p48_rs_men_a")
+    _, _, mentioned = await create_user("p48_rs_men_b")
+    _, _, other = await create_user("p48_rs_men_c")
+    post = await make_post(
+        author, "hey @p48_rs_men_b take a look", replySettings="mentioned"
+    )
+
+    allowed = await client.post(
+        "/api/page48/posts",
+        json={"content": "here", "parentPostId": post["postId"]},
+        headers=mentioned,
+    )
+    assert allowed.status_code == 201
+
+    blocked = await client.post(
+        "/api/page48/posts",
+        json={"content": "here", "parentPostId": post["postId"]},
+        headers=other,
+    )
+    assert blocked.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_thread_is_per_item(client, create_user):
+    _, _, author = await create_user("p48_rs_thread_a")
+    _, _, other = await create_user("p48_rs_thread_b")
+
+    res = await client.post(
+        "/api/page48/posts/thread",
+        json={
+            "posts": [
+                {"content": "root", "replySettings": "only_me"},
+                {"content": "continuation", "replySettings": "everyone"},
+            ]
+        },
+        headers=author,
+    )
+    assert res.status_code == 201
+    posts = res.json()["posts"]
+    assert posts[0]["replySettings"] == "only_me"
+    assert posts[1]["replySettings"] == "everyone"
+
+    # The root refuses outsiders...
+    blocked = await client.post(
+        "/api/page48/posts",
+        json={"content": "nope", "parentPostId": posts[0]["postId"]},
+        headers=other,
+    )
+    assert blocked.status_code == 400
+
+    # ...while the continuation, set to everyone, accepts them.
+    allowed = await client.post(
+        "/api/page48/posts",
+        json={"content": "ok", "parentPostId": posts[1]["postId"]},
+        headers=other,
+    )
+    assert allowed.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_can_be_changed_by_edit(client, create_user, make_post):
+    _, _, author = await create_user("p48_rs_edit_a")
+    _, _, other = await create_user("p48_rs_edit_b")
+    post = await make_post(author, "open at first")
+
+    allowed = await client.post(
+        "/api/page48/posts",
+        json={"content": "hi", "parentPostId": post["postId"]},
+        headers=other,
+    )
+    assert allowed.status_code == 201
+
+    updated = await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={"content": post["content"], "replySettings": "only_me"},
+        headers=author,
+    )
+    assert updated.status_code == 200
+    assert updated.json()["replySettings"] == "only_me"
+
+    blocked = await client.post(
+        "/api/page48/posts",
+        json={"content": "hi again", "parentPostId": post["postId"]},
+        headers=other,
+    )
+    assert blocked.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_can_reply_is_per_viewer(client, create_user, make_post):
+    _, _, author = await create_user("p48_rs_view_a")
+    _, _, other = await create_user("p48_rs_view_b")
+    post = await make_post(author, "restricted", replySettings="only_me")
+
+    as_author = (
+        await client.get(f"/api/page48/posts/{post['postId']}", headers=author)
+    ).json()
+    assert as_author["canReply"] is True
+
+    as_other = (
+        await client.get(f"/api/page48/posts/{post['postId']}", headers=other)
+    ).json()
+    assert as_other["canReply"] is False
+
+    as_guest = (await client.get(f"/api/page48/posts/{post['postId']}")).json()
+    assert as_guest["canReply"] is False
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_invalid_value_is_rejected(client, create_user):
+    _, _, author = await create_user("p48_rs_invalid_a")
+
+    # The value is a closed set: an unknown setting fails validation everywhere.
+    assert (
+        await client.post(
+            "/api/page48/posts",
+            json={"content": "x", "replySettings": "nobody"},
+            headers=author,
+        )
+    ).status_code == 422
+
+    assert (
+        await client.post(
+            "/api/page48/posts/thread",
+            json={
+                "posts": [
+                    {"content": "a"},
+                    {"content": "b", "replySettings": "nobody"},
+                ]
+            },
+            headers=author,
+        )
+    ).status_code == 422
+
+    post = (
+        await client.post("/api/page48/posts", json={"content": "ok"}, headers=author)
+    ).json()
+    assert (
+        await client.patch(
+            f"/api/page48/posts/{post['postId']}",
+            json={"content": "ok", "replySettings": "nobody"},
+            headers=author,
+        )
+    ).status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_pending_follow_does_not_grant_reply(
+    client, create_user, make_post, db
+):
+    _, author_id, author = await create_user("p48_rs_pend_a")
+    _, viewer_id, viewer = await create_user("p48_rs_pend_b")
+    post = await make_post(author, "followers only", replySettings="followers")
+
+    # A follow still awaiting approval must not count as being a follower.
+    await db["page48_follows"].insert_one(
+        {"followerId": viewer_id, "followingId": author_id, "status": "pending"}
+    )
+
+    blocked = await client.post(
+        "/api/page48/posts",
+        json={"content": "hi", "parentPostId": post["postId"]},
+        headers=viewer,
+    )
+    assert blocked.status_code == 400
+
+    detail = (
+        await client.get(f"/api/page48/posts/{post['postId']}", headers=viewer)
+    ).json()
+    assert detail["canReply"] is False
+
+
+@pytest.mark.asyncio
+async def test_refused_reply_does_not_bump_reply_count(client, create_user, make_post):
+    _, _, author = await create_user("p48_rs_count_a")
+    _, _, other = await create_user("p48_rs_count_b")
+    post = await make_post(author, "mine only", replySettings="only_me")
+
+    refused = await client.post(
+        "/api/page48/posts",
+        json={"content": "nope", "parentPostId": post["postId"]},
+        headers=other,
+    )
+    assert refused.status_code == 400
+
+    # A refused reply must never move the parent's counter.
+    after_refusal = (await client.get(f"/api/page48/posts/{post['postId']}")).json()
+    assert after_refusal["replyCount"] == 0
+
+    await make_post(author, "mine", parentPostId=post["postId"])
+    after_own_reply = (await client.get(f"/api/page48/posts/{post['postId']}")).json()
+    assert after_own_reply["replyCount"] == 1
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_do_not_block_quoting(client, create_user, make_post):
+    _, _, author = await create_user("p48_rs_quote_a")
+    _, _, other = await create_user("p48_rs_quote_b")
+    post = await make_post(author, "restricted replies", replySettings="only_me")
+
+    # A quote is its own post, not a reply, so the restriction does not apply.
+    quote = await client.post(
+        "/api/page48/posts",
+        json={"content": "my take", "quotedPostId": post["postId"]},
+        headers=other,
+    )
+    assert quote.status_code == 201
+    assert quote.json()["quotedPostId"] == post["postId"]
+
+
+@pytest.mark.asyncio
+async def test_reply_can_carry_its_own_reply_settings(client, create_user, make_post):
+    _, _, author = await create_user("p48_rs_reply_a")
+    _, _, replier = await create_user("p48_rs_reply_b")
+    _, _, third = await create_user("p48_rs_reply_c")
+    root = await make_post(author, "root")
+
+    reply = await make_post(
+        replier, "my reply", parentPostId=root["postId"], replySettings="only_me"
+    )
+    assert reply["replySettings"] == "only_me"
+
+    blocked = await client.post(
+        "/api/page48/posts",
+        json={"content": "nope", "parentPostId": reply["postId"]},
+        headers=third,
+    )
+    assert blocked.status_code == 400
+
+    # The reply's own author may still continue underneath it.
+    allowed = await client.post(
+        "/api/page48/posts",
+        json={"content": "ok", "parentPostId": reply["postId"]},
+        headers=replier,
+    )
+    assert allowed.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_edit_omitted_leaves_it_unchanged(
+    client, create_user, make_post
+):
+    _, _, author = await create_user("p48_rs_edit_keep_a")
+    post = await make_post(author, "restricted", replySettings="only_me")
+
+    updated = await client.patch(
+        f"/api/page48/posts/{post['postId']}",
+        json={"content": "edited"},
+        headers=author,
+    )
+    assert updated.status_code == 200
+    assert updated.json()["replySettings"] == "only_me"
+
+
+@pytest.mark.asyncio
+async def test_reply_settings_returned_in_feed_and_thread(
+    client, create_user, make_post
+):
+    _, _, author = await create_user("p48_rs_reads_a")
+    _, _, other = await create_user("p48_rs_reads_b")
+    post = await make_post(author, "root", replySettings="followers")
+
+    feed = (await client.get("/api/page48/feed", headers=other)).json()["data"]
+    entry = next(p for p in feed if p["postId"] == post["postId"])
+    assert entry["replySettings"] == "followers"
+    assert entry["canReply"] is False
+
+    thread = (
+        await client.get(f"/api/page48/posts/{post['postId']}/thread", headers=other)
+    ).json()
+    assert thread["post"]["replySettings"] == "followers"
+    assert thread["post"]["canReply"] is False

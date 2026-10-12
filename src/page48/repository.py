@@ -845,6 +845,23 @@ class Page48Repository:
         rows = await cursor.to_list(length=None)
         return [row["followingId"] for row in rows]
 
+    async def get_followers_of(
+        self, user_id: str, follower_ids: List[str]
+    ) -> List[str]:
+        """Which of `follower_ids` follow `user_id` (for reply restrictions)."""
+        if not follower_ids:
+            return []
+        cursor = self.follows.find(
+            {
+                "followingId": user_id,
+                "followerId": {"$in": follower_ids},
+                **ACCEPTED_FOLLOW,
+            },
+            {"followerId": 1},
+        )
+        rows = await cursor.to_list(length=None)
+        return [row["followerId"] for row in rows]
+
     async def get_pending_follow_ids(
         self, follower_id: str, user_ids: List[str]
     ) -> List[str]:

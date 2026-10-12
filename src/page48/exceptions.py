@@ -136,3 +136,7 @@ class CannotMuteSelfError(DomainException):
 
 class TooManyRelationsError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.MAX_RELATIONS_REACHED
+
+
+class ReplyNotAllowedError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.REPLY_NOT_ALLOWED

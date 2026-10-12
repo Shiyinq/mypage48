@@ -142,3 +142,7 @@ class CannotMuteSelf(BadRequest):
 
 class TooManyRelations(BadRequest):
     DETAIL = ErrorCode.MAX_RELATIONS_REACHED
+
+
+class ReplyNotAllowed(BadRequest):
+    DETAIL = ErrorCode.REPLY_NOT_ALLOWED

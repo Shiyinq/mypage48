@@ -1,6 +1,17 @@
 # A post may hold up to this many media items, images and videos combined.
 MAX_MEDIA = 10
 
+# Who may reply to a post. The author always may, whatever the setting is.
+REPLY_SETTINGS = (
+    "everyone",
+    "following",
+    "followers",
+    "following_and_followers",
+    "only_me",
+    "mentioned",
+)
+DEFAULT_REPLY_SETTING = "everyone"
+
 
 class Info:
     POST_CREATED = "Post created successfully."
@@ -56,6 +67,7 @@ class ErrorCode:
     CANNOT_FOLLOW_SELF = "You cannot follow yourself."
     CANNOT_BLOCK_SELF = "You cannot block yourself."
     CANNOT_MUTE_SELF = "You cannot mute yourself."
+    REPLY_NOT_ALLOWED = "You are not allowed to reply to this post."
 
 
 class DomainErrorCode:
@@ -95,3 +107,4 @@ class DomainErrorCode:
     CANNOT_FOLLOW_SELF = "You cannot follow yourself."
     CANNOT_BLOCK_SELF = "You cannot block yourself."
     CANNOT_MUTE_SELF = "You cannot mute yourself."
+    REPLY_NOT_ALLOWED = "You are not allowed to reply to this post."

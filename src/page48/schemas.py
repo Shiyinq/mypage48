@@ -3,6 +3,22 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
+# Who may reply to a post. The author always may, whatever the setting is.
+# - everyone: any signed-in account
+# - following: accounts the author follows
+# - followers: accounts that follow the author
+# - following_and_followers: either of the two above
+# - only_me: the author alone (no external replies)
+# - mentioned: accounts named with `@` in the post
+ReplySetting = Literal[
+    "everyone",
+    "following",
+    "followers",
+    "following_and_followers",
+    "only_me",
+    "mentioned",
+]
+
 
 class Page48Image(BaseModel):
     filename: str
@@ -110,6 +126,8 @@ class ThreadPostItem(BaseModel):
     isSpoiler: bool = False
     # Ordered media (images and videos mixed), up to `MAX_MEDIA` items.
     media: list[MediaRef] = Field(default_factory=list)
+    # Who may reply to this item. Each thread post carries its own setting.
+    replySettings: ReplySetting = "everyone"
 
 
 class CreateThreadRequest(BaseModel):
@@ -132,6 +150,8 @@ class CreatePostRequest(BaseModel):
     isSpoiler: bool = False
     # Ordered media (images and videos mixed), up to `MAX_MEDIA` items.
     media: list[MediaRef] = Field(default_factory=list)
+    # Who may reply to this post.
+    replySettings: ReplySetting = "everyone"
 
 
 class EditPostRequest(BaseModel):
@@ -144,6 +164,8 @@ class EditPostRequest(BaseModel):
     videos: Optional[list[VideoRef]] = None
     # Ordered media (images and videos mixed). Preferred over images/videos.
     media: Optional[list[MediaRef]] = None
+    # None leaves the current reply setting untouched.
+    replySettings: Optional[ReplySetting] = None
 
 
 class PostResponse(BaseModel):
@@ -192,6 +214,11 @@ class PostResponse(BaseModel):
     # True when the content is hidden behind a spoiler gate in the UI. Purely a
     # display flag: everyone can still read the post, they just have to reveal it.
     isSpoiler: bool = False
+
+    # Who may reply to this post.
+    replySettings: ReplySetting = "everyone"
+    # Whether the requesting viewer may reply (the author always may).
+    canReply: bool = True
 
     # Context for current user (optional, returned if user is logged in)
     isLiked: Optional[bool] = False

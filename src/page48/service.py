@@ -10,7 +10,7 @@ from src.auth.schemas import UserCurrent
 from src.config import Settings
 from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
-from src.page48.constants import MAX_MEDIA
+from src.page48.constants import DEFAULT_REPLY_SETTING, MAX_MEDIA, REPLY_SETTINGS
 from src.page48.exceptions import (
     CannotBlockSelfError,
     CannotFollowSelfError,
@@ -36,6 +36,7 @@ from src.page48.exceptions import (
     PostNotFoundError,
     QuotedPostNotFoundError,
     QuotePollConflictError,
+    ReplyNotAllowedError,
     ReportAlreadyExistsError,
     ReportCreationError,
     ThreadTooLongError,
@@ -177,6 +178,11 @@ MAX_VIDEO_DIMENSION = 8192
 MAX_VIDEO_DURATION_SECONDS = 3600
 
 
+def _is_accepted_follow(row: Optional[dict]) -> bool:
+    """A follow grants its privileges only once it is no longer pending."""
+    return bool(row) and row.get("status") != "pending"
+
+
 def _detect_video_container(data: bytes) -> Optional[str]:
     """The container the bytes actually look like, judged by its magic bytes.
 
@@ -285,6 +291,50 @@ class Page48Service:
         # A private post is nobody else's to open, not even via its link.
         if post.get("isPrivate") and post.get("userId") != viewer_id:
             raise PostNotFoundError()
+
+    async def _assert_can_reply(self, parent: dict, user: UserCurrent) -> None:
+        """Enforce the parent post's "who can reply" setting for a replier.
+
+        The author may always reply to their own post; anyone else is checked
+        against the parent's setting. Raises `ReplyNotAllowedError` when refused.
+        Reuses the follow edges and the stored `mentions`; it deliberately does
+        not touch the read-visibility plumbing, which is a different concern.
+        """
+        author_id = parent.get("userId")
+        if not author_id or author_id == user.userId:
+            return
+
+        setting = parent.get("replySettings") or DEFAULT_REPLY_SETTING
+        if setting == "everyone":
+            return
+        if setting == "only_me":
+            raise ReplyNotAllowedError()
+        if setting == "mentioned":
+            if (user.username or "").lower() in (parent.get("mentions") or []):
+                return
+            raise ReplyNotAllowedError()
+
+        # following / followers / following_and_followers need the follow edges.
+        author_follows_user = _is_accepted_follow(
+            await self.repository.get_follow(author_id, user.userId)
+        )
+        if setting == "following":
+            if author_follows_user:
+                return
+            raise ReplyNotAllowedError()
+
+        user_follows_author = _is_accepted_follow(
+            await self.repository.get_follow(user.userId, author_id)
+        )
+        if setting == "followers":
+            if user_follows_author:
+                return
+            raise ReplyNotAllowedError()
+
+        # following_and_followers: either direction is enough.
+        if author_follows_user or user_follows_author:
+            return
+        raise ReplyNotAllowedError()
 
     async def _muted_author_ids(self, viewer_id: Optional[str]) -> List[str]:
         """Muted accounts: hidden from the timeline only, never from search."""
@@ -430,6 +480,7 @@ class Page48Service:
             isPinned=bool(post.get("pinnedAt")),
             isPrivate=bool(post.get("isPrivate")),
             isSpoiler=bool(post.get("isSpoiler")),
+            replySettings=post.get("replySettings") or DEFAULT_REPLY_SETTING,
             isLiked=interactions.get("isLiked", False),
             isReposted=interactions.get("isReposted", False),
             isBookmarked=interactions.get("isBookmarked", False),
@@ -559,7 +610,71 @@ class Page48Service:
         if include_quotes:
             await self._attach_quoted_posts(posts, enriched, user_id)
 
+        # Who may reply is resolved per viewer, but only restricted posts need the
+        # follow lookups, so the common (everyone) case stays query-free.
+        can_reply = await self._compute_can_reply(posts, user_id)
+        for item in enriched:
+            item.canReply = can_reply.get(item.postId, True)
+
         return enriched
+
+    async def _compute_can_reply(
+        self, posts: List[dict], viewer_id: Optional[str]
+    ) -> dict:
+        """Whether the viewer may reply to each post, keyed by postId.
+
+        Posts with the default (or a missing) setting are replyable by anyone and
+        are never looked up; the remaining ones share one batched follow query in
+        each direction plus a single read of the viewer's username.
+        """
+        result = {p["postId"]: True for p in posts}
+        restricted = [
+            p
+            for p in posts
+            if (p.get("replySettings") or DEFAULT_REPLY_SETTING)
+            != DEFAULT_REPLY_SETTING
+        ]
+        if not restricted:
+            return result
+
+        if not viewer_id:
+            # A guest can never reply, so a restricted post is always off-limits.
+            for post in restricted:
+                result[post["postId"]] = False
+            return result
+
+        author_ids = list({p["userId"] for p in restricted if p.get("userId")})
+        # Authors the viewer follows (drives `followers`), and authors who follow
+        # the viewer (drives `following`).
+        viewer_follows = set(
+            await self.repository.get_followed_ids(viewer_id, author_ids)
+        )
+        viewer_followers = set(
+            await self.repository.get_followers_of(viewer_id, author_ids)
+        )
+        viewer = await self.user_repository.find_one({"userId": viewer_id})
+        viewer_username = ((viewer or {}).get("username") or "").lower()
+
+        for post in restricted:
+            post_id = post["postId"]
+            author_id = post.get("userId")
+            if author_id == viewer_id:
+                continue
+            setting = post.get("replySettings")
+            if setting == "only_me":
+                result[post_id] = False
+            elif setting == "mentioned":
+                result[post_id] = viewer_username in (post.get("mentions") or [])
+            elif setting == "following":
+                result[post_id] = author_id in viewer_followers
+            elif setting == "followers":
+                result[post_id] = author_id in viewer_follows
+            elif setting == "following_and_followers":
+                result[post_id] = (
+                    author_id in viewer_followers or author_id in viewer_follows
+                )
+
+        return result
 
     async def _attach_quoted_posts(
         self,
@@ -1325,6 +1440,9 @@ class Page48Service:
             # A reply must not expose, or chain onto, a post its author is not
             # allowed to read.
             await self._assert_post_visible(parent, user.userId)
+            # ...and the parent's "who can reply" setting must allow it. Checked
+            # before the reply counter moves, so a refused reply never inflates it.
+            await self._assert_can_reply(parent, user)
 
             root_post_id = parent.get("rootPostId") or parent_post_id
             depth = parent.get("depth", 0) + 1
@@ -1384,6 +1502,10 @@ class Page48Service:
                 "options": self._build_poll_options(data.poll.options),
             }
 
+        setting = getattr(data, "replySettings", None) or DEFAULT_REPLY_SETTING
+        if setting not in REPLY_SETTINGS:
+            setting = DEFAULT_REPLY_SETTING
+
         return {
             "postId": post_id,
             "rootPostId": root_post_id,
@@ -1403,6 +1525,7 @@ class Page48Service:
             "pinnedAt": None,
             "isPrivate": is_private,
             "isSpoiler": bool(getattr(data, "isSpoiler", False)),
+            "replySettings": setting,
             "likesCount": 0,
             "repostCount": 0,
             "bookmarksCount": 0,
@@ -1438,6 +1561,7 @@ class Page48Service:
             PollMediaConflictError,
             QuotePollConflictError,
             PollReplyNotAllowedError,
+            ReplyNotAllowedError,
         ):
             raise
         except Exception as e:
@@ -1486,6 +1610,7 @@ class Page48Service:
             PollMediaConflictError,
             QuotePollConflictError,
             PollReplyNotAllowedError,
+            ReplyNotAllowedError,
         ):
             raise
         except Exception as e:
@@ -2188,6 +2313,9 @@ class Page48Service:
         # None means "leave the spoiler flag as it is".
         if data.isSpoiler is not None:
             update["isSpoiler"] = data.isSpoiler
+        # None means "leave the who-can-reply setting as it is".
+        if data.replySettings is not None:
+            update["replySettings"] = data.replySettings
 
         # None means "leave the media as it is"; a list (even empty) replaces it.
         removed_media: List[str] = []

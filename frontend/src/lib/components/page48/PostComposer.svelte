@@ -15,7 +15,9 @@
 	import MentionSuggestions from '$lib/components/page48/MentionSuggestions.svelte';
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import PostEmbedView from '$lib/components/page48/PostEmbedView.svelte';
-	import { page48Api, type Page48Post } from '$lib/api/page48';
+	import ReplyAudiencePicker from '$lib/components/page48/ReplyAudiencePicker.svelte';
+	import { page48Api, type Page48Post, type Page48ReplySetting } from '$lib/api/page48';
+	import { REPLY_AUDIENCE_ICONS } from '$lib/constants/replyAudience';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -49,7 +51,8 @@
 			media: DraftMedia[],
 			poll: { options: string[] } | null,
 			quotedPostId: string | null,
-			isSpoiler: boolean
+			isSpoiler: boolean,
+			replySettings: Page48ReplySetting
 		) => Promise<void>;
 		/** Only provided where threads make sense (the feed, not the reply composer). */
 		onPostThread?: (drafts: PostDraftInput[]) => Promise<void>;
@@ -128,6 +131,17 @@
 	/** Mark the active draft as a spoiler (each thread item carries its own flag). */
 	// svelte-ignore state_referenced_locally
 	let spoilerOn = $state(editingPost?.isSpoiler ?? false);
+	/**
+	 * Who may reply to the post being composed. Each post is independent (a thread
+	 * can set it per item), so the active draft keeps its own value here.
+	 */
+	// svelte-ignore state_referenced_locally
+	let replySettings = $state<Page48ReplySetting>(editingPost?.replySettings ?? 'everyone');
+	/** Anchor + target of the "Who can reply?" panel; null means the active draft. */
+	let audienceOpen = $state(false);
+	let audienceAnchor = $state<HTMLElement>();
+	let audienceThreadIndex = $state<number | null>(null);
+	let audienceIcon = $derived(REPLY_AUDIENCE_ICONS[replySettings]);
 	/** Reply mode hides the tool row until the user engages the composer. */
 	let composerActive = $state(false);
 	let pollOptions = $state<string[]>(['', '']);
@@ -244,6 +258,34 @@
 		emojiAnchor = anchor;
 		emojiThreadIndex = index;
 		emojiOpen = true;
+	}
+
+	/** Open/close the "Who can reply?" panel for the active draft (`index` null) or a thread post. */
+	function toggleAudience(anchor: HTMLElement | undefined, index: number | null) {
+		if (audienceOpen && audienceThreadIndex === index) {
+			audienceOpen = false;
+			return;
+		}
+		audienceAnchor = anchor;
+		audienceThreadIndex = index;
+		audienceOpen = true;
+	}
+
+	/** Apply a choice to whichever draft opened the panel. */
+	function selectAudience(setting: Page48ReplySetting) {
+		const index = audienceThreadIndex;
+		if (index === null) {
+			replySettings = setting;
+			return;
+		}
+		const item = threadItems[index];
+		if (item) item.replySettings = setting;
+	}
+
+	/** The setting the open panel reflects: the active draft, or a queued thread post. */
+	function audienceValue(): Page48ReplySetting {
+		if (audienceThreadIndex === null) return replySettings;
+		return threadItems[audienceThreadIndex]?.replySettings ?? 'everyone';
 	}
 
 	/** Insert an emoji into whichever draft opened the picker. */
@@ -560,7 +602,8 @@
 			media: [...media],
 			poll: pollOpen ? { options: pollDraft } : null,
 			quotedPostId: quote?.postId ?? null,
-			isSpoiler: spoilerOn
+			isSpoiler: spoilerOn,
+			replySettings
 		};
 	}
 
@@ -583,6 +626,9 @@
 		media = [];
 		closePoll();
 		spoilerOn = false;
+		replySettings = 'everyone';
+		audienceOpen = false;
+		audienceThreadIndex = null;
 		quoteOverride = undefined;
 		emojiOpen = false;
 		emojiThreadIndex = null;
@@ -608,6 +654,8 @@
 		// Indices shifted, so an open picker would point at the wrong post.
 		emojiOpen = false;
 		emojiThreadIndex = null;
+		audienceOpen = false;
+		audienceThreadIndex = null;
 	}
 
 	/** Remove one media tile from a queued thread post. */
@@ -738,7 +786,8 @@
 					only.media,
 					only.poll,
 					only.quotedPostId ?? null,
-					only.isSpoiler ?? false
+					only.isSpoiler ?? false,
+					only.replySettings ?? 'everyone'
 				);
 			}
 			threadItems.forEach((item) => revokeDraftMedia(item.media));
@@ -789,6 +838,7 @@
 			return (
 				content.trim() !== (original.content ?? '').trim() ||
 				spoilerOn !== (original.isSpoiler ?? false) ||
+				replySettings !== (original.replySettings ?? 'everyone') ||
 				!mediaUnchanged(original.media ?? [])
 			);
 		}
@@ -854,6 +904,39 @@
 			</div>
 		{/if}
 	</div>
+{/snippet}
+
+<!-- Who-can-reply control for one queued thread post (each post is independent). -->
+{#snippet threadAudienceButton(item: PostDraftInput, index: number)}
+	{@const Icon = REPLY_AUDIENCE_ICONS[item.replySettings ?? 'everyone']}
+	<button
+		type="button"
+		class="shrink-0 p-1.5 rounded-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+		onclick={(e) => toggleAudience(e.currentTarget, index)}
+		disabled={isSubmitting}
+		title={t('page48.replyAudience.title')}
+		aria-label={t('page48.replyAudience.title')}
+		aria-haspopup="dialog"
+		aria-expanded={audienceOpen && audienceThreadIndex === index}
+	>
+		<Icon size={15} />
+	</button>
+{/snippet}
+
+<!-- Who-can-reply control on the active draft (posts, threads and replies). -->
+{#snippet activeAudienceButton()}
+	{@const AudienceIcon = audienceIcon}
+	<button
+		class="p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+		onclick={(e) => toggleAudience(e.currentTarget, null)}
+		disabled={isSubmitting}
+		title={t('page48.replyAudience.title')}
+		aria-label={t('page48.replyAudience.title')}
+		aria-haspopup="dialog"
+		aria-expanded={audienceOpen && audienceThreadIndex === null}
+	>
+		<AudienceIcon size={20} class="group-hover:scale-110 transition-transform" />
+	</button>
 {/snippet}
 
 <!-- A drop target for files, not a landmark; the textarea/submit stay the controls. -->
@@ -944,6 +1027,7 @@
 					>
 						<EyeOff size={15} />
 					</button>
+					{@render threadAudienceButton(item, i)}
 					<button
 						type="button"
 						class="shrink-0 p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
@@ -1282,6 +1366,9 @@
 						>
 							<EyeOff size={20} class="group-hover:scale-110 transition-transform" />
 						</button>
+
+						<!-- Who can reply: shown on posts, threads, edits and replies alike -->
+						{@render activeAudienceButton()}
 					</div>
 
 					<!-- Character Counter + Submit Button -->
@@ -1331,6 +1418,15 @@
 
 {#if emojiOpen && emojiAnchor}
 	<EmojiPicker anchor={emojiAnchor} onPick={insertEmoji} onClose={() => (emojiOpen = false)} />
+{/if}
+
+{#if audienceOpen}
+	<ReplyAudiencePicker
+		anchor={audienceAnchor}
+		value={audienceValue()}
+		onSelect={selectAudience}
+		onClose={() => (audienceOpen = false)}
+	/>
 {/if}
 
 <style>

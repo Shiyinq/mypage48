@@ -10,6 +10,24 @@ import { getCSRFToken } from '$lib/utils/auth';
  */
 export type Page48AccountType = 'official_account' | 'page48_admin';
 
+/** Who may reply to a post. The author always may, whatever the setting is. */
+export type Page48ReplySetting =
+	| 'everyone'
+	| 'following'
+	| 'followers'
+	| 'following_and_followers'
+	| 'only_me'
+	| 'mentioned';
+
+export const PAGE48_REPLY_SETTINGS: Page48ReplySetting[] = [
+	'everyone',
+	'following',
+	'followers',
+	'following_and_followers',
+	'only_me',
+	'mentioned'
+];
+
 export interface Page48ImageRef {
 	filename: string;
 	width: number;
@@ -22,6 +40,8 @@ export interface Page48ThreadPostInput {
 	poll?: { options: string[] } | null;
 	quotedPostId?: string | null;
 	isSpoiler?: boolean;
+	/** Who may reply. A thread shares one setting, taken from its first item. */
+	replySettings?: Page48ReplySetting;
 }
 
 export interface Page48ThreadResponse {
@@ -140,6 +160,11 @@ export interface Page48Post {
 
 	/** True when the content is hidden behind a spoiler gate until revealed. */
 	isSpoiler: boolean;
+
+	/** Who may reply to this post. */
+	replySettings: Page48ReplySetting;
+	/** Whether the current viewer may reply (the author always may). */
+	canReply: boolean;
 
 	/** The post this one quotes, if any. Never nested more than one level. */
 	quotedPost?: Page48Post | null;
@@ -501,6 +526,7 @@ export const page48Api = {
 		poll?: { options: string[] } | null;
 		quotedPostId?: string;
 		isSpoiler?: boolean;
+		replySettings?: Page48ReplySetting;
 	}) => {
 		clearListResponseCache();
 		return client<Page48Post>('/page48/posts', {
@@ -511,7 +537,8 @@ export const page48Api = {
 				parentPostId: payload.parentPostId,
 				poll: payload.poll ?? null,
 				quotedPostId: payload.quotedPostId,
-				isSpoiler: payload.isSpoiler ?? false
+				isSpoiler: payload.isSpoiler ?? false,
+				replySettings: payload.replySettings ?? 'everyone'
 			}
 		});
 	},
@@ -587,13 +614,18 @@ export const page48Api = {
 	editPost: async (
 		postId: string,
 		content: string,
-		opts: { media?: Page48MediaRef[]; isSpoiler?: boolean } = {}
+		opts: {
+			media?: Page48MediaRef[];
+			isSpoiler?: boolean;
+			replySettings?: Page48ReplySetting;
+		} = {}
 	): Promise<Page48Post> => {
 		clearListResponseCache();
 		const body: Record<string, unknown> = { content };
 		// Omitting media leaves it untouched; an empty list clears it.
 		if (opts.media !== undefined) body.media = opts.media;
 		if (opts.isSpoiler !== undefined) body.isSpoiler = opts.isSpoiler;
+		if (opts.replySettings !== undefined) body.replySettings = opts.replySettings;
 		return client<Page48Post>(`/page48/posts/${postId}`, { method: 'PATCH', body });
 	},
 

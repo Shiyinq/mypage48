@@ -154,6 +154,7 @@ from src.page48.exceptions import (
     PostNotFoundError,
     QuotedPostNotFoundError,
     QuotePollConflictError,
+    ReplyNotAllowedError,
     ReportAlreadyExistsError,
     ReportCreationError,
     ThreadTooLongError,
@@ -189,6 +190,7 @@ from src.page48.http_exceptions import (
     PostNotFound,
     QuotedPostNotFound,
     QuotePollConflict,
+    ReplyNotAllowed,
     ReportAlreadyExists,
     ReportCreateError,
     ThreadTooLong,
@@ -594,6 +596,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, QuotedPostNotFound())
     if isinstance(exc, QuotePollConflictError):
         return await detailed_http_exception_handler(request, QuotePollConflict())
+    if isinstance(exc, ReplyNotAllowedError):
+        return await detailed_http_exception_handler(request, ReplyNotAllowed())
     if isinstance(exc, CannotPinReplyError):
         return await detailed_http_exception_handler(request, CannotPinReply())
     if isinstance(exc, CannotPrivateReplyError):

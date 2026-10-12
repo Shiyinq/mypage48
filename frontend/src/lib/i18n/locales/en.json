@@ -2318,6 +2318,23 @@
 			"error": "Could not update the spoiler.",
 			"notification": "Spoiler post"
 		},
+		"replyAudience": {
+			"title": "Who can reply?",
+			"everyone": "Everyone",
+			"following": "Accounts you follow",
+			"followers": "Only Followers",
+			"following_and_followers": "Following and Followers",
+			"only_me": "Only me",
+			"mentioned": "Only accounts you mention",
+			"lockedViewer": "You can't reply to this post.",
+			"locked": {
+				"following": "Only accounts the author follows can reply.",
+				"followers": "Only the author's followers can reply.",
+				"following_and_followers": "Only accounts the author follows and the author's followers can reply.",
+				"only_me": "Only the author can reply.",
+				"mentioned": "Only accounts the author mentioned can reply."
+			}
+		},
 		"repostMenu": {
 			"repost": "Repost",
 			"undo": "Undo repost",

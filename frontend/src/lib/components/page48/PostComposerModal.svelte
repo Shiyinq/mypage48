@@ -4,7 +4,7 @@
 	import { fade } from 'svelte/transition';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
-	import { page48Api, type Page48Post } from '$lib/api/page48';
+	import { page48Api, type Page48Post, type Page48ReplySetting } from '$lib/api/page48';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { resolveDraftMedia, type DraftMedia, type PostDraftInput } from '$lib/utils/page48';
@@ -52,7 +52,8 @@
 			media: await resolveDraftMedia(draft.media),
 			poll: draft.poll,
 			quotedPostId: draft.quotedPostId ?? null,
-			isSpoiler: draft.isSpoiler ?? false
+			isSpoiler: draft.isSpoiler ?? false,
+			replySettings: draft.replySettings ?? 'everyone'
 		};
 	}
 
@@ -69,7 +70,8 @@
 		media: DraftMedia[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
-		isSpoiler: boolean
+		isSpoiler: boolean,
+		replySettings: Page48ReplySetting
 	) {
 		try {
 			const newPost = await page48Api.createPost({
@@ -77,7 +79,8 @@
 				media: await resolveDraftMedia(media),
 				poll,
 				quotedPostId: quotedPostId ?? undefined,
-				isSpoiler
+				isSpoiler,
+				replySettings
 			});
 			if (newPost) {
 				announce(newPost);
@@ -97,7 +100,8 @@
 		try {
 			const updated = await page48Api.editPost(editingPost.postId, draft.content.trim(), {
 				media: await resolveDraftMedia(draft.media),
-				isSpoiler: draft.isSpoiler ?? false
+				isSpoiler: draft.isSpoiler ?? false,
+				replySettings: draft.replySettings ?? 'everyone'
 			});
 			onSaved?.(updated);
 			showToast(t('page48.edit.success'), 'success');

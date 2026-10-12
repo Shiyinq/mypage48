@@ -2316,6 +2316,23 @@
 			"error": "ネタバレを更新できませんでした。",
 			"notification": "ネタバレ投稿"
 		},
+		"replyAudience": {
+			"title": "誰が返信できますか？",
+			"everyone": "全員",
+			"following": "フォロー中のアカウント",
+			"followers": "フォロワーのみ",
+			"following_and_followers": "フォロー中とフォロワー",
+			"only_me": "自分のみ",
+			"mentioned": "メンションしたアカウントのみ",
+			"lockedViewer": "この投稿には返信できません。",
+			"locked": {
+				"following": "投稿者がフォローしているアカウントのみ返信できます。",
+				"followers": "投稿者のフォロワーのみ返信できます。",
+				"following_and_followers": "投稿者がフォローしているアカウントとフォロワーのみ返信できます。",
+				"only_me": "投稿者のみ返信できます。",
+				"mentioned": "投稿者がメンションしたアカウントのみ返信できます。"
+			}
+		},
 		"repostMenu": {
 			"repost": "リポスト",
 			"undo": "リポストを解除",

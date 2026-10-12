@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { X, FileQuestion } from 'lucide-svelte';
-	import { page48Api, type Page48Post, type ThreadResponse } from '$lib/api/page48';
+	import { X, FileQuestion, Lock } from 'lucide-svelte';
+	import {
+		page48Api,
+		type Page48Post,
+		type Page48ReplySetting,
+		type ThreadResponse
+	} from '$lib/api/page48';
 	import { page48Reads } from '$lib/stores/page48.svelte';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
@@ -13,6 +18,7 @@
 		sharePost,
 		togglePostInteraction,
 		resolveDraftMedia,
+		replyAudienceLockedText,
 		type DraftMedia,
 		type MentionCandidate,
 		type Page48Interaction
@@ -226,6 +232,10 @@
 	}
 
 	function handleComment(post: Page48Post) {
+		if (!post.canReply) {
+			showToast(replyAudienceLockedText(post.replySettings), 'info');
+			return;
+		}
 		replyTarget = post;
 	}
 
@@ -263,7 +273,8 @@
 		media: DraftMedia[],
 		poll: { options: string[] } | null,
 		quotedPostId: string | null,
-		isSpoiler: boolean
+		isSpoiler: boolean,
+		replySettings: Page48ReplySetting
 	) {
 		const target = replyTarget ?? focused;
 		if (!target) return;
@@ -275,7 +286,8 @@
 				parentPostId: target.postId,
 				poll,
 				quotedPostId: quotedPostId ?? undefined,
-				isSpoiler
+				isSpoiler,
+				replySettings
 			});
 			showToast(t('page48.post.replySent'), 'success');
 			// Every card in this view stays mounted, so the answer can be placed under
@@ -358,7 +370,17 @@
 {/snippet}
 
 {#snippet inlineComposer(post: Page48Post)}
-	{#if isAuthenticated.value && replyTarget?.postId === post.postId}
+	{#if replyTarget?.postId === post.postId && !post.canReply}
+		<!-- Mirrors X: a post with limited replies shows this where the composer would be. -->
+		<div class="px-5 py-3 sm:px-6">
+			<div
+				class="flex items-center gap-2 rounded-2xl bg-gray-100 px-4 py-3 text-[13px] font-medium text-gray-500 dark:bg-zinc-900 dark:text-gray-400"
+			>
+				<Lock size={16} class="shrink-0" />
+				<span>{replyAudienceLockedText(post.replySettings)}</span>
+			</div>
+		</div>
+	{:else if isAuthenticated.value && post.canReply && replyTarget?.postId === post.postId}
 		<div class="bg-white/60 dark:bg-zinc-950/60">
 			{#if post.postId !== focused?.postId}
 				<div class="flex items-center justify-between px-5 sm:px-6 pt-3">

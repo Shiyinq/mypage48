@@ -4,7 +4,8 @@ import {
 	type Page48ImageRef,
 	type Page48MediaItem,
 	type Page48MediaRef,
-	type Page48Post
+	type Page48Post,
+	type Page48ReplySetting
 } from '$lib/api/page48';
 import { storageApi } from '$lib/apis/storage';
 import { showToast } from '$lib/stores/toast.svelte';
@@ -54,6 +55,8 @@ export interface PostDraftInput {
 	quotedPostId?: string | null;
 	/** Hide this post's content behind a spoiler gate until the reader opts in. */
 	isSpoiler?: boolean;
+	/** Who may reply to this post. Defaults to `everyone` when omitted. */
+	replySettings?: Page48ReplySetting;
 }
 
 /** Upload the new items and return every item as an ordered ref the API expects. */
@@ -947,4 +950,22 @@ export async function sharePost(post: Page48Post): Promise<void> {
 	} catch {
 		showToast(t('page48.error.shareError'), 'error');
 	}
+}
+
+/**
+ * The notice a viewer sees when they may not reply, worded to match the post's
+ * own setting (e.g. "Only the author's followers can reply."). Falls back to a
+ * generic message for the default/unknown case, which cannot really happen.
+ */
+export function replyAudienceLockedText(setting?: Page48ReplySetting): string {
+	if (
+		setting === 'following' ||
+		setting === 'followers' ||
+		setting === 'following_and_followers' ||
+		setting === 'only_me' ||
+		setting === 'mentioned'
+	) {
+		return t(`page48.replyAudience.locked.${setting}`);
+	}
+	return t('page48.replyAudience.lockedViewer');
 }
