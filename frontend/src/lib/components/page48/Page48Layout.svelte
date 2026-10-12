@@ -139,15 +139,16 @@
 	}
 
 	/**
-	 * Home and Following keep their own scroll position, so those two links must
-	 * not let SvelteKit scroll the new page back to the top; the feed restores the
-	 * saved offset itself once it has rendered. Returns true when it handled the
+	 * Pages whose feed restores its own scroll position. Those links must not let
+	 * SvelteKit scroll the new page back to the top; the page restores the saved
+	 * offset itself once it has rendered. Returns true when it handled the
 	 * navigation (so the caller can prevent the default).
 	 */
 	function guardFeedNav(href: string | null | undefined, event: MouseEvent): boolean {
 		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
 			return false;
-		if (href !== basePath && href !== `${basePath}/following`) return false;
+		const restores = [basePath, `${basePath}/following`, `${basePath}/photos`];
+		if (!href || !restores.includes(href)) return false;
 		void goto(href, { noScroll: true });
 		return true;
 	}

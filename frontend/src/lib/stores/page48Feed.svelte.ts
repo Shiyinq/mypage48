@@ -2,18 +2,20 @@ import type { Page48Post } from '$lib/api/page48';
 import { page48Reads } from '$lib/stores/page48.svelte';
 
 /**
- * Persistent state for the Home and Following feeds.
+ * Persistent state for the Page48 feeds.
  *
  * Each feed keeps its own bucket (posts, pagination cursor, scroll offset and the
  * posts detected while the viewer was away). Because the bucket lives at module
- * scope, navigating between `/page48` and `/page48/following` renders the data
- * that is already there instead of refetching behind a skeleton, and the scroll
- * offset can be restored.
+ * scope, navigating between Home and Following (or back to the Photos gallery)
+ * renders the data that is already there instead of refetching behind a skeleton,
+ * and the scroll offset can be restored.
  */
 
 export interface Page48FeedParams {
 	media?: 'text' | 'image' | 'video' | null;
 	following?: boolean;
+	/** First page size; defaults to 20 (the video feed uses 10). */
+	limit?: number;
 }
 
 interface FeedBucket {
@@ -32,6 +34,11 @@ interface FeedBucket {
 }
 
 const FEED_PAGE_SIZE = 20;
+
+/** The page size this bucket was opened with (a media feed may use a smaller one). */
+function pageSize(params: Page48FeedParams): number {
+	return params.limit ?? FEED_PAGE_SIZE;
+}
 
 const buckets = $state<Record<string, FeedBucket>>({});
 
@@ -65,7 +72,7 @@ async function ensure(key: string, params: Page48FeedParams, force = false): Pro
 	state.error = null;
 	try {
 		const response = await page48Reads.getFeed(
-			FEED_PAGE_SIZE,
+			pageSize(params),
 			null,
 			params.media ?? null,
 			params.following ?? false
@@ -90,7 +97,7 @@ async function loadMore(key: string, params: Page48FeedParams): Promise<void> {
 	state.isLoadingMore = true;
 	try {
 		const response = await page48Reads.getFeed(
-			FEED_PAGE_SIZE,
+			pageSize(params),
 			state.nextCursor,
 			params.media ?? null,
 			params.following ?? false
@@ -117,7 +124,7 @@ async function refresh(key: string, params: Page48FeedParams): Promise<void> {
 	state.isRefreshing = true;
 	try {
 		const response = await page48Reads.getFeed(
-			FEED_PAGE_SIZE,
+			pageSize(params),
 			null,
 			params.media ?? null,
 			params.following ?? false

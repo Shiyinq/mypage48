@@ -3,10 +3,11 @@
 	import { ImageOff } from 'lucide-svelte';
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
+	import NewPostsIndicator from '$lib/components/page48/NewPostsIndicator.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import type { Page48Post } from '$lib/api/page48';
-	import { page48Reads } from '$lib/stores/page48.svelte';
+	import { page48FeedStore } from '$lib/stores/page48Feed.svelte';
 	import { measureMissingImageSizes, mediaRatio } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -19,12 +20,34 @@
 
 	const { t } = useTranslation();
 
-	let posts = $state<Page48Post[]>([]);
-	let loading = $state(true);
-	let loadingMore = $state(false);
-	let error = $state<string | null>(null);
-	let hasMore = $state(false);
-	let nextCursor = $state<string | null>(null);
+	// The gallery keeps its posts and scroll while mounted away, like Home/Following.
+	const feed = page48FeedStore;
+	const feedKey = 'photos';
+	const params = { media: 'image' as const, limit: 20 };
+	const bucket = feed.bucket(feedKey);
+
+	let posts = $derived(bucket.posts);
+	let loading = $derived(!bucket.isLoaded && !bucket.error);
+	let error = $derived(bucket.error);
+	let loadingMore = $derived(bucket.isLoadingMore);
+	let pendingCount = $derived(bucket.pending.length);
+	/** True while the gallery sits at the very top (drives the indicator style). */
+	let atTop = $state(true);
+
+	/** Up to three avatars of the authors behind the waiting photos. */
+	let pendingAvatars = $derived.by(() => {
+		const seen = new Set<string>();
+		const out: string[] = [];
+		for (const post of bucket.pending) {
+			const picture = post.userProfilePicture_small ?? post.userProfilePicture;
+			if (picture && !seen.has(post.userId)) {
+				seen.add(post.userId);
+				out.push(picture);
+				if (out.length >= 3) break;
+			}
+		}
+		return out;
+	});
 
 	/** One tile per photo, keeping its post and its index within `post.media`. */
 	let tiles = $derived(
@@ -42,6 +65,32 @@
 	let viewerReturnUrl: string | null = null;
 
 	let sentinel = $state<HTMLDivElement>();
+
+	/** How often an active gallery looks for new photos. */
+	const REFRESH_INTERVAL_MS = 3 * 60 * 1000;
+
+	let scrollFrame = 0;
+	let refreshTimer: ReturnType<typeof setInterval> | undefined;
+
+	function handleScroll() {
+		atTop = window.scrollY <= 16;
+		if (scrollFrame) return;
+		scrollFrame = requestAnimationFrame(() => {
+			scrollFrame = 0;
+			feed.saveScroll(feedKey, window.scrollY);
+		});
+	}
+
+	/** Refresh only while this page is the active, visible tab. */
+	function backgroundRefresh() {
+		if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
+		void feed.refresh(feedKey, params);
+	}
+
+	function applyPending() {
+		feed.applyPending(feedKey);
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
 
 	function openViewer(tile: (typeof tiles)[number]) {
 		viewerPost = tile.post;
@@ -61,45 +110,37 @@
 		viewerReturnUrl = null;
 	}
 
+	onMount(() => {
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		window.addEventListener('focus', backgroundRefresh);
+		document.addEventListener('visibilitychange', backgroundRefresh);
+		refreshTimer = setInterval(backgroundRefresh, REFRESH_INTERVAL_MS);
+
+		atTop = window.scrollY <= 16;
+
+		// Already loaded: render instantly from the store and restore scroll.
+		// A fresh gallery starts at the top, whichever page the user came from.
+		const restore = bucket.isLoaded ? bucket.scrollY : 0;
+		requestAnimationFrame(() => window.scrollTo(0, restore));
+		if (bucket.isLoaded) {
+			backgroundRefresh();
+		} else {
+			void feed.ensure(feedKey, params);
+		}
+
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+			window.removeEventListener('focus', backgroundRefresh);
+			document.removeEventListener('visibilitychange', backgroundRefresh);
+			if (refreshTimer) clearInterval(refreshTimer);
+			if (scrollFrame) cancelAnimationFrame(scrollFrame);
+		};
+	});
+
 	// Older posts stored no dimensions; measure them so each tile keeps its own ratio.
 	$effect(() => {
 		const images = posts.flatMap((post) => post.media ?? []).filter((m) => m.type === 'image');
 		if (images.length) return measureMissingImageSizes(images);
-	});
-
-	async function loadFeed() {
-		try {
-			loading = true;
-			error = null;
-			const res = await page48Reads.getFeed(20, null, 'image');
-			posts = res.data;
-			hasMore = res.meta.hasMore;
-			nextCursor = res.meta.nextCursor;
-		} catch (err: unknown) {
-			const e = err as { message?: string };
-			error = e?.message || t('page48.photos.loadError');
-		} finally {
-			loading = false;
-		}
-	}
-
-	async function loadMore() {
-		if (loadingMore || loading || !hasMore || !nextCursor) return;
-		try {
-			loadingMore = true;
-			const res = await page48Reads.getFeed(20, nextCursor, 'image');
-			posts = [...posts, ...res.data];
-			hasMore = res.meta.hasMore;
-			nextCursor = res.meta.nextCursor;
-		} catch (err) {
-			console.error(err);
-		} finally {
-			loadingMore = false;
-		}
-	}
-
-	onMount(() => {
-		void loadFeed();
 	});
 
 	// Load the next page shortly before the sentinel scrolls into view.
@@ -108,7 +149,7 @@
 		if (!el) return;
 		const observer = new IntersectionObserver(
 			(entries) => {
-				if (entries.some((entry) => entry.isIntersecting)) void loadMore();
+				if (entries.some((entry) => entry.isIntersecting)) void feed.loadMore(feedKey, params);
 			},
 			{ rootMargin: '800px' }
 		);
@@ -136,6 +177,14 @@
 		<p class="text-xs">{emptyText ?? t('page48.photos.emptyText')}</p>
 	</div>
 {:else}
+	<NewPostsIndicator
+		variant="overlay"
+		count={pendingCount}
+		avatars={pendingAvatars}
+		{atTop}
+		onApply={applyPending}
+	/>
+
 	<!-- Masonry: CSS columns keep each photo's own ratio without cropping. -->
 	<div class="columns-2 gap-1 sm:columns-3 md:columns-4 lg:columns-5 2xl:columns-6 [&>*]:mb-1">
 		{#each tiles as tile (tile.post.postId + ':' + tile.item.filename)}

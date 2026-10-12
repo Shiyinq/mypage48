@@ -115,11 +115,11 @@
 
 		atTop = window.scrollY <= 16;
 
-		// Already loaded: render instantly from the store and restore scroll.
-		// First visit: load (skeleton) and start at the top.
+		// Always set the offset ourselves: a loaded feed restores where it was, a
+		// fresh one starts at the top — whichever page the user came from.
+		const restore = persistent && bucket.isLoaded ? bucket.scrollY : 0;
+		requestAnimationFrame(() => window.scrollTo(0, restore));
 		if (bucket.isLoaded) {
-			const restore = persistent ? bucket.scrollY : 0;
-			requestAnimationFrame(() => window.scrollTo(0, restore));
 			backgroundRefresh();
 		} else {
 			void feed.ensure(feedKey, params);
