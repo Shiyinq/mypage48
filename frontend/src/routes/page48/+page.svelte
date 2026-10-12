@@ -19,4 +19,4 @@
 	keywords="Page48, JKT48, JKT48 Page48, hashtag JKT48, komunitas JKT48, fan JKT48"
 />
 
-<Page48Feed showComposer />
+<Page48Feed />

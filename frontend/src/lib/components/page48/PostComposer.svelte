@@ -9,7 +9,7 @@
 		X,
 		Loader2
 	} from 'lucide-svelte';
-	import { onMount, tick } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import EmojiPicker from '$lib/components/page48/EmojiPicker.svelte';
 	import MentionSuggestions from '$lib/components/page48/MentionSuggestions.svelte';
@@ -69,6 +69,11 @@
 		 * being viewed. Who the viewer follows is added as a fallback automatically.
 		 */
 		mentionCandidates?: MentionCandidate[];
+		/**
+		 * Reports whether there is unsaved work, so a host modal can warn before
+		 * closing. Fires with `false` once the draft is empty or after publishing.
+		 */
+		onDirtyChange?: (dirty: boolean) => void;
 	}
 
 	let {
@@ -81,7 +86,8 @@
 		autofocus = false,
 		quotedPost = null,
 		onRemoveQuote,
-		mentionCandidates = []
+		mentionCandidates = [],
+		onDirtyChange
 	}: Props = $props();
 
 	/** Edit mode: same composer, but it saves an existing post. */
@@ -132,7 +138,15 @@
 	let threadItems = $state<PostDraftInput[]>([]);
 	let textareaEl = $state<HTMLTextAreaElement>();
 	let emojiButton = $state<HTMLButtonElement>();
+	/** Anchor + target of the emoji picker; `emojiThreadIndex` null means the active draft. */
+	let emojiAnchor = $state<HTMLElement>();
+	let emojiThreadIndex = $state<number | null>(null);
 	let fileInput = $state<HTMLInputElement>();
+	/** Shared picker for adding media to an existing thread post (not the active one). */
+	let threadFileInput = $state<HTMLInputElement>();
+	let threadMediaTarget = $state<number | null>(null);
+	/** Which thread post is currently validating/reading its picked files. */
+	let threadMediaBusy = $state<number | null>(null);
 
 	/** The `@handle` being typed, or null when no suggestion panel should show. */
 	let mentionQuery = $state<string | null>(null);
@@ -158,6 +172,41 @@
 	function autoGrow(el: HTMLTextAreaElement) {
 		el.style.height = 'auto';
 		el.style.height = el.scrollHeight + 'px';
+	}
+
+	/** Grow a textarea to fit its content; used by the inline thread post editors. */
+	function autosize(node: HTMLTextAreaElement, _value: string) {
+		const resize = () => {
+			node.style.height = 'auto';
+			node.style.height = `${node.scrollHeight}px`;
+		};
+		// Measure only after the value binding and layout settle: doing it synchronously
+		// at mount can run before the textarea's value is applied, collapsing a long
+		// multi-line post to a single row until the user focuses or types.
+		requestAnimationFrame(resize);
+		node.addEventListener('input', resize);
+		// Safety net for the "click / place cursor / tap" case.
+		node.addEventListener('focus', resize);
+		// A width change re-wraps the text, so re-measure (height changes are ignored
+		// to avoid feeding our own resize back into the observer).
+		let lastWidth = node.clientWidth;
+		const observer = new ResizeObserver(() => {
+			if (node.clientWidth === lastWidth) return;
+			lastWidth = node.clientWidth;
+			resize();
+		});
+		observer.observe(node);
+		return {
+			// Fires when the bound value changes programmatically (e.g. emoji inserted).
+			update() {
+				void tick().then(resize);
+			},
+			destroy() {
+				node.removeEventListener('input', resize);
+				node.removeEventListener('focus', resize);
+				observer.disconnect();
+			}
+		};
 	}
 
 	// Mentions and hashtags are coloured while typing, matching the published post.
@@ -186,9 +235,33 @@
 		autoGrow(el);
 	}
 
-	/** Insert an emoji at the caret, keeping focus and the caret in the textarea. */
+	/** Open/close the emoji picker for the active draft (`index` null) or a thread post. */
+	function toggleEmoji(anchor: HTMLElement | undefined, index: number | null) {
+		if (emojiOpen && emojiThreadIndex === index) {
+			emojiOpen = false;
+			return;
+		}
+		emojiAnchor = anchor;
+		emojiThreadIndex = index;
+		emojiOpen = true;
+	}
+
+	/** Insert an emoji into whichever draft opened the picker. */
 	async function insertEmoji(char: string) {
-		await insertAtCaret(char);
+		const index = emojiThreadIndex;
+		if (index === null) {
+			// Active draft: insert at the caret and keep focus there.
+			await insertAtCaret(char);
+			return;
+		}
+
+		const item = threadItems[index];
+		if (!item) return;
+		if (item.content.length + char.length > MAX_CONTENT_LENGTH) {
+			showToast(t('page48.composer.emojiTooLong'), 'error');
+			return;
+		}
+		item.content += char;
 	}
 
 	/**
@@ -310,7 +383,26 @@
 		return false;
 	}
 
-	/** Add any mix of photos and videos; up to `PAGE48_MAX_MEDIA` in total. */
+	/**
+	 * Validate picked files and shape them into draft entries, up to `room` of them.
+	 * Shared by the active composer and the per-thread-post media picker.
+	 */
+	async function buildMediaDrafts(files: File[], room: number): Promise<DraftMedia[]> {
+		const picked: DraftMedia[] = [];
+		probing = true;
+		try {
+			for (const file of files.slice(0, room)) {
+				const draft = await buildMediaDraft(file);
+				if (!draft) continue;
+				picked.push({ kind: 'new', draft, preview: URL.createObjectURL(file) });
+			}
+		} finally {
+			probing = false;
+		}
+		return picked;
+	}
+
+	/** Add any mix of photos and videos to the active draft; up to `PAGE48_MAX_MEDIA`. */
 	async function addMediaFiles(files: File[]) {
 		if (files.length === 0) return;
 
@@ -320,18 +412,7 @@
 			return;
 		}
 
-		probing = true;
-		try {
-			const picked: DraftMedia[] = [];
-			for (const file of files.slice(0, room)) {
-				const draft = await buildMediaDraft(file);
-				if (!draft) continue;
-				picked.push({ kind: 'new', draft, preview: URL.createObjectURL(file) });
-			}
-			media = [...media, ...picked];
-		} finally {
-			probing = false;
-		}
+		media = [...media, ...(await buildMediaDrafts(files, room))];
 	}
 
 	async function handleMediaSelect(e: Event) {
@@ -339,6 +420,36 @@
 		const files = Array.from(target.files ?? []);
 		target.value = '';
 		await addMediaFiles(files);
+	}
+
+	/** Open the picker that adds media to a queued thread post instead of the active one. */
+	function openThreadMediaPicker(index: number) {
+		threadMediaTarget = index;
+		threadFileInput?.click();
+	}
+
+	async function handleThreadMediaSelect(e: Event) {
+		const target = e.target as HTMLInputElement;
+		const files = Array.from(target.files ?? []);
+		target.value = '';
+		const index = threadMediaTarget;
+		threadMediaTarget = null;
+		if (index === null || files.length === 0) return;
+
+		const item = threadItems[index];
+		if (!item) return;
+		const room = PAGE48_MAX_MEDIA - item.media.length;
+		if (room <= 0) {
+			showToast(t('page48.composer.maxMedia'), 'error');
+			return;
+		}
+
+		threadMediaBusy = index;
+		try {
+			item.media = [...item.media, ...(await buildMediaDrafts(files, room))];
+		} finally {
+			threadMediaBusy = null;
+		}
 	}
 
 	// --- Drag & drop: files to add, tiles to reorder ---
@@ -429,6 +540,13 @@
 		}
 	}
 
+	/** Release blob URLs held by draft media (only newly picked files own one). */
+	function revokeDraftMedia(entries: DraftMedia[]) {
+		entries.forEach((entry) => {
+			if (entry.kind === 'new') URL.revokeObjectURL(entry.preview);
+		});
+	}
+
 	function removeMedia(index: number) {
 		const entry = media[index];
 		if (entry?.kind === 'new') URL.revokeObjectURL(entry.preview);
@@ -455,16 +573,19 @@
 		);
 	}
 
-	function resetDraft() {
+	/**
+	 * Clear the active draft. `releaseMedia` is false when the media is handed off
+	 * to a thread post, which keeps ownership of the same blob URLs.
+	 */
+	function resetDraft(releaseMedia = true) {
 		content = '';
-		media.forEach((entry) => {
-			if (entry.kind === 'new') URL.revokeObjectURL(entry.preview);
-		});
+		if (releaseMedia) revokeDraftMedia(media);
 		media = [];
 		closePoll();
 		spoilerOn = false;
 		quoteOverride = undefined;
 		emojiOpen = false;
+		emojiThreadIndex = null;
 		void tick().then(() => {
 			if (textareaEl) textareaEl.style.height = 'auto';
 		});
@@ -476,27 +597,31 @@
 		if (!draftHasContent(draft)) return;
 
 		threadItems = [...threadItems, draft];
-		resetDraft();
+		// The media moved into the thread post, so its blob URLs must stay alive.
+		resetDraft(false);
 	}
 
 	function removeThreadItem(index: number) {
+		const item = threadItems[index];
+		if (item) revokeDraftMedia(item.media);
 		threadItems = threadItems.filter((_, i) => i !== index);
+		// Indices shifted, so an open picker would point at the wrong post.
+		emojiOpen = false;
+		emojiThreadIndex = null;
 	}
 
-	function draftSummary(draft: PostDraftInput): string {
-		const parts: string[] = [];
-		const mediaCount = draft.media.length;
-		if (mediaCount > 0) parts.push(t('page48.composer.mediaCount', { count: mediaCount }));
-		if (draft.poll) parts.push(t('page48.poll.create'));
-		if (draft.quotedPostId) parts.push(t('page48.repostMenu.quote'));
-		return parts.join(' · ');
+	/** Remove one media tile from a queued thread post. */
+	function removeThreadMedia(itemIndex: number, mediaIndex: number) {
+		const item = threadItems[itemIndex];
+		if (!item) return;
+		const entry = item.media[mediaIndex];
+		if (entry?.kind === 'new') URL.revokeObjectURL(entry.preview);
+		item.media = item.media.filter((_, i) => i !== mediaIndex);
 	}
 
 	// Poll editor (a poll can't be combined with media)
 	function dropMedia() {
-		media.forEach((entry) => {
-			if (entry.kind === 'new') URL.revokeObjectURL(entry.preview);
-		});
+		revokeDraftMedia(media);
 		media = [];
 	}
 
@@ -560,6 +685,13 @@
 		return 'text-gray-400 dark:text-gray-500';
 	}
 
+	/** Mirror the post counter colours: amber near the limit, red at the limit. */
+	function contentCounterClass(length: number) {
+		if (length >= MAX_CONTENT_LENGTH) return 'text-red-500';
+		if (length >= MAX_CONTENT_LENGTH - 50) return 'text-amber-500';
+		return 'text-gray-400 dark:text-gray-500';
+	}
+
 	let pollDraft = $derived(
 		pollOptions.map((option) => option.trim()).filter((option) => option.length > 0)
 	);
@@ -609,6 +741,7 @@
 					only.isSpoiler ?? false
 				);
 			}
+			threadItems.forEach((item) => revokeDraftMedia(item.media));
 			threadItems = [];
 			resetDraft();
 		} catch (error) {
@@ -635,6 +768,49 @@
 				? `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.data.name || '')}&background=fca5a5&color=fff`
 				: null)
 	);
+
+	/** Whether the media strip still matches the post being edited (same items and order). */
+	function mediaUnchanged(original: Page48Post['media']): boolean {
+		if (media.length !== original.length) return false;
+		return media.every(
+			(entry, i) => entry.kind === 'existing' && entry.item.filename === original[i]?.filename
+		);
+	}
+
+	/**
+	 * Whether the user has unsaved work worth warning about. In edit mode this means
+	 * the draft diverges from the original post; in create mode any content counts.
+	 * A quote merely seeded by the host is not the user's doing (only a pasted one is).
+	 */
+	let hasDraft = $derived.by(() => {
+		if (editing) {
+			const original = editingPost;
+			if (!original) return false;
+			return (
+				content.trim() !== (original.content ?? '').trim() ||
+				spoilerOn !== (original.isSpoiler ?? false) ||
+				!mediaUnchanged(original.media ?? [])
+			);
+		}
+
+		return (
+			content.trim().length > 0 ||
+			media.length > 0 ||
+			(pollOpen && pollDraft.length >= POLL_MIN_OPTIONS) ||
+			threadItems.length > 0 ||
+			!!quoteOverride
+		);
+	});
+
+	$effect(() => {
+		onDirtyChange?.(hasDraft);
+	});
+
+	// The modal owns the draft; release its blob URLs if it is closed without posting.
+	onDestroy(() => {
+		revokeDraftMedia(media);
+		threadItems.forEach((item) => revokeDraftMedia(item.media));
+	});
 </script>
 
 <!-- Submit button: sits beside the input until the tool row appears, then moves into it -->
@@ -657,348 +833,487 @@
 	</button>
 {/snippet}
 
+<!-- The author's avatar, reused for every thread post and the active composer. -->
+{#snippet composerAvatar(sizeClass: string)}
+	<div
+		class={`${sizeClass} rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 ring-2 ring-white dark:ring-zinc-900 shadow-sm`}
+	>
+		{#if userAvatar}
+			<img
+				src={userAvatar}
+				alt={t('page48.aria.profile')}
+				class="w-full h-full object-cover"
+				onerror={(e) => {
+					(e.target as HTMLImageElement).src =
+						`https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.data?.name || '')}&background=fca5a5&color=fff`;
+				}}
+			/>
+		{:else}
+			<div class="w-full h-full bg-red-100 flex items-center justify-center text-red-500 font-bold">
+				?
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
 <!-- A drop target for files, not a landmark; the textarea/submit stay the controls. -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class={`flex gap-4 py-5 px-5 sm:px-6 border-b border-gray-100 dark:border-white/10 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl transition-all ${dragOver ? 'ring-2 ring-inset ring-red-400/70' : ''}`}
+	class={`py-5 px-5 sm:px-6 border-b border-gray-100 dark:border-white/10 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl transition-all ${dragOver ? 'ring-2 ring-inset ring-red-400/70' : ''}`}
 	ondragover={handleDragOver}
 	ondragleave={handleDragLeave}
 	ondrop={handleDrop}
 >
-	<!-- Avatar -->
-	<div class="shrink-0 pt-1">
-		<div
-			class="w-11 h-11 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 ring-2 ring-white dark:ring-zinc-900 shadow-sm"
-		>
-			{#if userAvatar}
-				<img
-					src={userAvatar}
-					alt={t('page48.aria.profile')}
-					class="w-full h-full object-cover"
-					onerror={(e) => {
-						(e.target as HTMLImageElement).src =
-							`https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.data?.name || '')}&background=fca5a5&color=fff`;
-					}}
-				/>
-			{:else}
-				<div
-					class="w-full h-full bg-red-100 flex items-center justify-center text-red-500 font-bold"
-				>
-					?
-				</div>
-			{/if}
-		</div>
-	</div>
+	<!-- Queued thread posts: each one stays editable, with its own avatar rail. -->
+	{#each threadItems as item, i (item)}
+		<div class="flex gap-3" in:fade>
+			<div class="flex shrink-0 flex-col items-center self-stretch pt-1">
+				{@render composerAvatar('w-10 h-10')}
+				<div class="my-1 w-0.5 flex-1 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
+			</div>
 
-	<!-- Composer Content -->
-	<div class="flex-1 min-w-0 flex flex-col pt-1.5">
-		<!-- Queued thread posts -->
-		{#if threadItems.length > 0}
-			<div class="flex flex-col gap-1.5 mb-2" in:fade>
-				{#each threadItems as item, i (i)}
-					{@const summary = draftSummary(item)}
-					<div
-						class="flex items-start gap-2 rounded-xl border border-gray-200 dark:border-zinc-800 px-3 py-2"
+			<div class="min-w-0 flex-1 pb-4">
+				<div class="flex items-start gap-2">
+					<span
+						class="mt-1 shrink-0 text-[11px] font-bold tabular-nums text-gray-300 dark:text-zinc-600"
 					>
-						<span class="mt-0.5 shrink-0 text-[11px] font-bold tabular-nums text-gray-400">
-							{i + 1}
+						{i + 1}
+					</span>
+					<textarea
+						use:autosize={item.content}
+						bind:value={item.content}
+						maxlength={MAX_CONTENT_LENGTH}
+						placeholder={resolvedPlaceholder}
+						rows="1"
+						class={`block min-w-0 flex-1 resize-none bg-transparent outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 ${CONTENT_TEXT_CLASS}`}
+					></textarea>
+					<!-- Character counter for this thread post -->
+					{#if item.content.length > 0}
+						<span
+							class={`mt-1 shrink-0 text-[12px] font-medium tabular-nums ${contentCounterClass(
+								item.content.length
+							)}`}
+							aria-live="polite"
+						>
+							{item.content.length}/{MAX_CONTENT_LENGTH}
 						</span>
-						<div class="min-w-0 flex-1">
-							<p class="truncate text-[13px] text-gray-700 dark:text-gray-200">
-								{item.content.trim() || t('page48.aria.media')}
-							</p>
-							{#if summary}
-								<p class="mt-0.5 text-[11px] text-gray-400 dark:text-gray-500">{summary}</p>
-							{/if}
-						</div>
-						<button
-							type="button"
-							class="shrink-0 p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
-							onclick={() => removeThreadItem(i)}
-							aria-label={t('page48.thread.removePost')}
-						>
-							<X size={14} />
-						</button>
-					</div>
-				{/each}
-			</div>
-		{/if}
-
-		<div class="flex items-center gap-3">
-			<div class="relative min-w-0 flex-1">
-				<!-- Highlight layer. The textarea's own text is transparent so mentions,
-				     hashtags and links can be coloured as they are typed. -->
-				<div
-					aria-hidden="true"
-					class={`pointer-events-none absolute inset-0 select-none overflow-hidden text-gray-900 dark:text-gray-100 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
-				>
-					{#each contentParts as part, i (i)}
-						{#if part.tag}
-							<span class="text-red-500">{part.text}</span>
-						{:else if part.mention}
-							<span class="font-semibold text-red-500">{part.text}</span>
-						{:else if part.link}
-							<span class="text-blue-500">{part.text}</span>
-						{:else if part.spoiler}
-							<span class="spoiler-hidden">||{part.text}||</span>
-						{:else}
-							{part.text}
-						{/if}
-					{/each}
-				</div>
-				<textarea
-					bind:this={textareaEl}
-					bind:value={content}
-					placeholder={resolvedPlaceholder}
-					maxlength={MAX_CONTENT_LENGTH}
-					class={`relative block w-full resize-none bg-transparent text-transparent caret-gray-900 outline-none placeholder:text-gray-400 dark:caret-gray-100 dark:placeholder:text-gray-500 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
-					rows="1"
-					oninput={(e) => {
-						autoGrow(e.target as HTMLTextAreaElement);
-						syncMentionState();
-					}}
-					onkeydown={handleMentionKeydown}
-					onpaste={handlePaste}
-					onblur={closeMentions}
-					onfocus={() => (composerActive = true)}
-				></textarea>
-			</div>
-			{#if !showToolRow}
-				{@render submitButton()}
-			{/if}
-		</div>
-
-		<!-- Embeddable link preview (YouTube/X/Instagram/TikTok/Spotify) -->
-		{#if postEmbed}
-			<div class="mt-2" in:fade>
-				<PostEmbedView embed={postEmbed} compact />
-			</div>
-		{/if}
-
-		<!-- Poll editor -->
-		{#if pollOpen}
-			<div class="mt-2 rounded-2xl border border-gray-200 dark:border-zinc-800 p-2" in:fade>
-				{#each pollOptions as _, i}
-					<div class="flex items-center gap-1 mb-2 last:mb-0">
-						<div class="relative flex-1 min-w-0">
-							<input
-								bind:value={pollOptions[i]}
-								type="text"
-								maxlength={POLL_MAX_OPTION_LENGTH}
-								placeholder={t('page48.poll.optionPlaceholder', { index: i + 1 })}
-								aria-label={t('page48.poll.optionPlaceholder', { index: i + 1 })}
-								class="w-full rounded-lg border border-gray-200 dark:border-zinc-800 pl-3 pr-14 py-2 text-[14px] text-gray-900 dark:text-gray-100 bg-transparent outline-none transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-red-400 dark:focus:border-red-500"
-							/>
-							<span
-								class={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium tabular-nums ${pollCounterClass(
-									pollOptions[i].length
-								)}`}
-							>
-								{pollOptions[i].length}/{POLL_MAX_OPTION_LENGTH}
-							</span>
-						</div>
-						{#if pollOptions.length > POLL_MIN_OPTIONS}
-							<button
-								type="button"
-								class="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
-								onclick={() => removePollOption(i)}
-								aria-label={t('page48.poll.removeOption', { index: i + 1 })}
-							>
-								<X size={16} />
-							</button>
-						{/if}
-					</div>
-				{/each}
-
-				<div class="flex items-center justify-between mt-1">
+					{/if}
+					<!-- Media picker for this thread post -->
 					<button
 						type="button"
-						class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-						onclick={addPollOption}
-						disabled={pollOptions.length >= POLL_MAX_OPTIONS}
-					>
-						<Plus size={15} />
-						{t('page48.poll.addOption')}
-					</button>
-					<button
-						type="button"
-						class="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
-						onclick={closePoll}
-						title={t('page48.poll.remove')}
-						aria-label={t('page48.poll.remove')}
-					>
-						<Trash2 size={16} />
-					</button>
-				</div>
-
-				{#if !pollReady}
-					<p class="px-1 mt-1 text-[12px] text-amber-500">{t('page48.poll.hint')}</p>
-				{/if}
-			</div>
-		{/if}
-
-		<!-- Media Previews: the post's own media + newly picked, images and videos -->
-		{#if media.length > 0}
-			<div class="flex gap-2 mt-2 mb-2 overflow-x-auto pb-2 snap-x" in:fade>
-				{#each media as entry, i (entry.kind === 'existing' ? entry.item.filename : entry.preview)}
-					{@const isVideo =
-						entry.kind === 'existing' ? entry.item.type === 'video' : entry.draft.type === 'video'}
-					{@const src =
-						entry.kind === 'existing'
-							? entry.item.url_small || entry.item.url_medium || entry.item.url
-							: entry.preview}
-					<!-- Each tile is a movable handle; the remove button stays the control. -->
-					<!-- svelte-ignore a11y_no_static_element_interactions -->
-					<div
-						class={`relative shrink-0 snap-start cursor-grab active:cursor-grabbing ${
-							dragIndex === i ? 'opacity-40' : ''
-						}`}
-						draggable="true"
-						ondragstart={(event) => handleMediaDragStart(i, event)}
-						ondragover={(event) => handleMediaDragOver(i, event)}
-						ondrop={(event) => handleMediaDrop(i, event)}
-						ondragend={() => (dragIndex = null)}
-						title={t('page48.composer.dragToReorder')}
-					>
-						{#if isVideo}
-							<video
-								{src}
-								muted
-								playsinline
-								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 bg-black"
-							></video>
-						{:else}
-							<img
-								{src}
-								alt={t('page48.composer.previewAlt')}
-								class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
-							/>
-						{/if}
-						<button
-							class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
-							onclick={() => removeMedia(i)}
-						>
-							<X size={14} />
-						</button>
-					</div>
-				{/each}
-			</div>
-		{/if}
-
-		<!-- Quoted post being replied to by this composer -->
-		{#if quote}
-			<QuotedPostCard post={quote} removable={!editing} onRemove={removeQuote} />
-		{/if}
-
-		{#if showToolRow}
-			<!-- Action Bar -->
-			<div class="flex items-center justify-between mt-3 pt-2 border-t border-transparent">
-				<div class="flex items-center gap-1">
-					<!-- Media: photos and videos, mixed, one picker -->
-					<button
-						class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
-						onclick={() => fileInput?.click()}
-						disabled={media.length >= PAGE48_MAX_MEDIA || probing || isSubmitting || pollOpen}
+						class="shrink-0 p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+						onclick={() => openThreadMediaPicker(i)}
+						disabled={item.media.length >= PAGE48_MAX_MEDIA || probing || isSubmitting}
 						title={t('page48.composer.addMedia')}
 						aria-label={t('page48.composer.addMedia')}
 					>
-						{#if probing}
-							<Loader2 size={20} class="animate-spin" />
+						{#if threadMediaBusy === i}
+							<Loader2 size={15} class="animate-spin" />
 						{:else}
-							<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />
+							<ImageIcon size={15} />
 						{/if}
 					</button>
-					<input
-						type="file"
-						accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
-						multiple
-						class="hidden"
-						bind:this={fileInput}
-						onchange={handleMediaSelect}
-					/>
-
-					<!-- Emoji Picker -->
+					<!-- Emoji picker for this thread post -->
 					<button
-						bind:this={emojiButton}
-						class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
-							emojiOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+						type="button"
+						class={`shrink-0 p-1.5 rounded-full transition-colors cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-40 disabled:cursor-not-allowed ${
+							emojiOpen && emojiThreadIndex === i
+								? 'text-red-500'
+								: 'text-gray-400 hover:text-red-500'
 						}`}
-						onclick={() => (emojiOpen = !emojiOpen)}
+						onclick={(e) => toggleEmoji(e.currentTarget, i)}
 						disabled={isSubmitting}
 						title={t('page48.composer.addEmoji')}
 						aria-label={t('page48.composer.addEmoji')}
 						aria-haspopup="dialog"
-						aria-expanded={emojiOpen}
+						aria-expanded={emojiOpen && emojiThreadIndex === i}
 					>
-						<Smile size={20} class="group-hover:scale-110 transition-transform" />
+						<Smile size={15} />
 					</button>
-
-					<!-- Poll (not available on replies, quotes or edits) -->
-					{#if !isReply && !quotedPost && !editing}
-						<button
-							class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
-								pollOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-							}`}
-							onclick={pollOpen ? closePoll : openPoll}
-							disabled={media.length > 0 || probing || isSubmitting || isThread}
-							title={t('page48.poll.create')}
-							aria-label={t('page48.poll.create')}
-							aria-pressed={pollOpen}
-						>
-							<ChartNoAxesColumn size={20} class="group-hover:scale-110 transition-transform" />
-						</button>
-					{/if}
-
-					<!-- Spoiler toggle: available on every post, replies included -->
+					<!-- Spoiler toggle for this thread post -->
 					<button
-						class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
-							spoilerOn ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+						type="button"
+						class={`shrink-0 p-1.5 rounded-full transition-colors cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
+							item.isSpoiler ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
 						}`}
-						onclick={() => (spoilerOn = !spoilerOn)}
+						onclick={() => (item.isSpoiler = !item.isSpoiler)}
 						disabled={isSubmitting}
 						title={t('page48.spoiler.mark')}
 						aria-label={t('page48.spoiler.mark')}
-						aria-pressed={spoilerOn}
+						aria-pressed={item.isSpoiler ?? false}
 					>
-						<EyeOff size={20} class="group-hover:scale-110 transition-transform" />
+						<EyeOff size={15} />
+					</button>
+					<button
+						type="button"
+						class="shrink-0 p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+						onclick={() => removeThreadItem(i)}
+						aria-label={t('page48.thread.removePost')}
+						title={t('page48.thread.removePost')}
+					>
+						<X size={15} />
 					</button>
 				</div>
 
-				<!-- Character Counter + Submit Button -->
-				<div class="flex items-center gap-3">
-					{#if content.length > 0}
-						<span
-							class={`text-[13px] font-medium tabular-nums ${
-								content.length >= MAX_CONTENT_LENGTH
-									? 'text-red-500'
-									: content.length >= MAX_CONTENT_LENGTH - 50
-										? 'text-amber-500'
-										: 'text-gray-400 dark:text-gray-500'
-							}`}
-							aria-live="polite"
-						>
-							{content.length}/{MAX_CONTENT_LENGTH}
-						</span>
-					{/if}
+				<!-- Media previews for this thread post -->
+				{#if item.media.length > 0}
+					<div class="mt-2 flex gap-2 overflow-x-auto pb-1">
+						{#each item.media as entry, mi (entry.kind === 'existing' ? entry.item.filename : entry.preview)}
+							{@const isVideo =
+								entry.kind === 'existing'
+									? entry.item.type === 'video'
+									: entry.draft.type === 'video'}
+							{@const src =
+								entry.kind === 'existing'
+									? entry.item.url_small || entry.item.url_medium || entry.item.url
+									: entry.preview}
+							<div class="relative shrink-0">
+								{#if isVideo}
+									<video
+										{src}
+										muted
+										playsinline
+										class="h-28 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 bg-black"
+									></video>
+								{:else}
+									<img
+										{src}
+										alt={t('page48.composer.previewAlt')}
+										class="h-28 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
+									/>
+								{/if}
+								<button
+									type="button"
+									class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
+									onclick={() => removeThreadMedia(i, mi)}
+									aria-label={t('page48.thread.removeMedia')}
+									title={t('page48.thread.removeMedia')}
+								>
+									<X size={13} />
+								</button>
+							</div>
+						{/each}
+					</div>
+				{/if}
 
-					<!-- Thread: only where a thread makes sense (never in the reply composer) -->
-					{#if onPostThread}
+				<!-- Spoiler marker so a marked thread post is recognisable at a glance. -->
+				{#if item.isSpoiler}
+					<div
+						class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-500 dark:bg-red-500/10"
+					>
+						<EyeOff size={12} />
+						{t('page48.spoiler.badge')}
+					</div>
+				{/if}
+
+				<!-- Poll and quote can't be edited inline; surface them so they're not lost. -->
+				{#if item.poll}
+					<div class="mt-2 flex items-center gap-1.5 text-[12px] text-gray-500 dark:text-gray-400">
+						<ChartNoAxesColumn size={14} />
+						<span>{t('page48.poll.create')}</span>
+					</div>
+				{/if}
+				{#if item.quotedPostId}
+					<div class="mt-1.5 text-[12px] text-gray-500 dark:text-gray-400">
+						{t('page48.repostMenu.quote')}
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/each}
+
+	<!-- Shared picker for adding media to a queued thread post. -->
+	<input
+		type="file"
+		accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+		multiple
+		class="hidden"
+		bind:this={threadFileInput}
+		onchange={handleThreadMediaSelect}
+	/>
+
+	<!-- Active composer: the post being written right now -->
+	<div class="flex gap-3">
+		<div class="shrink-0 pt-1">
+			{@render composerAvatar('w-10 h-10')}
+		</div>
+
+		<!-- Composer Content -->
+		<div class="flex-1 min-w-0 flex flex-col pt-1.5">
+			<div class="flex items-center gap-3">
+				<div class="relative min-w-0 flex-1">
+					<!-- Highlight layer. The textarea's own text is transparent so mentions,
+				     hashtags and links can be coloured as they are typed. -->
+					<div
+						aria-hidden="true"
+						class={`pointer-events-none absolute inset-0 select-none overflow-hidden text-gray-900 dark:text-gray-100 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
+					>
+						{#each contentParts as part, i (i)}
+							{#if part.tag}
+								<span class="text-red-500">{part.text}</span>
+							{:else if part.mention}
+								<span class="font-semibold text-red-500">{part.text}</span>
+							{:else if part.link}
+								<span class="text-blue-500">{part.text}</span>
+							{:else if part.spoiler}
+								<span class="spoiler-hidden">||{part.text}||</span>
+							{:else}
+								{part.text}
+							{/if}
+						{/each}
+					</div>
+					<textarea
+						bind:this={textareaEl}
+						bind:value={content}
+						placeholder={resolvedPlaceholder}
+						maxlength={MAX_CONTENT_LENGTH}
+						class={`relative block w-full resize-none bg-transparent text-transparent caret-gray-900 outline-none placeholder:text-gray-400 dark:caret-gray-100 dark:placeholder:text-gray-500 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
+						rows="1"
+						oninput={(e) => {
+							autoGrow(e.target as HTMLTextAreaElement);
+							syncMentionState();
+						}}
+						onkeydown={handleMentionKeydown}
+						onpaste={handlePaste}
+						onblur={closeMentions}
+						onfocus={() => (composerActive = true)}
+					></textarea>
+				</div>
+				{#if !showToolRow}
+					{@render submitButton()}
+				{/if}
+			</div>
+
+			<!-- Embeddable link preview (YouTube/X/Instagram/TikTok/Spotify) -->
+			{#if postEmbed}
+				<div class="mt-2" in:fade>
+					<PostEmbedView embed={postEmbed} compact />
+				</div>
+			{/if}
+
+			<!-- Poll editor -->
+			{#if pollOpen}
+				<div class="mt-2 rounded-2xl border border-gray-200 dark:border-zinc-800 p-2" in:fade>
+					{#each pollOptions as _, i}
+						<div class="flex items-center gap-1 mb-2 last:mb-0">
+							<div class="relative flex-1 min-w-0">
+								<input
+									bind:value={pollOptions[i]}
+									type="text"
+									maxlength={POLL_MAX_OPTION_LENGTH}
+									placeholder={t('page48.poll.optionPlaceholder', { index: i + 1 })}
+									aria-label={t('page48.poll.optionPlaceholder', { index: i + 1 })}
+									class="w-full rounded-lg border border-gray-200 dark:border-zinc-800 pl-3 pr-14 py-2 text-[14px] text-gray-900 dark:text-gray-100 bg-transparent outline-none transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-red-400 dark:focus:border-red-500"
+								/>
+								<span
+									class={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium tabular-nums ${pollCounterClass(
+										pollOptions[i].length
+									)}`}
+								>
+									{pollOptions[i].length}/{POLL_MAX_OPTION_LENGTH}
+								</span>
+							</div>
+							{#if pollOptions.length > POLL_MIN_OPTIONS}
+								<button
+									type="button"
+									class="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+									onclick={() => removePollOption(i)}
+									aria-label={t('page48.poll.removeOption', { index: i + 1 })}
+								>
+									<X size={16} />
+								</button>
+							{/if}
+						</div>
+					{/each}
+
+					<div class="flex items-center justify-between mt-1">
 						<button
 							type="button"
-							class="p-2 rounded-full transition-colors cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
-							onclick={addToThread}
-							disabled={!draftHasContent(currentDraft()) || isSubmitting || probing}
-							title={t('page48.thread.addPost')}
-							aria-label={t('page48.thread.addPost')}
+							class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+							onclick={addPollOption}
+							disabled={pollOptions.length >= POLL_MAX_OPTIONS}
 						>
-							<Plus size={18} />
+							<Plus size={15} />
+							{t('page48.poll.addOption')}
 						</button>
-					{/if}
+						<button
+							type="button"
+							class="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+							onclick={closePoll}
+							title={t('page48.poll.remove')}
+							aria-label={t('page48.poll.remove')}
+						>
+							<Trash2 size={16} />
+						</button>
+					</div>
 
-					{@render submitButton()}
+					{#if !pollReady}
+						<p class="px-1 mt-1 text-[12px] text-amber-500">{t('page48.poll.hint')}</p>
+					{/if}
 				</div>
-			</div>
-		{/if}
+			{/if}
+
+			<!-- Media Previews: the post's own media + newly picked, images and videos -->
+			{#if media.length > 0}
+				<div class="flex gap-2 mt-2 mb-2 overflow-x-auto pb-2 snap-x" in:fade>
+					{#each media as entry, i (entry.kind === 'existing' ? entry.item.filename : entry.preview)}
+						{@const isVideo =
+							entry.kind === 'existing'
+								? entry.item.type === 'video'
+								: entry.draft.type === 'video'}
+						{@const src =
+							entry.kind === 'existing'
+								? entry.item.url_small || entry.item.url_medium || entry.item.url
+								: entry.preview}
+						<!-- Each tile is a movable handle; the remove button stays the control. -->
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
+						<div
+							class={`relative shrink-0 snap-start cursor-grab active:cursor-grabbing ${
+								dragIndex === i ? 'opacity-40' : ''
+							}`}
+							draggable="true"
+							ondragstart={(event) => handleMediaDragStart(i, event)}
+							ondragover={(event) => handleMediaDragOver(i, event)}
+							ondrop={(event) => handleMediaDrop(i, event)}
+							ondragend={() => (dragIndex = null)}
+							title={t('page48.composer.dragToReorder')}
+						>
+							{#if isVideo}
+								<video
+									{src}
+									muted
+									playsinline
+									class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 bg-black"
+								></video>
+							{:else}
+								<img
+									{src}
+									alt={t('page48.composer.previewAlt')}
+									class="h-32 w-auto rounded-xl border border-gray-200 dark:border-zinc-800 object-cover"
+								/>
+							{/if}
+							<button
+								class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
+								onclick={() => removeMedia(i)}
+							>
+								<X size={14} />
+							</button>
+						</div>
+					{/each}
+				</div>
+			{/if}
+
+			<!-- Quoted post being replied to by this composer -->
+			{#if quote}
+				<QuotedPostCard post={quote} removable={!editing} onRemove={removeQuote} />
+			{/if}
+
+			{#if showToolRow}
+				<!-- Action Bar -->
+				<div class="flex items-center justify-between mt-3 pt-2 border-t border-transparent">
+					<div class="flex items-center gap-1">
+						<!-- Media: photos and videos, mixed, one picker -->
+						<button
+							class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
+							onclick={() => fileInput?.click()}
+							disabled={media.length >= PAGE48_MAX_MEDIA || probing || isSubmitting || pollOpen}
+							title={t('page48.composer.addMedia')}
+							aria-label={t('page48.composer.addMedia')}
+						>
+							{#if probing}
+								<Loader2 size={20} class="animate-spin" />
+							{:else}
+								<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />
+							{/if}
+						</button>
+						<input
+							type="file"
+							accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+							multiple
+							class="hidden"
+							bind:this={fileInput}
+							onchange={handleMediaSelect}
+						/>
+
+						<!-- Emoji Picker -->
+						<button
+							bind:this={emojiButton}
+							class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
+								emojiOpen && emojiThreadIndex === null
+									? 'text-red-500'
+									: 'text-gray-400 hover:text-red-500'
+							}`}
+							onclick={() => toggleEmoji(emojiButton, null)}
+							disabled={isSubmitting}
+							title={t('page48.composer.addEmoji')}
+							aria-label={t('page48.composer.addEmoji')}
+							aria-haspopup="dialog"
+							aria-expanded={emojiOpen && emojiThreadIndex === null}
+						>
+							<Smile size={20} class="group-hover:scale-110 transition-transform" />
+						</button>
+
+						<!-- Poll (not available on replies, quotes or edits) -->
+						{#if !isReply && !quotedPost && !editing}
+							<button
+								class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
+									pollOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+								}`}
+								onclick={pollOpen ? closePoll : openPoll}
+								disabled={media.length > 0 || probing || isSubmitting || isThread}
+								title={t('page48.poll.create')}
+								aria-label={t('page48.poll.create')}
+								aria-pressed={pollOpen}
+							>
+								<ChartNoAxesColumn size={20} class="group-hover:scale-110 transition-transform" />
+							</button>
+						{/if}
+
+						<!-- Spoiler toggle: available on every post, replies included -->
+						<button
+							class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
+								spoilerOn ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+							}`}
+							onclick={() => (spoilerOn = !spoilerOn)}
+							disabled={isSubmitting}
+							title={t('page48.spoiler.mark')}
+							aria-label={t('page48.spoiler.mark')}
+							aria-pressed={spoilerOn}
+						>
+							<EyeOff size={20} class="group-hover:scale-110 transition-transform" />
+						</button>
+					</div>
+
+					<!-- Character Counter + Submit Button -->
+					<div class="flex items-center gap-3">
+						{#if content.length > 0}
+							<span
+								class={`text-[13px] font-medium tabular-nums ${contentCounterClass(content.length)}`}
+								aria-live="polite"
+							>
+								{content.length}/{MAX_CONTENT_LENGTH}
+							</span>
+						{/if}
+
+						<!-- Thread: only where a thread makes sense (never in the reply composer) -->
+						{#if onPostThread}
+							<button
+								type="button"
+								class="p-2 rounded-full transition-colors cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
+								onclick={addToThread}
+								disabled={!draftHasContent(currentDraft()) || isSubmitting || probing}
+								title={t('page48.thread.addPost')}
+								aria-label={t('page48.thread.addPost')}
+							>
+								<Plus size={18} />
+							</button>
+						{/if}
+
+						{@render submitButton()}
+					</div>
+				</div>
+			{/if}
+		</div>
 	</div>
 </div>
 
@@ -1014,8 +1329,8 @@
 	/>
 {/if}
 
-{#if emojiOpen}
-	<EmojiPicker anchor={emojiButton} onPick={insertEmoji} onClose={() => (emojiOpen = false)} />
+{#if emojiOpen && emojiAnchor}
+	<EmojiPicker anchor={emojiAnchor} onPick={insertEmoji} onClose={() => (emojiOpen = false)} />
 {/if}
 
 <style>

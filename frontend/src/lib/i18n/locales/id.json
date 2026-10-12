@@ -2056,7 +2056,10 @@
 			"addEmoji": "Tambahkan emoji",
 			"emojiTooLong": "Batas karakter tercapai.",
 			"quoteNotFound": "Tidak bisa membuka postingan yang dikutip.",
-			"newPost": "Buat postingan baru"
+			"newPost": "Buat postingan baru",
+			"discardTitle": "Buang postingan?",
+			"discardMessage": "Postingan dan lampiran yang belum dikirim akan hilang.",
+			"discardConfirm": "Buang"
 		},
 		"notifications": {
 			"title": "Notifikasi",
@@ -2120,6 +2123,7 @@
 		"thread": {
 			"addPost": "Tambah postingan lain",
 			"removePost": "Hapus postingan ini",
+			"removeMedia": "Hapus media",
 			"publish": "Posting semua",
 			"show": "Tampilkan thread ini ({count} postingan)",
 			"sent": "Thread terkirim ({count} postingan)",
@@ -2333,7 +2337,9 @@
 			"placeholder": "Apa yang baru?",
 			"save": "Simpan",
 			"success": "Postingan diperbarui",
-			"error": "Gagal memperbarui postingan"
+			"error": "Gagal memperbarui postingan",
+			"discardTitle": "Buang perubahan?",
+			"discardMessage": "Perubahan yang belum disimpan akan hilang."
 		},
 		"delete": {
 			"title": "Hapus Postingan",

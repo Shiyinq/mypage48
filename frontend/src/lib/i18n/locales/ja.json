@@ -2050,7 +2050,10 @@
 			"addEmoji": "絵文字を追加",
 			"emojiTooLong": "文字数の上限に達しました。",
 			"quoteNotFound": "引用した投稿を開けませんでした。",
-			"newPost": "新しい投稿を作成"
+			"newPost": "新しい投稿を作成",
+			"discardTitle": "投稿を破棄しますか？",
+			"discardMessage": "未送信の投稿と添付は失われます。",
+			"discardConfirm": "破棄"
 		},
 		"notifications": {
 			"title": "通知",
@@ -2114,6 +2117,7 @@
 		"thread": {
 			"addPost": "投稿を追加",
 			"removePost": "この投稿を削除",
+			"removeMedia": "メディアを削除",
 			"publish": "すべて投稿",
 			"show": "スレッドを表示（{count}件）",
 			"sent": "スレッドを投稿しました（{count}件）",
@@ -2327,7 +2331,9 @@
 			"placeholder": "いまどうしてる？",
 			"save": "保存",
 			"success": "投稿を更新しました",
-			"error": "投稿の更新に失敗しました"
+			"error": "投稿の更新に失敗しました",
+			"discardTitle": "変更を破棄しますか？",
+			"discardMessage": "未保存の変更は失われます。"
 		},
 		"delete": {
 			"title": "投稿を削除",

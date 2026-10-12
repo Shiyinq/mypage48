@@ -1,30 +1,20 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { page48Api, type Page48Post } from '$lib/api/page48';
+	import { type Page48Post } from '$lib/api/page48';
 	import { page48Reads } from '$lib/stores/page48.svelte';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
-	import PostComposer from '$lib/components/page48/PostComposer.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { fade } from 'svelte/transition';
-	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
-	import { showToast } from '$lib/stores/toast.svelte';
 	import { t } from '$lib/i18n';
-	import {
-		sharePost,
-		togglePostInteraction,
-		resolveDraftMedia,
-		type DraftMedia,
-		type PostDraftInput
-	} from '$lib/utils/page48';
+	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
 
 	interface Props {
 		media?: 'text' | 'image' | 'video' | null;
 		/** Only show posts from accounts the viewer follows (requires sign-in). */
 		following?: boolean;
-		showComposer?: boolean;
 		showSidebars?: boolean;
 		emptyTitle?: string;
 		emptyText?: string;
@@ -33,7 +23,6 @@
 	let {
 		media = null,
 		following = false,
-		showComposer = false,
 		showSidebars = true,
 		emptyTitle,
 		emptyText
@@ -143,65 +132,6 @@
 	function handleDelete(postId: string) {
 		posts = posts.filter((p) => p.postId !== postId);
 	}
-
-	/** Upload one composed draft and return the payload the API expects. */
-	async function buildThreadItem(draft: PostDraftInput) {
-		return {
-			content: draft.content,
-			media: await resolveDraftMedia(draft.media),
-			poll: draft.poll,
-			quotedPostId: draft.quotedPostId ?? null,
-			isSpoiler: draft.isSpoiler ?? false
-		};
-	}
-
-	async function handleCreateThread(drafts: PostDraftInput[]) {
-		try {
-			const items = [];
-			for (const draft of drafts) {
-				items.push(await buildThreadItem(draft));
-			}
-
-			const thread = await page48Api.createThread(items);
-			if (thread?.posts?.length) {
-				// Only the first post belongs in the feed; the rest live in the thread.
-				posts = [thread.posts[0], ...posts];
-				showToast(t('page48.thread.sent', { count: thread.posts.length }), 'success');
-			}
-		} catch (err: unknown) {
-			console.error(err);
-			const e = err as { message?: string; detail?: string };
-			showToast(e?.detail || e?.message || t('page48.thread.error'), 'error');
-			throw err; // Rethrow so Composer stops loading state
-		}
-	}
-
-	async function handleCreatePost(
-		content: string,
-		media: DraftMedia[],
-		poll: { options: string[] } | null,
-		quotedPostId: string | null,
-		isSpoiler: boolean
-	) {
-		try {
-			const newPost = await page48Api.createPost({
-				content,
-				media: await resolveDraftMedia(media),
-				poll,
-				quotedPostId: quotedPostId ?? undefined,
-				isSpoiler
-			});
-			if (newPost) {
-				posts = [newPost, ...posts];
-				showToast(t('page48.feed.postSuccess'), 'success');
-			}
-		} catch (err: unknown) {
-			console.error(err);
-			const e = err as { message?: string };
-			showToast(e?.message || t('page48.feed.postError'), 'error');
-			throw err; // Rethrow so Composer stops loading state
-		}
-	}
 </script>
 
 <svelte:window onscroll={handleScroll} />
@@ -209,10 +139,6 @@
 <div
 	class="relative max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"
 >
-	{#if showComposer && isAuthenticated.value}
-		<PostComposer onPost={handleCreatePost} onPostThread={handleCreateThread} />
-	{/if}
-
 	{#if loading}
 		<!-- Skeleton Feed -->
 		<div class="divide-y divide-gray-200/60 dark:divide-white/10">

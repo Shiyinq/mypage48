@@ -3,6 +3,7 @@
 	import { portal } from '$lib/actions/portal';
 	import { fade } from 'svelte/transition';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
+	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -21,6 +22,28 @@
 	let { onClose, quotedPost = null, onRemoveQuote, editingPost = null, onSaved }: Props = $props();
 
 	const { t } = useTranslation();
+
+	/** True while the composer holds unsaved work; blocks a silent close. */
+	let dirty = $state(false);
+	/** Confirmation shown when closing would throw the draft away. */
+	let confirmDiscard = $state(false);
+
+	/** Close the modal, asking first when there is something to lose. */
+	function requestClose() {
+		if (dirty) {
+			confirmDiscard = true;
+			return;
+		}
+		onClose();
+	}
+
+	// Wording differs between throwing away a new post and an edit.
+	const discardTitle = $derived(
+		editingPost ? t('page48.edit.discardTitle') : t('page48.composer.discardTitle')
+	);
+	const discardMessage = $derived(
+		editingPost ? t('page48.edit.discardMessage') : t('page48.composer.discardMessage')
+	);
 
 	/** Upload one composed draft and return the payload the API expects. */
 	async function buildThreadItem(draft: PostDraftInput) {
@@ -110,7 +133,13 @@
 
 <svelte:window
 	onkeydown={(e) => {
-		if (e.key === 'Escape') onClose();
+		if (e.key !== 'Escape') return;
+		// While the discard prompt is open, Escape dismisses that instead.
+		if (confirmDiscard) {
+			confirmDiscard = false;
+			return;
+		}
+		requestClose();
 	}}
 />
 
@@ -124,7 +153,7 @@
 >
 	<div
 		class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-		onclick={onClose}
+		onclick={requestClose}
 		role="presentation"
 	></div>
 
@@ -144,7 +173,7 @@
 			</h2>
 			<button
 				class="-mr-2 p-2 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer"
-				onclick={onClose}
+				onclick={requestClose}
 				aria-label={t('page48.aria.close')}
 			>
 				<X size={18} />
@@ -157,6 +186,7 @@
 					{editingPost}
 					onEdit={handleEdit}
 					quotedPost={editingPost.quotedPost ?? null}
+					onDirtyChange={(value) => (dirty = value)}
 					autofocus
 				/>
 			{:else}
@@ -165,9 +195,21 @@
 					onPostThread={quotedPost ? undefined : handleThread}
 					{quotedPost}
 					{onRemoveQuote}
+					onDirtyChange={(value) => (dirty = value)}
 					autofocus
 				/>
 			{/if}
 		</div>
 	</div>
 </div>
+
+{#if confirmDiscard}
+	<ConfirmModal
+		title={discardTitle}
+		message={discardMessage}
+		confirmText={t('page48.composer.discardConfirm')}
+		destructive
+		onCancel={() => (confirmDiscard = false)}
+		onConfirm={onClose}
+	/>
+{/if}

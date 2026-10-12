@@ -2052,7 +2052,10 @@
 			"addEmoji": "Add emoji",
 			"emojiTooLong": "Character limit reached.",
 			"quoteNotFound": "Couldn't open the quoted post.",
-			"newPost": "Create a new post"
+			"newPost": "Create a new post",
+			"discardTitle": "Discard post?",
+			"discardMessage": "Your unsent post and attachments will be lost.",
+			"discardConfirm": "Discard"
 		},
 		"notifications": {
 			"title": "Notifications",
@@ -2116,6 +2119,7 @@
 		"thread": {
 			"addPost": "Add another post",
 			"removePost": "Remove this post",
+			"removeMedia": "Remove media",
 			"publish": "Post all",
 			"show": "Show this thread ({count} posts)",
 			"sent": "Thread posted ({count} posts)",
@@ -2329,7 +2333,9 @@
 			"placeholder": "What's new?",
 			"save": "Save",
 			"success": "Post updated",
-			"error": "Failed to update post"
+			"error": "Failed to update post",
+			"discardTitle": "Discard changes?",
+			"discardMessage": "Your unsaved changes will be lost."
 		},
 		"delete": {
 			"title": "Delete Post",
