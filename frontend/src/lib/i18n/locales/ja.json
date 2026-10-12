@@ -2250,7 +2250,8 @@
 			"title": "投稿メディア",
 			"hideDetails": "詳細を隠す",
 			"showDetails": "詳細を表示",
-			"download": "写真をダウンロード"
+			"download": "写真をダウンロード",
+			"downloadVideo": "動画をダウンロード"
 		},
 		"activity": {
 			"title": "投稿のアクティビティ",

@@ -2256,7 +2256,8 @@
 			"title": "Media postingan",
 			"hideDetails": "Sembunyikan detail",
 			"showDetails": "Tampilkan detail",
-			"download": "Unduh foto"
+			"download": "Unduh foto",
+			"downloadVideo": "Unduh video"
 		},
 		"activity": {
 			"title": "Aktivitas postingan",

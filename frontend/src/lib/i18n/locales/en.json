@@ -2252,7 +2252,8 @@
 			"title": "Post media",
 			"hideDetails": "Hide details",
 			"showDetails": "Show details",
-			"download": "Download photo"
+			"download": "Download photo",
+			"downloadVideo": "Download video"
 		},
 		"activity": {
 			"title": "Post activity",

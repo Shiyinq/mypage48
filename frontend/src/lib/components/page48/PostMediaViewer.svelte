@@ -55,9 +55,8 @@
 		index = Math.max(0, Math.min(next, media.length - 1));
 	}
 
-	/** Same behaviour as the single-image lightbox: save the shown photo. */
-	async function downloadImage() {
-		const src = currentUrl;
+	/** Save a media file via a blob download, falling back to a new tab on failure. */
+	async function downloadMedia(src: string, fallbackExt: string) {
 		if (!src) return;
 		try {
 			const response = await fetch(src);
@@ -67,7 +66,7 @@
 			link.href = url;
 
 			const name = src.split('/').pop()?.split('?')[0] || `page48-${index + 1}`;
-			link.download = name.includes('.') ? name : `${name}.jpg`;
+			link.download = name.includes('.') ? name : `${name}.${fallbackExt}`;
 
 			document.body.appendChild(link);
 			link.click();
@@ -77,6 +76,16 @@
 			console.error('Download failed:', error);
 			window.open(src, '_blank');
 		}
+	}
+
+	/** Same behaviour as the single-image lightbox: save the shown photo. */
+	function downloadImage() {
+		void downloadMedia(currentUrl, 'jpg');
+	}
+
+	/** Save the shown video. */
+	function downloadVideo() {
+		void downloadMedia(current.url ?? '', 'mp4');
 	}
 
 	// --- Keyboard + scroll lock ----------------------------------------------
@@ -148,12 +157,16 @@
 						{index + 1} / {media.length}
 					</span>
 				{/if}
-				{#if current?.type === 'image'}
+				{#if current?.type === 'image' || current?.type === 'video'}
+					{@const downloadLabel =
+						current.type === 'video'
+							? t('page48.mediaViewer.downloadVideo')
+							: t('page48.mediaViewer.download')}
 					<button
 						class="flex cursor-pointer items-center rounded-full border border-white/10 bg-zinc-900/80 p-2.5 text-white backdrop-blur-md transition-colors hover:bg-zinc-800"
-						onclick={downloadImage}
-						aria-label={t('page48.mediaViewer.download')}
-						title={t('page48.mediaViewer.download')}
+						onclick={current.type === 'video' ? downloadVideo : downloadImage}
+						aria-label={downloadLabel}
+						title={downloadLabel}
 					>
 						<Download class="h-5 w-5" />
 					</button>
