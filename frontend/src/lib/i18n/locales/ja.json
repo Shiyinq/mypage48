@@ -36,6 +36,10 @@
 		"logout": "ログアウト",
 		"settings": "設定",
 		"profile": "プロフィール",
+		"accountOfficial": "公式アカウント",
+		"accountOfficialInfo": "Page48で認証された公式アカウントです。",
+		"accountAdmin": "Page48 管理者",
+		"accountAdminInfo": "Page48の公式管理者アカウントです。",
 		"dashboard": "概要",
 		"language": "言語",
 		"noResults": "結果が見つかりません",
@@ -72,6 +76,7 @@
 			"square": "1:1",
 			"sixteenNine": "16:9",
 			"nineSixteen": "9:16",
+			"threeOne": "3:1",
 			"fourThree": "4:3",
 			"threeFour": "3:4"
 		}
@@ -133,7 +138,8 @@
 		"liveHistory": "ライブ履歴",
 		"watchHistory": "視聴履歴",
 		"startSorter": "ソーターを開始",
-		"sorterHistory": "ソーター履歴"
+		"sorterHistory": "ソーター履歴",
+		"page48": "ページ48"
 	},
 	"header": {
 		"tagline": "JKT48劇場トラッカー"
@@ -145,6 +151,7 @@
 			"members": "メンバー",
 			"events": "イベント",
 			"calendar": "カレンダー",
+			"page48": "ページ48",
 			"sorter": "ソーター",
 			"live": "ライブ"
 		},
@@ -173,6 +180,10 @@
 			"achievements": {
 				"title": "ACHIEVEMENTS",
 				"description": "JKT48を応援しながらバッジやマイルストーンを解除します。「初公演」から「伝説のファン」まで、進捗を追跡し、忠誠心を示しましょう。"
+			},
+			"page48": {
+				"title": "PAGE48",
+				"description": "JKT48ファンのためのソーシャルスペース。写真・動画・投票を投稿し、返信や引用で交流し、お互いをフォローして、トレンドのハッシュタグをチェックできます。"
 			},
 			"sorter": {
 				"title": "SORTER",
@@ -625,7 +636,11 @@
 			"emailWarning": "メールアドレスを変更すると再認証が必要になります。",
 			"systemInfo": "会員情報",
 			"systemSubtitle": "メンバーシップの詳細",
-			"verification": "アカウント認証"
+			"verification": "アカウント認証",
+			"banner": "バナー",
+			"bannerHint": "推奨サイズは3:1です。エディタで調整できます。",
+			"bannerUploadSuccess": "バナーを更新しました！",
+			"bannerUploadError": "バナーのアップロードに失敗しました。もう一度お試しください。"
 		},
 		"language": {
 			"title": "言語",
@@ -1098,6 +1113,7 @@
 				"members": "メンバー",
 				"setlists": "セットリスト",
 				"feedback": "フィードバック",
+				"reports": "報告",
 				"settings": "設定",
 				"more": "その他"
 			},
@@ -1152,6 +1168,32 @@
 				"notesInfo": "このメモはユーザーのメールに送信され、「マイフィードバック」ページに表示されます。",
 				"saving": "保存中...",
 				"saveChanges": "変更を保存"
+			}
+		},
+		"reports": {
+			"title": "報告",
+			"subtitle": "他のユーザーからの投稿・ユーザー報告",
+			"emptyTitle": "報告はまだありません",
+			"emptyDesc": "まだ報告が送信されていません。",
+			"errorTitle": "報告の読み込みに失敗しました",
+			"errorDesc": "サーバーから報告を読み込めませんでした。",
+			"loadMore": "もっと読み込む",
+			"noMore": "読み込む報告はもうありません",
+			"filters": {
+				"all": "すべて",
+				"post": "投稿",
+				"user": "ユーザー"
+			},
+			"reportedBy": "@{username} による報告",
+			"deletedTarget": "対象は存在しないか削除されています。",
+			"imageCount": "画像{count}枚",
+			"viewPost": "投稿を見る",
+			"viewUser": "プロフィールを見る",
+			"status": {
+				"pending": "保留中",
+				"reviewed": "確認済み",
+				"resolved": "解決済み",
+				"dismissed": "却下"
 			}
 		},
 		"settings": {
@@ -1642,6 +1684,7 @@
 			"eventHistory": "イベント履歴へ",
 			"feedback": "フィードバックへ移動",
 			"adminFeedback": "管理フィードバックへ",
+			"adminReports": "管理報告へ",
 			"adminSettings": "管理設定へ",
 			"publicProfile": "公開プロフィールへ移動",
 			"journal": "ジャーナルへ移動",
@@ -1889,5 +1932,499 @@
 		"watchOfficialLink": "IDN公式アプリ",
 		"readTos": "IDN利用規約を読む",
 		"goBack": "戻る"
+	},
+	"page48": {
+		"nav": {
+			"home": "ホーム",
+			"photos": "画像",
+			"videos": "動画",
+			"trending": "トレンド",
+			"following": "フォロー中"
+		},
+		"follow": {
+			"follow": "フォロー",
+			"following": "フォロー中",
+			"unfollow": "フォロー解除",
+			"requested": "リクエスト済み",
+			"cancelRequest": "フォローリクエストをキャンセル",
+			"accept": "承認",
+			"decline": "拒否",
+			"accepted": "リクエストを承認しました。",
+			"declined": "リクエストを拒否しました。",
+			"requestPending": "フォローリクエストは承認待ちです。",
+			"lockedPosts": "このアカウントは承認済みのフォロワーにのみ投稿を表示します。",
+			"error": "フォローを更新できませんでした"
+		},
+		"seo": {
+			"feedTitle": "ページ48",
+			"feedDesc": "ページ48 - JKT48コミュニティのソーシャルスペース。テキスト・写真・動画の投稿やメンバーのハッシュタグをチェック。",
+			"photosTitle": "ページ48の写真",
+			"photosDesc": "ページ48 JKT48コミュニティの写真投稿。",
+			"videosTitle": "ページ48の動画",
+			"videosDesc": "ページ48 JKT48コミュニティの動画投稿。",
+			"trendingTitle": "ページ48のトレンド",
+			"trendingDesc": "ページ48 JKT48コミュニティで人気のハッシュタグ。",
+			"tagTitle": "ページ48の #{tag} 投稿",
+			"tagDesc": "ページ48で #{tag} が付いた投稿をすべて表示。",
+			"postTitle": "ページ48の投稿",
+			"postDesc": "ページ48の投稿と返信を表示。",
+			"userTitle": "ページ48プロフィール",
+			"userDesc": "ページ48でユーザーの投稿・リポスト・写真を表示。",
+			"followingTitle": "ページ48のフォロー中",
+			"followingDesc": "ページ48でフォロー中のアカウントの投稿。"
+		},
+		"aria": {
+			"profile": "プロフィール",
+			"profilePhoto": "プロフィール写真",
+			"banner": "プロフィールバナー",
+			"openPost": "投稿を開く",
+			"more": "その他のオプション",
+			"like": "いいね",
+			"comment": "コメント",
+			"repost": "リポスト",
+			"bookmark": "保存",
+			"share": "共有",
+			"removeQuote": "引用を削除",
+			"media": "投稿メディア",
+			"viewImage": "画像 {index} / {total} を表示",
+			"playVideo": "動画を再生",
+			"youtubeVideo": "YouTube 動画",
+			"cancelReply": "返信をキャンセル",
+			"openX": "X @{username} を開く",
+			"imageCount": "画像 {count} 枚",
+			"prevImage": "前の画像",
+			"nextImage": "次の画像",
+			"close": "閉じる",
+			"mentionSuggestions": "ユーザーの候補",
+			"userPreview": "ユーザーのプレビュー",
+			"xPost": "X の投稿",
+			"instagramPost": "Instagram の投稿",
+			"tiktokPost": "TikTok の投稿",
+			"spotifyEmbed": "Spotify 埋め込み",
+			"telegramPost": "Telegram の投稿"
+		},
+		"embed": {
+			"viewOnX": "X で投稿を表示",
+			"xLoads": "投稿は X から読み込みます",
+			"viewOnInstagram": "Instagram で投稿を表示",
+			"instagramLoads": "投稿は Instagram から読み込みます",
+			"viewStoryOnInstagram": "Instagram でストーリーを表示",
+			"storyNotice": "ストーリーは 24 時間で消えます",
+			"viewOnTikTok": "TikTok で見る",
+			"tiktokLoads": "動画は TikTok から読み込みます",
+			"tiktokShortNotice": "TikTok で動画を開きます",
+			"listenOnSpotify": "Spotify で聴く",
+			"spotifyLoads": "プレーヤーは Spotify から読み込みます",
+			"spotifyShortNotice": "Spotify で開きます",
+			"viewOnTelegram": "Telegram で投稿を表示",
+			"telegramLoads": "投稿は Telegram から読み込みます"
+		},
+		"mentions": {
+			"noResults": "ユーザーが見つかりません",
+			"searching": "検索中…"
+		},
+		"hover": {
+			"notFoundText": "このユーザー名のアカウントはありません。削除されたか、名前が変更された可能性があります。",
+			"loadError": "プロフィールを読み込めませんでした。もう一度ホバーしてください。"
+		},
+		"composer": {
+			"placeholder": "いまどうしてる？",
+			"replyPlaceholder": "@{username} に返信",
+			"submit": "投稿",
+			"reply": "返信",
+			"addPhoto": "写真を追加",
+			"maxPhotos": "1投稿につき最大10枚まで。",
+			"maxMedia": "1投稿につき最大10個のメディア。",
+			"addMedia": "写真または動画を追加",
+			"dragToReorder": "ドラッグして並べ替え",
+			"dropToUpload": "写真や動画をドロップして追加",
+			"mediaCount": "メディア {count} 個",
+			"maxSize": "写真は最大3MBまで。",
+			"previewAlt": "アップロードのプレビュー",
+			"addVideo": "動画を追加",
+			"removeVideo": "動画を削除",
+			"videoTooLong": "動画は1分以内にしてください。",
+			"videoTooLarge": "動画は50MB以内にしてください。",
+			"videoInvalidType": "動画はMP4またはWebMにしてください。",
+			"videoUnreadable": "この動画は読み込めません。",
+			"addEmoji": "絵文字を追加",
+			"emojiTooLong": "文字数の上限に達しました。",
+			"quoteNotFound": "引用した投稿を開けませんでした。",
+			"newPost": "新しい投稿を作成",
+			"discardTitle": "投稿を破棄しますか？",
+			"discardMessage": "未送信の投稿と添付は失われます。",
+			"discardConfirm": "破棄"
+		},
+		"notifications": {
+			"title": "通知",
+			"empty": "まだ通知はありません。",
+			"loadError": "通知を読み込めませんでした。",
+			"loadErrorText": "接続を確認して、もう一度お試しください。",
+			"postUnavailable": "この投稿は利用できません。",
+			"likedPost": "あなたの投稿をいいねしました",
+			"repliedPost": "あなたの投稿に返信しました",
+			"repostedPost": "あなたの投稿をリポストしました",
+			"quotedPost": "あなたの投稿を引用しました",
+			"mentionedYou": "あなたをメンションしました",
+			"followedYou": "あなたをフォローしました",
+			"followRequested": "あなたにフォローをリクエストしました",
+			"followAccepted": "あなたのフォローリクエストを承認しました",
+			"tab": {
+				"replies": "返信",
+				"mentions": "メンション",
+				"likes": "いいね",
+				"reposts": "リポスト",
+				"follows": "フォロー"
+			}
+		},
+		"search": {
+			"title": "検索",
+			"description": "Page48の投稿、ユーザー、ハッシュタグを検索します。",
+			"placeholder": "Page48を検索",
+			"forTerm": "「{term}」を検索",
+			"enterHint": "Enter ↵",
+			"hint": "#タグ、@ユーザー、from:ユーザー が使えます",
+			"prompt": "2文字以上入力してください。",
+			"empty": "結果が見つかりませんでした。",
+			"loadError": "検索結果を読み込めませんでした。",
+			"loadErrorText": "接続を確認して、もう一度お試しください。",
+			"tab": {
+				"top": "トップ",
+				"posts": "投稿",
+				"media": "メディア",
+				"users": "ユーザー",
+				"tags": "ハッシュタグ"
+			},
+			"section": {
+				"users": "ユーザー",
+				"tags": "ハッシュタグ",
+				"posts": "投稿"
+			}
+		},
+		"poll": {
+			"create": "投票を作成",
+			"remove": "投票を削除",
+			"addOption": "選択肢を追加",
+			"optionPlaceholder": "選択肢 {index}",
+			"removeOption": "選択肢 {index} を削除",
+			"hint": "選択肢を2つ以上入力してください（最大6つ、各50文字まで）。",
+			"voteFor": "{option} に投票",
+			"voteError": "投票を送信できませんでした。",
+			"endsIn": "残り {time}",
+			"ended": "投票は終了しました",
+			"votes": "{count} 票"
+		},
+		"thread": {
+			"addPost": "投稿を追加",
+			"removePost": "この投稿を削除",
+			"removeMedia": "メディアを削除",
+			"publish": "すべて投稿",
+			"show": "スレッドを表示（{count}件）",
+			"sent": "スレッドを投稿しました（{count}件）",
+			"error": "スレッドを投稿できませんでした"
+		},
+		"emoji": {
+			"search": "絵文字を検索",
+			"empty": "絵文字が見つかりません",
+			"recent": "よく使う絵文字",
+			"smileys": "顔・感情",
+			"gestures": "人・ジェスチャー",
+			"hearts": "ハート",
+			"animals": "動物・自然",
+			"food": "食べ物・飲み物",
+			"activities": "アクティビティ",
+			"travel": "旅行・場所",
+			"objects": "物",
+			"symbols": "記号"
+		},
+		"video": {
+			"play": "再生",
+			"pause": "一時停止",
+			"mute": "ミュート",
+			"unmute": "ミュート解除",
+			"seek": "シーク",
+			"prev": "前の動画",
+			"next": "次の動画",
+			"showMore": "もっと見る",
+			"showLess": "閉じる",
+			"commentsTitle": "コメント",
+			"commentsEmpty": "まだコメントがありません。最初にコメントしましょう！",
+			"commentsSignIn": "コメントするにはサインイン",
+			"commentReply": "返信"
+		},
+		"feed": {
+			"emptyTitle": "まだ投稿がありません",
+			"emptyText": "最初の投稿をしてみましょう！",
+			"loadError": "フィードの読み込みに失敗しました",
+			"end": "すべて表示しました",
+			"postSuccess": "投稿しました",
+			"postError": "投稿に失敗しました",
+			"followingEmptyTitle": "フィードは空です",
+			"followingEmptyText": "フォロー中のアカウントの投稿がここに表示されます。",
+			"newPosts": "{count}件の投稿を表示",
+			"posted": "件の新しい投稿"
+		},
+		"photos": {
+			"emptyTitle": "まだ画像がありません",
+			"emptyText": "画像を含む投稿がここに表示されます。",
+			"loadError": "画像を読み込めませんでした。"
+		},
+		"videos": {
+			"emptyTitle": "まだ動画がありません",
+			"emptyText": "動画を含む投稿がここに表示されます。"
+		},
+		"videosFeed": {
+			"emptyTitle": "動画はまだありません",
+			"emptyText": "表示する動画がまだありません。",
+			"loadError": "動画の読み込みに失敗しました"
+		},
+		"time": {
+			"secondsShort": "秒",
+			"minutesShort": "分",
+			"hoursShort": "時間",
+			"daysShort": "日",
+			"monthsShort": "ヶ月",
+			"yearsShort": "年"
+		},
+		"trending": {
+			"title": "ページ48のトレンド",
+			"subtitle": "最も使われているタグ",
+			"empty": "まだタグがありません。投稿で#ハッシュタグを使ってみましょう。",
+			"postCount": "{count} 件",
+			"loadError": "トレンドの読み込みに失敗しました"
+		},
+		"members": {
+			"title": "メンバーのハッシュタグ",
+			"subtitle": "活動中のJKT48メンバーのXユーザー名",
+			"empty": "メンバーのXアカウント情報がまだありません。",
+			"loadError": "メンバー情報の読み込みに失敗しました"
+		},
+		"activeUsers": {
+			"title": "最もアクティブ",
+			"empty": "まだユーザーの活動がありません。",
+			"loadError": "アクティブユーザーの読み込みに失敗しました",
+			"postCount": "{count} 投稿"
+		},
+		"tag": {
+			"header": "このタグの投稿",
+			"headerFiltered": "このタグの投稿 • {media}フィルター",
+			"mediaText": "テキスト",
+			"mediaImage": "画像",
+			"mediaVideo": "動画",
+			"empty": "タグ #{tag} の投稿はまだありません。",
+			"loadError": "読み込みに失敗しました"
+		},
+		"post": {
+			"loadError": "投稿の読み込みに失敗しました",
+			"notFound": "投稿が見つかりません",
+			"notFoundTitle": "投稿が見つかりません",
+			"notFoundText": "この投稿は削除されたか、あなたには表示できません。",
+			"replyingTo": "返信先",
+			"replySent": "返信を送信しました",
+			"replyError": "返信の送信に失敗しました",
+			"emptyReplies": "まだ返信がありません。",
+			"showMore": "もっと見る",
+			"showLess": "折りたたむ",
+			"quotedUnavailable": "このポストは利用できません。"
+		},
+		"userPage": {
+			"notFoundTitle": "ユーザーが見つかりません",
+			"notFoundText": "探しているプロフィールは存在しないか、削除されました。",
+			"loadError": "プロフィールの読み込みに失敗しました",
+			"editInSettings": "設定で編集",
+			"reposted": "リポスト",
+			"pinned": "固定されたポスト",
+			"countPosts": "{count} 投稿",
+			"countReposts": "{count} リポスト",
+			"followers": "フォロワー",
+			"following": "フォロー中",
+			"followersTitle": "フォロワー",
+			"followingTitle": "フォロー中",
+			"emptyFollowers": "まだフォロワーがいません。",
+			"emptyFollowing": "まだ誰もフォローしていません。",
+			"listErrorText": "このリストの読み込み中に問題が発生しました。",
+			"loadMore": "もっと見る",
+			"back": "戻る"
+		},
+		"mediaViewer": {
+			"title": "投稿メディア",
+			"hideDetails": "詳細を隠す",
+			"showDetails": "詳細を表示",
+			"download": "写真をダウンロード"
+		},
+		"activity": {
+			"title": "投稿のアクティビティ",
+			"view": "アクティビティを表示",
+			"backToPost": "投稿に戻る",
+			"quotes": "引用",
+			"reposts": "リポスト",
+			"likes": "いいね",
+			"emptyQuotes": "まだ引用がありません。",
+			"emptyReposts": "まだリポストがありません。",
+			"emptyLikes": "まだいいねがありません。",
+			"loadMore": "もっと見る",
+			"error": "リストの読み込みに失敗しました。",
+			"loadError": "アクティビティの読み込みに失敗しました",
+			"loadErrorText": "この投稿のアクティビティの読み込み中にエラーが発生しました。"
+		},
+		"tabs": {
+			"posts": "投稿",
+			"media": "画像",
+			"videos": "動画",
+			"reposts": "リポスト",
+			"replies": "返信",
+			"likes": "いいね",
+			"bookmarks": "保存済み"
+		},
+		"empty": {
+			"posts": "まだ投稿がありません。",
+			"media": "まだ画像がありません。",
+			"videos": "まだ動画がありません。",
+			"reposts": "まだリポストがありません。",
+			"replies": "まだ返信がありません。",
+			"likes": "いいねした投稿はまだありません。",
+			"bookmarks": "保存した投稿はまだありません。"
+		},
+		"error": {
+			"action": "処理に失敗しました。もう一度お試しください。",
+			"shareCopied": "リンクをコピーしました",
+			"shareError": "リンクの共有に失敗しました"
+		},
+		"menu": {
+			"edit": "編集",
+			"delete": "削除",
+			"report": "報告",
+			"pin": "プロフィールに固定",
+			"unpin": "固定を解除",
+			"makePrivate": "非公開にする",
+			"makePublic": "公開にする",
+			"markSpoiler": "ネタバレ設定",
+			"unmarkSpoiler": "ネタバレ解除"
+		},
+		"private": {
+			"badge": "自分のみ",
+			"made": "この投稿は自分のみ閲覧できます。",
+			"madePublic": "投稿を公開に戻しました。",
+			"error": "投稿の公開設定を変更できませんでした。"
+		},
+		"spoiler": {
+			"badge": "ネタバレ",
+			"label": "ネタバレ",
+			"show": "ネタバレを表示",
+			"tapToShow": "タップしてこの投稿を表示",
+			"mark": "ネタバレとして設定",
+			"marked": "ネタバレとして設定しました。",
+			"unmarked": "ネタバレを解除しました。",
+			"error": "ネタバレを更新できませんでした。",
+			"notification": "ネタバレ投稿"
+		},
+		"replyAudience": {
+			"title": "誰が返信できますか？",
+			"everyone": "全員",
+			"following": "フォロー中のアカウント",
+			"followers": "フォロワーのみ",
+			"following_and_followers": "フォロー中とフォロワー",
+			"only_me": "自分のみ",
+			"mentioned": "メンションしたアカウントのみ",
+			"lockedViewer": "この投稿には返信できません。",
+			"locked": {
+				"following": "投稿者がフォローしているアカウントのみ返信できます。",
+				"followers": "投稿者のフォロワーのみ返信できます。",
+				"following_and_followers": "投稿者がフォローしているアカウントとフォロワーのみ返信できます。",
+				"only_me": "投稿者のみ返信できます。",
+				"mentioned": "投稿者がメンションしたアカウントのみ返信できます。"
+			}
+		},
+		"repostMenu": {
+			"repost": "リポスト",
+			"undo": "リポストを解除",
+			"quote": "引用ポスト"
+		},
+		"pin": {
+			"pinned": "ポストを固定しました。",
+			"unpinned": "固定を解除しました。",
+			"error": "固定の変更に失敗しました。"
+		},
+		"edit": {
+			"title": "投稿を編集",
+			"placeholder": "いまどうしてる？",
+			"save": "保存",
+			"success": "投稿を更新しました",
+			"error": "投稿の更新に失敗しました",
+			"discardTitle": "変更を破棄しますか？",
+			"discardMessage": "未保存の変更は失われます。"
+		},
+		"delete": {
+			"title": "投稿を削除",
+			"message": "この投稿は完全に削除されます。続行しますか？",
+			"confirm": "削除",
+			"success": "投稿を削除しました",
+			"error": "投稿の削除に失敗しました"
+		},
+		"report": {
+			"titlePost": "投稿を報告",
+			"titleUser": "ユーザーを報告",
+			"reasonLabel": "理由",
+			"noteLabel": "補足（任意）",
+			"reason": {
+				"spam": "スパム",
+				"harassment": "嫌がらせ・ヘイトスピーチ",
+				"inappropriate": "不適切なコンテンツ",
+				"other": "その他"
+			},
+			"submit": "報告を送信",
+			"success": "報告を送信しました。ありがとうございます。",
+			"error": "報告の送信に失敗しました",
+			"already": "すでに報告済みです。"
+		},
+		"reportUser": "ユーザーを報告",
+		"backHome": "ホームに戻る",
+		"settings": {
+			"title": "Page48",
+			"subtitle": "プライバシーと、ブロック・ミュートしたアカウント。",
+			"viewList": "表示",
+			"lockedTitle": "Page48プロフィールをロック",
+			"lockedSubtitle": "オンにすると、承認したフォロワーだけが投稿を見られます。",
+			"lockedOn": "投稿はフォロワー限定になりました。",
+			"lockedOff": "誰でも投稿を見られるようになりました。",
+			"embedsTitle": "埋め込みを自動で読み込む",
+			"embedsSubtitle": "X・Instagram・TikTok の投稿を画面に入った時点で読み込みます。YouTube はサムネイルのままです。"
+		},
+		"blockUser": "ブロック",
+		"unblockUser": "ブロック解除",
+		"muteUser": "ミュート",
+		"unmuteUser": "ミュート解除",
+		"block": {
+			"title": "ユーザーをブロックしますか？",
+			"message": "{name} さんはあなたの投稿を見られなくなり、あなたも相手の投稿を見られなくなります。フォローも解除されます。",
+			"confirm": "ブロック",
+			"success": "ユーザーをブロックしました。",
+			"error": "ブロックできませんでした。",
+			"youBlocked": "このユーザーをブロックしています。",
+			"blockedBy": "このユーザーの投稿は表示できません。"
+		},
+		"unblock": {
+			"success": "ブロックを解除しました。"
+		},
+		"mute": {
+			"title": "ユーザーをミュートしますか？",
+			"message": "{name} さんの投稿はホームのタイムラインに表示されなくなります。ミュートしたことは相手に通知されず、プロフィールは引き続き見られます。",
+			"confirm": "ミュート",
+			"success": "ユーザーをミュートしました。",
+			"error": "ミュートできませんでした。"
+		},
+		"unmute": {
+			"success": "ミュートを解除しました。"
+		},
+		"relations": {
+			"blocks": {
+				"title": "ブロック中のアカウント",
+				"empty": "ブロックしているユーザーはいません。"
+			},
+			"mutes": {
+				"title": "ミュート中のアカウント",
+				"empty": "ミュートしているユーザーはいません。"
+			}
+		}
 	}
 }

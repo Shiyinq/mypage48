@@ -15,13 +15,15 @@ interface UserProfileStoreState {
 	error: string | null;
 	isLoading: boolean;
 	isUpdatingAvatar: boolean;
+	isUpdatingBanner: boolean;
 }
 
 const state = $state<UserProfileStoreState>({
 	data: null,
 	error: null,
 	isLoading: false,
-	isUpdatingAvatar: false
+	isUpdatingAvatar: false,
+	isUpdatingBanner: false
 });
 const dedup = createRequestDedup();
 
@@ -38,6 +40,9 @@ function createUserProfileStore() {
 		},
 		get isUpdatingAvatar() {
 			return state.isUpdatingAvatar;
+		},
+		get isUpdatingBanner() {
+			return state.isUpdatingBanner;
 		},
 
 		/**
@@ -142,6 +147,21 @@ function createUserProfileStore() {
 		},
 
 		/**
+		 * Update the user's Page48 banner (cover image)
+		 */
+		updateBanner: async (base64: string) => {
+			state.isUpdatingBanner = true;
+			try {
+				const uploadRes = await storageStore.uploadImage(base64, 'banner');
+				await auth.updateBanner(uploadRes.filename, uploadRes.blurHash);
+				await userProfile.load({ force: true });
+				return uploadRes;
+			} finally {
+				state.isUpdatingBanner = false;
+			}
+		},
+
+		/**
 		 * Update public visibility status
 		 */
 		updatePublicStatus: async (isPublic: boolean, publicYear: number | null) => {
@@ -180,6 +200,7 @@ function createUserProfileStore() {
 			if (val.error !== undefined) state.error = val.error;
 			if (val.isLoading !== undefined) state.isLoading = val.isLoading;
 			if (val.isUpdatingAvatar !== undefined) state.isUpdatingAvatar = val.isUpdatingAvatar;
+			if (val.isUpdatingBanner !== undefined) state.isUpdatingBanner = val.isUpdatingBanner;
 		},
 
 		/**
@@ -190,6 +211,7 @@ function createUserProfileStore() {
 			state.error = null;
 			state.isLoading = false;
 			state.isUpdatingAvatar = false;
+			state.isUpdatingBanner = false;
 			dedup.clear();
 		},
 

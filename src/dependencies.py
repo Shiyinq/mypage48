@@ -32,6 +32,8 @@ from src.health.repository import HealthRepository
 from src.health.service import HealthService
 from src.http_exceptions import AdminRequired
 from src.infrastructure import AsyncBackgroundRunner
+from src.link_resolver.repository import LinkResolverRepository
+from src.link_resolver.service import LinkResolverService
 from src.live.service import LiveService
 from src.live_history.repository import LiveHistoryRepository
 from src.live_history.service import LiveHistoryService
@@ -44,6 +46,8 @@ from src.memories.repository import MemoriesRepository
 from src.memories.service import MemoriesService
 from src.news.repository import NewsRepository
 from src.news.service import NewsService
+from src.page48.repository import Page48Repository
+from src.page48.service import Page48Service
 from src.replay.repository import ReplayRepository
 from src.replay.service import ReplayService
 from src.setlists.repository import SetlistsRepository
@@ -85,6 +89,14 @@ def get_storage_service(
     config: Settings = Depends(get_settings),
 ) -> StorageService:
     return StorageService(repo, config)
+
+
+# Shared so the in-memory resolution cache survives across requests.
+_link_resolver_repository = LinkResolverRepository()
+
+
+def get_link_resolver_service() -> LinkResolverService:
+    return LinkResolverService(_link_resolver_repository)
 
 
 def get_api_key_repository(db=Depends(get_db)) -> ApiKeyRepository:
@@ -475,6 +487,20 @@ def get_live_service(
     config: Settings = Depends(get_settings),
 ) -> LiveService:
     return LiveService(member_repo, admin_service, config)
+
+
+def get_page48_repository(db=Depends(get_db)) -> Page48Repository:
+    return Page48Repository(db)
+
+
+def get_page48_service(
+    repo: Page48Repository = Depends(get_page48_repository),
+    config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
+    user_repo: UserRepository = Depends(get_user_repository),
+) -> Page48Service:
+    background_runner = AsyncBackgroundRunner()
+    return Page48Service(repo, background_runner, config, storage_service, user_repo)
 
 
 def get_sorters_repository(db=Depends(get_db)) -> SortersRepository:

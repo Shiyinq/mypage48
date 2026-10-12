@@ -85,6 +85,8 @@ from src.feedback.http_exceptions import (
 from src.feedback.http_exceptions import FeedbackNotFound as HttpFeedbackNotFound
 from src.feedback.http_exceptions import FeedbackUpdateFailed
 from src.http_exceptions import DetailedHTTPException
+from src.link_resolver.exceptions import InvalidLinkError, LinkResolveError
+from src.link_resolver.http_exceptions import InvalidLink, LinkResolveFailed
 from src.live.exceptions import (
     CommentsFetchError,
     FetchIdnError,
@@ -127,6 +129,78 @@ from src.news.http_exceptions import (
     NewsItemFetchHTTPError,
     NewsNotFound,
 )
+from src.page48.exceptions import (
+    CannotBlockSelfError,
+    CannotFollowSelfError,
+    CannotMuteSelfError,
+    CannotPinReplyError,
+    CannotPrivateReplyError,
+    CannotReportSelfError,
+    InvalidImageError,
+    InvalidPollOptionError,
+    InvalidPollOptionsError,
+    InvalidReportTargetError,
+    InvalidVideoError,
+    InvalidVideoTypeError,
+    MaxMediaExceededError,
+    MaxVideoExceededError,
+    MediaConflictError,
+    PollAlreadyVotedError,
+    PollEndedError,
+    PollMediaConflictError,
+    PollNotFoundError,
+    PollReplyNotAllowedError,
+    PostCreationError,
+    PostNotFoundError,
+    QuotedPostNotFoundError,
+    QuotePollConflictError,
+    ReplyNotAllowedError,
+    ReportAlreadyExistsError,
+    ReportCreationError,
+    ThreadTooLongError,
+    ThreadTooShortError,
+    TooManyRelationsError,
+    UnauthorizedActionError,
+    UserProfileNotFoundError,
+    VideoTooLargeError,
+    VideoUploadError,
+)
+from src.page48.http_exceptions import (
+    CannotBlockSelf,
+    CannotFollowSelf,
+    CannotMuteSelf,
+    CannotPinReply,
+    CannotPrivateReply,
+    CannotReportSelf,
+    InvalidImage,
+    InvalidPollOption,
+    InvalidPollOptions,
+    InvalidReportTarget,
+    InvalidVideo,
+    InvalidVideoType,
+    MaxMediaExceeded,
+    MaxVideoExceeded,
+    MediaConflict,
+    PollAlreadyVoted,
+    PollEnded,
+    PollMediaConflict,
+    PollNotFound,
+    PollReplyNotAllowed,
+    PostCreateError,
+    PostNotFound,
+    QuotedPostNotFound,
+    QuotePollConflict,
+    ReplyNotAllowed,
+    ReportAlreadyExists,
+    ReportCreateError,
+    ThreadTooLong,
+    ThreadTooShort,
+    TooManyRelations,
+    UnauthorizedAction,
+    UserProfileNotFound,
+    VideoTooLarge,
+)
+from src.page48.http_exceptions import VideoUploadError as VideoUploadHTTPError
 from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
 from src.replay.http_exceptions import (
     HttpReplayAlreadyExists,
@@ -467,6 +541,82 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     if isinstance(exc, DomainConcertDeleteError):
         return await detailed_http_exception_handler(request, HttpConcertDeleteError())
 
+    # Page48 errors
+    if isinstance(exc, PostNotFoundError):
+        return await detailed_http_exception_handler(request, PostNotFound())
+    if isinstance(exc, PostCreationError):
+        return await detailed_http_exception_handler(request, PostCreateError())
+    if isinstance(exc, UnauthorizedActionError):
+        return await detailed_http_exception_handler(request, UnauthorizedAction())
+    if isinstance(exc, UserProfileNotFoundError):
+        return await detailed_http_exception_handler(request, UserProfileNotFound())
+    if isinstance(exc, ReportCreationError):
+        return await detailed_http_exception_handler(request, ReportCreateError())
+    if isinstance(exc, CannotReportSelfError):
+        return await detailed_http_exception_handler(request, CannotReportSelf())
+    if isinstance(exc, ReportAlreadyExistsError):
+        return await detailed_http_exception_handler(request, ReportAlreadyExists())
+    if isinstance(exc, InvalidReportTargetError):
+        return await detailed_http_exception_handler(request, InvalidReportTarget())
+    if isinstance(exc, VideoTooLargeError):
+        return await detailed_http_exception_handler(request, VideoTooLarge())
+    if isinstance(exc, InvalidVideoTypeError):
+        return await detailed_http_exception_handler(request, InvalidVideoType())
+    if isinstance(exc, MaxMediaExceededError):
+        return await detailed_http_exception_handler(request, MaxMediaExceeded())
+    if isinstance(exc, MaxVideoExceededError):
+        return await detailed_http_exception_handler(request, MaxVideoExceeded())
+    if isinstance(exc, MediaConflictError):
+        return await detailed_http_exception_handler(request, MediaConflict())
+    if isinstance(exc, InvalidVideoError):
+        return await detailed_http_exception_handler(request, InvalidVideo())
+    if isinstance(exc, InvalidImageError):
+        return await detailed_http_exception_handler(request, InvalidImage())
+    if isinstance(exc, VideoUploadError):
+        return await detailed_http_exception_handler(request, VideoUploadHTTPError())
+    if isinstance(exc, PollNotFoundError):
+        return await detailed_http_exception_handler(request, PollNotFound())
+    if isinstance(exc, PollEndedError):
+        return await detailed_http_exception_handler(request, PollEnded())
+    if isinstance(exc, PollAlreadyVotedError):
+        return await detailed_http_exception_handler(request, PollAlreadyVoted())
+    if isinstance(exc, InvalidPollOptionError):
+        return await detailed_http_exception_handler(request, InvalidPollOption())
+    if isinstance(exc, InvalidPollOptionsError):
+        return await detailed_http_exception_handler(request, InvalidPollOptions())
+    if isinstance(exc, PollMediaConflictError):
+        return await detailed_http_exception_handler(request, PollMediaConflict())
+    if isinstance(exc, PollReplyNotAllowedError):
+        return await detailed_http_exception_handler(request, PollReplyNotAllowed())
+    if isinstance(exc, ThreadTooShortError):
+        return await detailed_http_exception_handler(request, ThreadTooShort())
+    if isinstance(exc, ThreadTooLongError):
+        return await detailed_http_exception_handler(request, ThreadTooLong())
+    if isinstance(exc, QuotedPostNotFoundError):
+        return await detailed_http_exception_handler(request, QuotedPostNotFound())
+    if isinstance(exc, QuotePollConflictError):
+        return await detailed_http_exception_handler(request, QuotePollConflict())
+    if isinstance(exc, ReplyNotAllowedError):
+        return await detailed_http_exception_handler(request, ReplyNotAllowed())
+    if isinstance(exc, CannotPinReplyError):
+        return await detailed_http_exception_handler(request, CannotPinReply())
+    if isinstance(exc, CannotPrivateReplyError):
+        return await detailed_http_exception_handler(request, CannotPrivateReply())
+    if isinstance(exc, CannotFollowSelfError):
+        return await detailed_http_exception_handler(request, CannotFollowSelf())
+    if isinstance(exc, CannotBlockSelfError):
+        return await detailed_http_exception_handler(request, CannotBlockSelf())
+    if isinstance(exc, CannotMuteSelfError):
+        return await detailed_http_exception_handler(request, CannotMuteSelf())
+    if isinstance(exc, TooManyRelationsError):
+        return await detailed_http_exception_handler(request, TooManyRelations())
+
+    # Link resolver errors
+    if isinstance(exc, InvalidLinkError):
+        return await detailed_http_exception_handler(request, InvalidLink())
+    if isinstance(exc, LinkResolveError):
+        return await detailed_http_exception_handler(request, LinkResolveFailed())
+
     # Storage errors
     if isinstance(exc, StorageConnectionError):
         return await detailed_http_exception_handler(request, StorageConnectionFailed())
@@ -498,12 +648,21 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     )
 
 
-async def detailed_http_exception_handler(request: Request, exc: DetailedHTTPException):
+def detailed_http_exception_response(exc: DetailedHTTPException) -> JSONResponse:
+    """Build the JSON response for a `DetailedHTTPException`.
+
+    Middlewares can't rely on the registered exception handlers because they run
+    outside `ExceptionMiddleware`, so they use this to respond directly.
+    """
     return JSONResponse(
         status_code=exc.STATUS_CODE,
         content={"detail": exc.detail},
         headers=getattr(exc, "headers", None),
     )
+
+
+async def detailed_http_exception_handler(request: Request, exc: DetailedHTTPException):
+    return detailed_http_exception_response(exc)
 
 
 async def request_validation_exception_handler(

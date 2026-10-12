@@ -37,6 +37,10 @@
 		"events": "Event",
 		"settings": "Pengaturan",
 		"profile": "Profil",
+		"accountOfficial": "Akun resmi",
+		"accountOfficialInfo": "Akun resmi yang terverifikasi di Page48.",
+		"accountAdmin": "Admin Page48",
+		"accountAdminInfo": "Akun admin resmi Page48.",
 		"dashboard": "Ringkasan",
 		"language": "Bahasa",
 		"noResults": "Tidak ada hasil ditemukan",
@@ -73,6 +77,7 @@
 			"square": "1:1",
 			"sixteenNine": "16:9",
 			"nineSixteen": "9:16",
+			"threeOne": "3:1",
 			"fourThree": "4:3",
 			"threeFour": "3:4"
 		}
@@ -134,7 +139,8 @@
 		"liveHistory": "Riwayat Live",
 		"watchHistory": "Riwayat Menonton",
 		"startSorter": "Mulai Sorter",
-		"sorterHistory": "Riwayat Sorter"
+		"sorterHistory": "Riwayat Sorter",
+		"page48": "Page48"
 	},
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"
@@ -146,6 +152,7 @@
 			"members": "Member",
 			"events": "Event",
 			"calendar": "Kalender",
+			"page48": "Page48",
 			"sorter": "Sorter",
 			"live": "Live"
 		},
@@ -174,6 +181,10 @@
 			"achievements": {
 				"title": "PENCAPAIAN",
 				"description": "Buka lencana dan pencapaian saat kamu mendukung JKT48. Dari \"Pertunjukan Pertama\" hingga \"Fans Legendaris\", lacak kemajuanmu dan tunjukkan loyalitasmu."
+			},
+			"page48": {
+				"title": "PAGE48",
+				"description": "Ruang sosial khusus penggemar JKT48: bagikan foto, video, dan polling, ngobrol lewat balasan dan kutipan, saling mengikuti, lalu jelajahi hashtag yang sedang trending."
 			},
 			"sorter": {
 				"title": "SORTER",
@@ -625,7 +636,11 @@
 			"emailWarning": "Mengubah email akan memerlukan verifikasi ulang.",
 			"systemInfo": "Informasi Anggota",
 			"systemSubtitle": "Detail data keanggotaan Anda",
-			"verification": "Verifikasi Akun"
+			"verification": "Verifikasi Akun",
+			"banner": "Banner",
+			"bannerHint": "Ukuran ideal 3:1. Foto dapat disesuaikan di editor.",
+			"bannerUploadSuccess": "Banner berhasil diperbarui!",
+			"bannerUploadError": "Gagal mengunggah banner. Silakan coba lagi."
 		},
 		"language": {
 			"title": "Bahasa",
@@ -1410,6 +1425,7 @@
 				"members": "Members",
 				"setlists": "Setlists",
 				"feedback": "Masukan",
+				"reports": "Laporan",
 				"settings": "Pengaturan",
 				"more": "Lainnya"
 			},
@@ -1464,6 +1480,32 @@
 				"notesInfo": "Catatan ini akan dikirimkan ke email user dan muncul di halaman 'My Feedback' mereka.",
 				"saving": "Menyimpan...",
 				"saveChanges": "Simpan Perubahan"
+			}
+		},
+		"reports": {
+			"title": "Laporan",
+			"subtitle": "Laporan postingan dan pengguna dari pengguna lain",
+			"emptyTitle": "Belum Ada Laporan",
+			"emptyDesc": "Belum ada laporan yang masuk.",
+			"errorTitle": "Gagal memuat laporan",
+			"errorDesc": "Gagal memuat laporan dari server.",
+			"loadMore": "Muat lebih banyak",
+			"noMore": "Tidak ada laporan lagi untuk dimuat",
+			"filters": {
+				"all": "Semua",
+				"post": "Postingan",
+				"user": "Pengguna"
+			},
+			"reportedBy": "Dilaporkan oleh @{username}",
+			"deletedTarget": "Target sudah tidak ada atau telah dihapus.",
+			"imageCount": "{count} gambar",
+			"viewPost": "Lihat postingan",
+			"viewUser": "Lihat profil",
+			"status": {
+				"pending": "Menunggu",
+				"reviewed": "Ditinjau",
+				"resolved": "Selesai",
+				"dismissed": "Ditolak"
 			}
 		},
 		"settings": {
@@ -1648,6 +1690,7 @@
 			"eventHistory": "Ke Riwayat Event",
 			"feedback": "Ke Masukan",
 			"adminFeedback": "Ke Masukan Admin",
+			"adminReports": "Ke Laporan Admin",
 			"adminSettings": "Ke Pengaturan Admin",
 			"publicProfile": "Ke Profil Publik",
 			"journal": "Ke Jurnal",
@@ -1895,5 +1938,499 @@
 		"watchOfficialLink": "aplikasi resmi IDN",
 		"readTos": "Baca Ketentuan IDN",
 		"goBack": "Kembali"
+	},
+	"page48": {
+		"nav": {
+			"home": "Beranda",
+			"photos": "Gambar",
+			"videos": "Video",
+			"trending": "Trending",
+			"following": "Mengikuti"
+		},
+		"follow": {
+			"follow": "Ikuti",
+			"following": "Mengikuti",
+			"unfollow": "Berhenti mengikuti",
+			"requested": "Diminta",
+			"cancelRequest": "Batalkan permintaan mengikuti",
+			"accept": "Setujui",
+			"decline": "Abaikan",
+			"accepted": "Permintaan disetujui.",
+			"declined": "Permintaan diabaikan.",
+			"requestPending": "Permintaan mengikutimu sedang menunggu persetujuan.",
+			"lockedPosts": "Akun ini hanya menampilkan postingannya untuk pengikut yang disetujui.",
+			"error": "Gagal memperbarui status mengikuti"
+		},
+		"seo": {
+			"feedTitle": "Page48",
+			"feedDesc": "Page48 - ruang sosial komunitas JKT48. Bagikan postingan teks, gambar, dan video, serta ikuti hashtag member JKT48.",
+			"photosTitle": "Gambar di Page48",
+			"photosDesc": "Kumpulan postingan bergambar dari komunitas Page48 JKT48.",
+			"videosTitle": "Video di Page48",
+			"videosDesc": "Kumpulan postingan video dari komunitas Page48 JKT48.",
+			"trendingTitle": "Trending di Page48",
+			"trendingDesc": "Hashtag yang sedang populer di komunitas Page48 JKT48.",
+			"tagTitle": "Postingan #{tag} di Page48",
+			"tagDesc": "Lihat semua postingan dengan hashtag #{tag} di Page48.",
+			"postTitle": "Postingan Page48",
+			"postDesc": "Lihat postingan dan balasan di Page48.",
+			"userTitle": "Profil Page48",
+			"userDesc": "Lihat postingan, repost, dan gambar pengguna di Page48.",
+			"followingTitle": "Mengikuti di Page48",
+			"followingDesc": "Postingan dari akun yang kamu ikuti di Page48."
+		},
+		"aria": {
+			"profile": "Profil",
+			"profilePhoto": "Foto profil",
+			"banner": "Banner profil",
+			"openPost": "Buka postingan",
+			"more": "Opsi lainnya",
+			"like": "Suka",
+			"comment": "Komentar",
+			"repost": "Repost",
+			"bookmark": "Simpan",
+			"share": "Bagikan",
+			"removeQuote": "Hapus kutipan",
+			"media": "Media postingan",
+			"viewImage": "Lihat gambar {index} dari {total}",
+			"playVideo": "Putar video",
+			"youtubeVideo": "Video YouTube",
+			"cancelReply": "Batalkan balasan",
+			"openX": "Buka X @{username}",
+			"imageCount": "{count} gambar",
+			"prevImage": "Gambar sebelumnya",
+			"nextImage": "Gambar berikutnya",
+			"close": "Tutup",
+			"mentionSuggestions": "Saran pengguna",
+			"userPreview": "Pratinjau pengguna",
+			"xPost": "Postingan X",
+			"instagramPost": "Postingan Instagram",
+			"tiktokPost": "Postingan TikTok",
+			"spotifyEmbed": "Embed Spotify",
+			"telegramPost": "Postingan Telegram"
+		},
+		"embed": {
+			"viewOnX": "Lihat post di X",
+			"xLoads": "Post dimuat dari X",
+			"viewOnInstagram": "Lihat post di Instagram",
+			"instagramLoads": "Post dimuat dari Instagram",
+			"viewStoryOnInstagram": "Lihat story di Instagram",
+			"storyNotice": "Story hilang setelah 24 jam",
+			"viewOnTikTok": "Lihat di TikTok",
+			"tiktokLoads": "Video dimuat dari TikTok",
+			"tiktokShortNotice": "Membuka video di TikTok",
+			"listenOnSpotify": "Dengar di Spotify",
+			"spotifyLoads": "Player dimuat dari Spotify",
+			"spotifyShortNotice": "Membuka di Spotify",
+			"viewOnTelegram": "Lihat post di Telegram",
+			"telegramLoads": "Post dimuat dari Telegram"
+		},
+		"mentions": {
+			"noResults": "Pengguna tidak ditemukan",
+			"searching": "Mencari…"
+		},
+		"hover": {
+			"notFoundText": "Tidak ada akun dengan username ini. Mungkin sudah dihapus atau mengganti username.",
+			"loadError": "Gagal memuat profil ini. Arahkan kursor lagi untuk mencoba ulang."
+		},
+		"composer": {
+			"placeholder": "Apa yang baru?",
+			"replyPlaceholder": "Balas @{username}",
+			"submit": "Posting",
+			"reply": "Balas",
+			"addPhoto": "Tambahkan Foto",
+			"maxPhotos": "Maksimal 10 foto per postingan.",
+			"maxMedia": "Maksimal 10 media per postingan.",
+			"addMedia": "Tambah foto atau video",
+			"dragToReorder": "Geser untuk ubah urutan",
+			"dropToUpload": "Lepas foto atau video untuk menambahkannya",
+			"mediaCount": "{count} media",
+			"maxSize": "Ukuran foto maksimal 3MB.",
+			"previewAlt": "Pratinjau foto",
+			"addVideo": "Tambahkan Video",
+			"removeVideo": "Hapus video",
+			"videoTooLong": "Video maksimal 1 menit.",
+			"videoTooLarge": "Ukuran video maksimal 50MB.",
+			"videoInvalidType": "Format video harus MP4 atau WebM.",
+			"videoUnreadable": "Video tidak bisa dibaca.",
+			"addEmoji": "Tambahkan emoji",
+			"emojiTooLong": "Batas karakter tercapai.",
+			"quoteNotFound": "Tidak bisa membuka postingan yang dikutip.",
+			"newPost": "Buat postingan baru",
+			"discardTitle": "Buang postingan?",
+			"discardMessage": "Postingan dan lampiran yang belum dikirim akan hilang.",
+			"discardConfirm": "Buang"
+		},
+		"notifications": {
+			"title": "Notifikasi",
+			"empty": "Belum ada notifikasi.",
+			"loadError": "Gagal memuat notifikasi.",
+			"loadErrorText": "Periksa koneksimu lalu coba lagi.",
+			"postUnavailable": "Postingan ini sudah tidak tersedia.",
+			"likedPost": "menyukai postinganmu",
+			"repliedPost": "membalas postinganmu",
+			"repostedPost": "memposting ulang postinganmu",
+			"quotedPost": "mengutip postinganmu",
+			"mentionedYou": "menyebut kamu",
+			"followedYou": "mengikuti kamu",
+			"followRequested": "meminta untuk mengikutimu",
+			"followAccepted": "menerima permintaan mengikutimu",
+			"tab": {
+				"replies": "Balasan",
+				"mentions": "Sebutan",
+				"likes": "Suka",
+				"reposts": "Repost",
+				"follows": "Mengikuti"
+			}
+		},
+		"search": {
+			"title": "Pencarian",
+			"description": "Cari postingan, pengguna, dan hashtag di Page48.",
+			"placeholder": "Cari di Page48",
+			"forTerm": "Cari: “{term}”",
+			"enterHint": "Enter ↵",
+			"hint": "Gunakan #tag, @user, dan from:user",
+			"prompt": "Ketik minimal 2 karakter untuk mencari.",
+			"empty": "Tidak ada hasil.",
+			"loadError": "Gagal memuat hasil pencarian.",
+			"loadErrorText": "Periksa koneksimu lalu coba lagi.",
+			"tab": {
+				"top": "Teratas",
+				"posts": "Postingan",
+				"media": "Media",
+				"users": "Pengguna",
+				"tags": "Hashtag"
+			},
+			"section": {
+				"users": "Pengguna",
+				"tags": "Hashtag",
+				"posts": "Postingan"
+			}
+		},
+		"poll": {
+			"create": "Buat polling",
+			"remove": "Hapus polling",
+			"addOption": "Tambah pilihan",
+			"optionPlaceholder": "Pilihan {index}",
+			"removeOption": "Hapus pilihan {index}",
+			"hint": "Isi minimal 2 pilihan (maksimal 6, 50 karakter per pilihan).",
+			"voteFor": "Pilih {option}",
+			"voteError": "Gagal mengirim suara.",
+			"endsIn": "Berakhir dalam {time}",
+			"ended": "Polling berakhir",
+			"votes": "{count} suara"
+		},
+		"thread": {
+			"addPost": "Tambah postingan lain",
+			"removePost": "Hapus postingan ini",
+			"removeMedia": "Hapus media",
+			"publish": "Posting semua",
+			"show": "Tampilkan thread ini ({count} postingan)",
+			"sent": "Thread terkirim ({count} postingan)",
+			"error": "Gagal mengirim thread"
+		},
+		"emoji": {
+			"search": "Cari emoji",
+			"empty": "Emoji tidak ditemukan",
+			"recent": "Sering dipakai",
+			"smileys": "Wajah & emosi",
+			"gestures": "Gestur & orang",
+			"hearts": "Hati & cinta",
+			"animals": "Hewan & alam",
+			"food": "Makanan & minuman",
+			"activities": "Aktivitas",
+			"travel": "Perjalanan & tempat",
+			"objects": "Benda",
+			"symbols": "Simbol"
+		},
+		"video": {
+			"play": "Putar",
+			"pause": "Jeda",
+			"mute": "Bisukan",
+			"unmute": "Nyalakan suara",
+			"seek": "Geser video",
+			"prev": "Video sebelumnya",
+			"next": "Video berikutnya",
+			"showMore": "Selengkapnya",
+			"showLess": "Sembunyikan",
+			"commentsTitle": "Komentar",
+			"commentsEmpty": "Belum ada komentar. Jadilah yang pertama!",
+			"commentsSignIn": "Masuk untuk berkomentar",
+			"commentReply": "Balas"
+		},
+		"feed": {
+			"emptyTitle": "Belum ada postingan",
+			"emptyText": "Jadilah yang pertama menulis sesuatu!",
+			"loadError": "Gagal memuat feed",
+			"end": "Anda sudah melihat semuanya",
+			"postSuccess": "Postingan berhasil dikirim",
+			"postError": "Gagal mengirim postingan",
+			"followingEmptyTitle": "Feed kamu masih kosong",
+			"followingEmptyText": "Postingan dari akun yang kamu ikuti akan muncul di sini.",
+			"newPosts": "Tampilkan {count} postingan",
+			"posted": "postingan baru"
+		},
+		"photos": {
+			"emptyTitle": "Belum ada gambar",
+			"emptyText": "Postingan yang berisi gambar akan muncul di sini.",
+			"loadError": "Gagal memuat gambar."
+		},
+		"videos": {
+			"emptyTitle": "Belum ada video",
+			"emptyText": "Postingan yang berisi video akan muncul di sini."
+		},
+		"videosFeed": {
+			"emptyTitle": "Belum ada video",
+			"emptyText": "Belum ada video untuk ditampilkan.",
+			"loadError": "Gagal memuat video"
+		},
+		"time": {
+			"secondsShort": "d",
+			"minutesShort": "m",
+			"hoursShort": "j",
+			"daysShort": "h",
+			"monthsShort": "bln",
+			"yearsShort": "thn"
+		},
+		"trending": {
+			"title": "Trending di Page48",
+			"subtitle": "Tag paling banyak dipakai",
+			"empty": "Belum ada tag. Gunakan #hashtag di postinganmu.",
+			"postCount": "{count} post",
+			"loadError": "Gagal memuat trending"
+		},
+		"members": {
+			"title": "Hashtag Member",
+			"subtitle": "Username X member JKT48 yang aktif",
+			"empty": "Belum ada data akun X member.",
+			"loadError": "Gagal memuat data member"
+		},
+		"activeUsers": {
+			"title": "Paling Aktif",
+			"empty": "Belum ada aktivitas pengguna.",
+			"loadError": "Gagal memuat pengguna aktif",
+			"postCount": "{count} post"
+		},
+		"tag": {
+			"header": "Postingan dengan tag ini",
+			"headerFiltered": "Postingan dengan tag ini • filter {media}",
+			"mediaText": "Teks",
+			"mediaImage": "Gambar",
+			"mediaVideo": "Video",
+			"empty": "Belum ada postingan dengan tag #{tag}.",
+			"loadError": "Gagal memuat"
+		},
+		"post": {
+			"loadError": "Gagal memuat postingan",
+			"notFound": "Postingan tidak ditemukan",
+			"notFoundTitle": "Postingan tidak ditemukan",
+			"notFoundText": "Postingan ini sudah dihapus, atau tidak tersedia untukmu.",
+			"replyingTo": "Membalas",
+			"replySent": "Balasan terkirim",
+			"replyError": "Gagal mengirim balasan",
+			"emptyReplies": "Belum ada balasan.",
+			"showMore": "Selengkapnya",
+			"showLess": "Sembunyikan",
+			"quotedUnavailable": "Postingan ini sudah tidak tersedia."
+		},
+		"userPage": {
+			"notFoundTitle": "Pengguna tidak ditemukan",
+			"notFoundText": "Profil yang kamu cari tidak ada atau sudah dihapus.",
+			"loadError": "Gagal memuat profil",
+			"editInSettings": "Edit di Pengaturan",
+			"reposted": "Direpost",
+			"pinned": "Disematkan",
+			"countPosts": "{count} Postingan",
+			"countReposts": "{count} Repost",
+			"followers": "Pengikut",
+			"following": "Mengikuti",
+			"followersTitle": "Pengikut",
+			"followingTitle": "Mengikuti",
+			"emptyFollowers": "Belum ada pengikut.",
+			"emptyFollowing": "Belum mengikuti siapa pun.",
+			"listErrorText": "Terjadi kesalahan saat memuat daftar ini.",
+			"loadMore": "Muat lagi",
+			"back": "Kembali"
+		},
+		"mediaViewer": {
+			"title": "Media postingan",
+			"hideDetails": "Sembunyikan detail",
+			"showDetails": "Tampilkan detail",
+			"download": "Unduh foto"
+		},
+		"activity": {
+			"title": "Aktivitas postingan",
+			"view": "Lihat aktivitas",
+			"backToPost": "Kembali ke postingan",
+			"quotes": "Kutipan",
+			"reposts": "Repost",
+			"likes": "Suka",
+			"emptyQuotes": "Belum ada kutipan.",
+			"emptyReposts": "Belum ada repost.",
+			"emptyLikes": "Belum ada yang menyukai.",
+			"loadMore": "Muat lebih banyak",
+			"error": "Gagal memuat daftar.",
+			"loadError": "Gagal memuat aktivitas",
+			"loadErrorText": "Terjadi kesalahan saat memuat aktivitas postingan ini."
+		},
+		"tabs": {
+			"posts": "Postingan",
+			"media": "Gambar",
+			"videos": "Video",
+			"reposts": "Repost",
+			"replies": "Balasan",
+			"likes": "Suka",
+			"bookmarks": "Tersimpan"
+		},
+		"empty": {
+			"posts": "Belum ada postingan.",
+			"media": "Belum ada gambar.",
+			"videos": "Belum ada video.",
+			"reposts": "Belum ada repost.",
+			"replies": "Belum ada balasan.",
+			"likes": "Belum ada postingan yang disukai.",
+			"bookmarks": "Belum ada postingan tersimpan."
+		},
+		"error": {
+			"action": "Gagal memproses. Coba lagi.",
+			"shareCopied": "Tautan disalin",
+			"shareError": "Gagal membagikan tautan"
+		},
+		"menu": {
+			"edit": "Edit",
+			"delete": "Hapus",
+			"report": "Laporkan",
+			"pin": "Sematkan ke profil",
+			"unpin": "Lepas sematan",
+			"makePrivate": "Jadikan privat",
+			"makePublic": "Jadikan publik",
+			"markSpoiler": "Tandai spoiler",
+			"unmarkSpoiler": "Hapus spoiler"
+		},
+		"private": {
+			"badge": "Hanya kamu",
+			"made": "Postingan sekarang hanya bisa dilihat kamu.",
+			"madePublic": "Postingan kembali publik.",
+			"error": "Gagal mengubah privasi postingan."
+		},
+		"spoiler": {
+			"badge": "Spoiler",
+			"label": "Spoiler",
+			"show": "Lihat spoiler",
+			"tapToShow": "Ketuk untuk membuka postingan ini",
+			"mark": "Tandai sebagai spoiler",
+			"marked": "Ditandai sebagai spoiler.",
+			"unmarked": "Spoiler dihapus.",
+			"error": "Gagal memperbarui spoiler.",
+			"notification": "Postingan spoiler"
+		},
+		"replyAudience": {
+			"title": "Siapa yang bisa membalas?",
+			"everyone": "Semua orang",
+			"following": "Akun yang kamu ikuti",
+			"followers": "Hanya pengikut",
+			"following_and_followers": "Akun yang kamu ikuti dan pengikutmu",
+			"only_me": "Hanya saya",
+			"mentioned": "Hanya akun yang kamu sebut",
+			"lockedViewer": "Kamu tidak bisa membalas postingan ini.",
+			"locked": {
+				"following": "Hanya akun yang diikutinya yang bisa membalas.",
+				"followers": "Hanya pengikutnya yang bisa membalas.",
+				"following_and_followers": "Hanya akun yang diikutinya dan pengikutnya yang bisa membalas.",
+				"only_me": "Hanya dia yang bisa membalas.",
+				"mentioned": "Hanya akun yang disebutnya yang bisa membalas."
+			}
+		},
+		"repostMenu": {
+			"repost": "Repost",
+			"undo": "Batalkan repost",
+			"quote": "Kutip postingan"
+		},
+		"pin": {
+			"pinned": "Postingan disematkan.",
+			"unpinned": "Sematan dilepas.",
+			"error": "Gagal mengubah sematan."
+		},
+		"edit": {
+			"title": "Edit Postingan",
+			"placeholder": "Apa yang baru?",
+			"save": "Simpan",
+			"success": "Postingan diperbarui",
+			"error": "Gagal memperbarui postingan",
+			"discardTitle": "Buang perubahan?",
+			"discardMessage": "Perubahan yang belum disimpan akan hilang."
+		},
+		"delete": {
+			"title": "Hapus Postingan",
+			"message": "Postingan ini akan dihapus permanen. Lanjutkan?",
+			"confirm": "Hapus",
+			"success": "Postingan dihapus",
+			"error": "Gagal menghapus postingan"
+		},
+		"report": {
+			"titlePost": "Laporkan Postingan",
+			"titleUser": "Laporkan Pengguna",
+			"reasonLabel": "Alasan",
+			"noteLabel": "Catatan tambahan (opsional)",
+			"reason": {
+				"spam": "Spam",
+				"harassment": "Pelecehan atau ujaran kebencian",
+				"inappropriate": "Konten tidak pantas",
+				"other": "Lainnya"
+			},
+			"submit": "Kirim Laporan",
+			"success": "Laporan terkirim. Terima kasih.",
+			"error": "Gagal mengirim laporan",
+			"already": "Kamu sudah melaporkan ini."
+		},
+		"reportUser": "Laporkan Pengguna",
+		"backHome": "Kembali ke beranda",
+		"settings": {
+			"title": "Page48",
+			"subtitle": "Privasi dan daftar akun yang kamu blokir atau bisukan.",
+			"viewList": "Lihat",
+			"lockedTitle": "Kunci Profil Page48",
+			"lockedSubtitle": "Saat aktif, hanya pengikut yang kamu setujui yang bisa melihat postinganmu.",
+			"lockedOn": "Postingan kamu sekarang hanya untuk pengikut.",
+			"lockedOff": "Postingan kamu sekarang bisa dilihat semua orang.",
+			"embedsTitle": "Muat embed otomatis",
+			"embedsSubtitle": "Muat post X, Instagram, dan TikTok saat masuk layar. YouTube tetap pakai thumbnail."
+		},
+		"blockUser": "Blokir",
+		"unblockUser": "Buka blokir",
+		"muteUser": "Bisukan",
+		"unmuteUser": "Batalkan bisukan",
+		"block": {
+			"title": "Blokir pengguna?",
+			"message": "{name} tidak akan bisa melihat postinganmu dan kamu tidak akan melihat postingannya. Kalian juga berhenti saling mengikuti.",
+			"confirm": "Blokir",
+			"success": "Pengguna diblokir.",
+			"error": "Gagal memblokir pengguna ini.",
+			"youBlocked": "Kamu memblokir pengguna ini.",
+			"blockedBy": "Kamu tidak bisa melihat postingan pengguna ini."
+		},
+		"unblock": {
+			"success": "Blokir dibuka."
+		},
+		"mute": {
+			"title": "Bisukan pengguna?",
+			"message": "Postingan {name} tidak akan muncul lagi di beranda (timeline) kamu. Pengguna ini tidak akan tahu kalau kamu membisukannya, dan kamu tetap bisa melihat profilnya.",
+			"confirm": "Bisukan",
+			"success": "Pengguna dibisukan.",
+			"error": "Gagal membisukan pengguna ini."
+		},
+		"unmute": {
+			"success": "Bisukan dibatalkan."
+		},
+		"relations": {
+			"blocks": {
+				"title": "Akun Diblokir",
+				"empty": "Kamu tidak memblokir siapa pun."
+			},
+			"mutes": {
+				"title": "Akun Dibisukan",
+				"empty": "Kamu tidak membisukan siapa pun."
+			}
+		}
 	}
 }

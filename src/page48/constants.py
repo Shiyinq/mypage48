@@ -1,0 +1,110 @@
+# A post may hold up to this many media items, images and videos combined.
+MAX_MEDIA = 10
+
+# Who may reply to a post. The author always may, whatever the setting is.
+REPLY_SETTINGS = (
+    "everyone",
+    "following",
+    "followers",
+    "following_and_followers",
+    "only_me",
+    "mentioned",
+)
+DEFAULT_REPLY_SETTING = "everyone"
+
+
+class Info:
+    POST_CREATED = "Post created successfully."
+    POST_UPDATED = "Post updated successfully."
+    POST_DELETED = "Post deleted successfully."
+    LIKE_TOGGLED = "Like status toggled."
+    REPOST_TOGGLED = "Repost status toggled."
+    BOOKMARK_TOGGLED = "Bookmark status toggled."
+    REPORT_CREATED = "Report submitted successfully."
+    VIDEO_UPLOADED = "Video uploaded successfully."
+    POLL_VOTED = "Vote submitted successfully."
+    THREAD_CREATED = "Thread created successfully."
+    QUOTE_CREATED = "Quote post created successfully."
+    POST_PINNED = "Post pinned successfully."
+    POST_UNPINNED = "Post unpinned successfully."
+    NOTIFICATIONS_READ = "Notifications marked as read."
+
+
+class ErrorCode:
+    POST_NOT_FOUND = "Post not found."
+    POST_CREATE_ERROR = "Failed to create post."
+    INVALID_IMAGE = "The image reference is invalid."
+    MAX_RELATIONS_REACHED = (
+        "You have reached the maximum number of blocked or muted accounts."
+    )
+    UNAUTHORIZED_ACTION = "You are not authorized to perform this action."
+    MAX_MEDIA_EXCEEDED = "Maximum number of media allowed per post is 10."
+    REPLY_NOT_FOUND = "The post you are trying to reply to does not exist."
+    USER_NOT_FOUND = "User not found."
+    REPORT_CREATE_ERROR = "Failed to submit report."
+    CANNOT_REPORT_SELF = "You cannot report yourself."
+    REPORT_ALREADY_EXISTS = "You have already reported this."
+    INVALID_REPORT_TARGET = "The reported target does not exist."
+    VIDEO_UPLOAD_ERROR = "Failed to upload video."
+    VIDEO_TOO_LARGE = "Video exceeds the maximum size of 50MB."
+    INVALID_VIDEO_TYPE = "Unsupported video format. Allowed: MP4 or WebM."
+    MAX_VIDEO_EXCEEDED = "Maximum number of videos allowed per post is 1."
+    INVALID_MEDIA_COMBINATION = "A post cannot contain both images and a video."
+    INVALID_VIDEO = "The video reference is invalid."
+    POLL_NOT_FOUND = "This post does not have a poll."
+    POLL_ENDED = "This poll has ended."
+    POLL_ALREADY_VOTED = "You have already voted on this poll."
+    INVALID_POLL_OPTION = "The poll option is invalid."
+    INVALID_POLL_OPTIONS = "A poll requires 2 to 6 options of up to 50 characters each."
+    POLL_MEDIA_CONFLICT = "A poll cannot be combined with images or a video."
+    POLL_REPLY_NOT_ALLOWED = "Polls are only supported on top-level posts."
+    THREAD_TOO_SHORT = "A thread needs at least 2 posts."
+    THREAD_TOO_LONG = "A thread can have at most 25 posts."
+    QUOTED_POST_NOT_FOUND = "The post you are trying to quote does not exist."
+    POLL_QUOTE_CONFLICT = "A quote cannot include a poll."
+    CANNOT_PIN_REPLY = "Only top-level posts can be pinned."
+    CANNOT_PRIVATE_REPLY = "Only top-level posts can be made private."
+    CANNOT_FOLLOW_SELF = "You cannot follow yourself."
+    CANNOT_BLOCK_SELF = "You cannot block yourself."
+    CANNOT_MUTE_SELF = "You cannot mute yourself."
+    REPLY_NOT_ALLOWED = "You are not allowed to reply to this post."
+
+
+class DomainErrorCode:
+    POST_NOT_FOUND = "Post not found."
+    POST_CREATION_FAILED = "Failed to create post."
+    INVALID_IMAGE = "The image reference is invalid."
+    MAX_RELATIONS_REACHED = (
+        "You have reached the maximum number of blocked or muted accounts."
+    )
+    UNAUTHORIZED = "Unauthorized."
+    USER_NOT_FOUND = "User not found."
+    REPORT_CREATION_FAILED = "Failed to submit report."
+    CANNOT_REPORT_SELF = "You cannot report yourself."
+    REPORT_ALREADY_EXISTS = "You have already reported this."
+    INVALID_REPORT_TARGET = "The reported target does not exist."
+    VIDEO_UPLOAD_FAILED = "Failed to upload video."
+    VIDEO_TOO_LARGE = "Video exceeds the maximum size of 50MB."
+    INVALID_VIDEO_TYPE = "Unsupported video format. Allowed: MP4 or WebM."
+    MAX_MEDIA_EXCEEDED = "Maximum number of media allowed per post is 10."
+    MAX_VIDEO_EXCEEDED = "Maximum number of videos allowed per post is 1."
+    INVALID_MEDIA_COMBINATION = "A post cannot contain both images and a video."
+    INVALID_VIDEO = "The video reference is invalid."
+    POLL_NOT_FOUND = "This post does not have a poll."
+    POLL_ENDED = "This poll has ended."
+    POLL_ALREADY_VOTED = "You have already voted on this poll."
+    INVALID_POLL_OPTION = "The poll option is invalid."
+    INVALID_POLL_OPTIONS = "A poll requires 2 to 6 options of up to 50 characters each."
+    POLL_MEDIA_CONFLICT = "A poll cannot be combined with images or a video."
+    POLL_REPLY_NOT_ALLOWED = "Polls are only supported on top-level posts."
+    THREAD_CREATION_FAILED = "Failed to create thread."
+    THREAD_TOO_SHORT = "A thread needs at least 2 posts."
+    THREAD_TOO_LONG = "A thread can have at most 25 posts."
+    QUOTED_POST_NOT_FOUND = "The post you are trying to quote does not exist."
+    POLL_QUOTE_CONFLICT = "A quote cannot include a poll."
+    CANNOT_PIN_REPLY = "Only top-level posts can be pinned."
+    CANNOT_PRIVATE_REPLY = "Only top-level posts can be made private."
+    CANNOT_FOLLOW_SELF = "You cannot follow yourself."
+    CANNOT_BLOCK_SELF = "You cannot block yourself."
+    CANNOT_MUTE_SELF = "You cannot mute yourself."
+    REPLY_NOT_ALLOWED = "You are not allowed to reply to this post."

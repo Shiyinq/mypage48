@@ -44,6 +44,10 @@ export interface User {
 	profilePicture_medium?: string | null;
 	profilePicture_small?: string | null;
 	blurHash?: string | null;
+	bannerPicture?: string | null;
+	bannerPicture_medium?: string | null;
+	bannerPicture_small?: string | null;
+	bannerBlurHash?: string | null;
 	oshis?: UserOshi[];
 	isPublic?: boolean;
 	publicYear?: number | null;

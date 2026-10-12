@@ -72,6 +72,8 @@ class UserInDB(BaseModel):
     userId: str = Field(default_factory=lambda: str(uuid4()))
     profilePicture: Optional[str] = Field(default=None)
     blurHash: Optional[str] = Field(default=None)
+    bannerPicture: Optional[str] = Field(default=None)
+    bannerBlurHash: Optional[str] = Field(default=None)
     name: str = Field(max_length=100)  # Stores fullName or OAuth name
     memberId: Optional[str] = Field(
         max_length=20, default=None
@@ -87,6 +89,9 @@ class UserInDB(BaseModel):
     updatedAt: datetime = Field(default_factory=datetime.now)
     isEmailVerified: bool = Field(default=False)
     isPublic: bool = Field(default=False)
+    # Page48-only account badge: "official_account" or "page48_admin".
+    # None means a regular account with no check mark.
+    page48AccountType: Optional[str] = Field(default=None)
     publicYear: Optional[int] = Field(default=None)  # None = All Years
     failedLoginAttempts: int = Field(default=0)
     isAccountLocked: bool = Field(default=False)
@@ -151,6 +156,16 @@ class UpdateProfilePictureRequest(BaseModel):
     @classmethod
     def validate_profile_picture(cls, v: str) -> str:
         return validate_image_path(v, "avatar/", "Profile picture")
+
+
+class UpdateBannerRequest(BaseModel):
+    bannerPicture: str = Field(max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
+
+    @field_validator("bannerPicture")
+    @classmethod
+    def validate_banner_picture(cls, v: str) -> str:
+        return validate_image_path(v, "banner/", "Banner")
 
 
 class BatchAddOshiRequest(BaseModel):

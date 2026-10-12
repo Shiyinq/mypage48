@@ -6,3 +6,4 @@ export { default as DeveloperAccessSettings } from './DeveloperAccessSettings.sv
 export { default as ApiKeyModal } from './ApiKeyModal.svelte';
 export { default as ConfirmApiKeyModal } from './ConfirmApiKeyModal.svelte';
 export { default as ExportData } from './ExportData.svelte';
+export { default as SettingsSections } from './SettingsSections.svelte';
