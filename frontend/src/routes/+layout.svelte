@@ -16,7 +16,7 @@
 	import MobileHeader from '$lib/components/navigation/MobileHeader.svelte';
 	import PlaygroundHeader from '$lib/components/playground/PlaygroundHeader.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
-	import { Check } from 'lucide-svelte';
+	import { Check, Info, AlertTriangle } from 'lucide-svelte';
 	import SplashScreen from '$lib/components/SplashScreen.svelte';
 	import LoadingBar from '$lib/components/LoadingBar.svelte';
 	import { logger } from '$lib/utils/logger';
@@ -240,16 +240,23 @@
 			<AppBackground hideDecorationsOnMobile={true} />
 		{/if}
 		{#if toast.current}
+			{@const toastType = toast.current.type}
 			<div class="fixed top-4 left-0 right-0 z-[99999] flex justify-center pointer-events-none">
 				<div
 					class="bg-gray-900/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-medium text-sm border border-white/10 pointer-events-auto animate-[fadeInDown_0.3s_ease-out]"
 				>
 					<div
-						class={toast.current.type === 'error'
-							? 'bg-red-500 rounded-full p-1'
-							: 'bg-green-500 rounded-full p-1'}
+						class={`rounded-full p-1 ${
+							toastType === 'error'
+								? 'bg-red-500'
+								: toastType === 'warning'
+									? 'bg-amber-500'
+									: toastType === 'info'
+										? 'bg-blue-500'
+										: 'bg-green-500'
+						}`}
 					>
-						{#if toast.current.type === 'error'}
+						{#if toastType === 'error'}
 							<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
 									stroke-linecap="round"
@@ -258,6 +265,10 @@
 									d="M6 18L18 6M6 6l12 12"
 								/>
 							</svg>
+						{:else if toastType === 'info'}
+							<Info class="w-3 h-3 text-white" />
+						{:else if toastType === 'warning'}
+							<AlertTriangle class="w-3 h-3 text-white" />
 						{:else}
 							<Check class="w-3 h-3 text-white" />
 						{/if}
