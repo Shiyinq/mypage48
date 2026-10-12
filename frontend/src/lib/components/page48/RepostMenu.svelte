@@ -48,6 +48,19 @@
 		open = false;
 		action();
 	}
+
+	// The panel is portalled and fixed, so any scroll (or resize) would leave it
+	// floating away from the repost button: close it instead.
+	$effect(() => {
+		if (!open) return;
+		const close = () => (open = false);
+		window.addEventListener('scroll', close, true);
+		window.addEventListener('resize', close);
+		return () => {
+			window.removeEventListener('scroll', close, true);
+			window.removeEventListener('resize', close);
+		};
+	});
 </script>
 
 <button
