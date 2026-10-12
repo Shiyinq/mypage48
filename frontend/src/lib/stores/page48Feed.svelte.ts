@@ -192,3 +192,37 @@ export const page48FeedStore = {
 	saveScroll,
 	savePosition
 };
+
+// A post edited or deleted anywhere must be reflected in every cached feed, not
+// just the page it happened on (each page holds its own copy of the post).
+if (typeof window !== 'undefined') {
+	window.addEventListener('page48:post-updated', (event) => {
+		const updated = (event as CustomEvent<Page48Post>).detail;
+		if (!updated?.postId) return;
+		for (const key of Object.keys(buckets)) {
+			const state = buckets[key];
+			if (state.posts.some((post) => post.postId === updated.postId)) {
+				state.posts = state.posts.map((post) =>
+					post.postId === updated.postId ? { ...post, ...updated } : post
+				);
+			}
+			if (state.pending.some((post) => post.postId === updated.postId)) {
+				state.pending = state.pending.map((post) =>
+					post.postId === updated.postId ? { ...post, ...updated } : post
+				);
+			}
+		}
+	});
+
+	window.addEventListener('page48:post-deleted', (event) => {
+		const postId = (event as CustomEvent<{ postId?: string }>).detail?.postId;
+		if (!postId) return;
+		for (const key of Object.keys(buckets)) {
+			const state = buckets[key];
+			if (state.posts.some((post) => post.postId === postId)) {
+				state.posts = state.posts.filter((post) => post.postId !== postId);
+			}
+			state.pending = state.pending.filter((post) => post.postId !== postId);
+		}
+	});
+}

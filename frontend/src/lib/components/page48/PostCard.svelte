@@ -183,6 +183,8 @@
 		post.isEdited = updated.isEdited;
 		post.updatedAt = updated.updatedAt;
 		onUpdated?.(post);
+		// Broadcast so the post's copies on other pages (feeds, profiles) update too.
+		window.dispatchEvent(new CustomEvent('page48:post-updated', { detail: post }));
 	}
 
 	async function handleDelete() {
@@ -193,6 +195,9 @@
 			showToast(t('page48.delete.success'), 'success');
 			showDelete = false;
 			onDelete?.(post.postId);
+			window.dispatchEvent(
+				new CustomEvent('page48:post-deleted', { detail: { postId: post.postId } })
+			);
 		} catch (err: unknown) {
 			const e = err as { detail?: string; message?: string };
 			showToast(e?.detail || e?.message || t('page48.delete.error'), 'error');

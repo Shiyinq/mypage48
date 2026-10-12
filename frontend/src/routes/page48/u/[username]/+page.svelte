@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Repeat2, Settings, Copy, Play, Pin } from 'lucide-svelte';
@@ -16,7 +16,8 @@
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 	import { portal } from '$lib/actions/portal';
-	import { page48NavbarStore, page48Reads } from '$lib/stores/page48.svelte';
+	import { page48NavbarStore } from '$lib/stores/page48.svelte';
+	import { page48ProfileStore } from '$lib/stores/page48Profile.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
@@ -31,17 +32,23 @@
 
 	let username = $derived($page.params.username ?? '');
 
-	let profile = $state<Page48UserProfile | null>(null);
-	let loadingProfile = $state(true);
-	let profileError = $state<string | null>(null);
-	let notFound = $state(false);
+	// The profile header and its tab lists live in a module-scope store, so revisiting
+	// a profile or switching between its tabs renders what is already there: no
+	// skeleton, no refetch. The header is quietly revalidated once it goes stale.
+	const profileEntry = $derived(page48ProfileStore.readProfile(username));
+	let profile = $derived(profileEntry.data);
+	let loadingProfile = $derived(
+		!profileEntry.isLoaded && !profileEntry.error && !profileEntry.notFound
+	);
+	let profileError = $derived(profileEntry.error);
+	let notFound = $derived(profileEntry.notFound);
 
 	let activeTab = $state<Tab>('posts');
-	let posts = $state<Page48Post[]>([]);
-	let loadingList = $state(true);
-	let loadingMore = $state(false);
-	let hasMore = $state(false);
-	let nextCursor = $state<string | null>(null);
+	const listEntry = $derived(page48ProfileStore.readList(username, activeTab));
+	let posts = $derived(listEntry.posts);
+	let loadingList = $derived(!listEntry.isLoaded);
+	let loadingMore = $derived(listEntry.isLoadingMore);
+	let hasMore = $derived(listEntry.hasMore);
 
 	let isOwnProfile = $derived(!!profile && userProfile.data?.username === profile.username);
 
@@ -110,7 +117,7 @@
 			if (!post?.postId) return;
 			if (activeTab !== 'posts') return;
 			if (!profile || post.username !== profile.username) return;
-			posts = [post, ...posts];
+			page48ProfileStore.prependPost(username, 'posts', post);
 		}
 		window.addEventListener('page48:post-created', handleCreated);
 		return () => window.removeEventListener('page48:post-created', handleCreated);
@@ -120,13 +127,21 @@
 	$effect(() => {
 		const name = username;
 		if (!name) return;
-		loadProfile();
+		void page48ProfileStore.ensureProfile(name);
+		// Opening a profile refreshes the header (a revisit within the read cache's
+		// 5s window still serves from cache, so this is cheap).
+		void page48ProfileStore.revalidateProfile(name, true);
 	});
 
 	// Active tab lives in the URL (?tab=…) in both directions: clicking a tab
 	// updates the URL, and opening a URL directly activates that tab.
 	let tabParam = $derived($page.url.searchParams.get('tab'));
 	let lastTabKey = '';
+	/** Last profile+tab whose scroll was restored, so it happens once per visit. */
+	let restoreKey = '';
+	/** The profile currently open; a change means the visitor entered a new profile. */
+	let lastProfile = '';
+	let scrollFrame = 0;
 
 	function resolveTab(raw: string | null): Tab {
 		// `media` was the key before the Photos tab became `images`; keep old links working.
@@ -147,10 +162,6 @@
 		if (!name) return;
 		if (!showPosts) {
 			activeTab = target;
-			posts = [];
-			hasMore = false;
-			nextCursor = null;
-			loadingList = false;
 			// Leaving this state later must trigger a fresh load.
 			lastTabKey = '';
 			return;
@@ -158,7 +169,26 @@
 		const key = `${name}|${target}`;
 		if (key === lastTabKey) return;
 		lastTabKey = key;
-		void loadTab(target);
+		activeTab = target;
+		void page48ProfileStore.ensureList(name, target);
+	});
+
+	// Restore this profile tab's scroll and quietly pull in new posts. Keyed per
+	// profile+tab, so it runs once per visit and not on every list change.
+	$effect(() => {
+		const name = username;
+		const tab = activeTab;
+		if (!name || !listEntry.isLoaded) return;
+		const key = `${name}|${tab}`;
+		if (key === restoreKey) return;
+		restoreKey = key;
+		const saved = page48ProfileStore.readList(name, tab).scrollY;
+		requestAnimationFrame(() => window.scrollTo(0, saved));
+		// Entering a profile refreshes the active tab; switching tabs only refreshes
+		// a tab whose data has gone stale.
+		const force = name !== lastProfile;
+		lastProfile = name;
+		void revalidateTab(name, tab, force);
 	});
 
 	function selectTab(key: Tab) {
@@ -176,8 +206,7 @@
 	function handleFollowChange(following: boolean, pending: boolean) {
 		if (!profile) return;
 		const wasFollowing = profile.isFollowing;
-		profile = {
-			...profile,
+		page48ProfileStore.patchProfile(username, {
 			isFollowing: following,
 			isFollowPending: pending,
 			followerCount: Math.max(
@@ -185,81 +214,7 @@
 				profile.followerCount +
 					(following && !wasFollowing ? 1 : !following && wasFollowing ? -1 : 0)
 			)
-		};
-	}
-
-	async function loadProfile() {
-		try {
-			loadingProfile = true;
-			profileError = null;
-			notFound = false;
-			if (!username) {
-				notFound = true;
-				return;
-			}
-			profile = await page48Reads.getUserProfile(username);
-		} catch (err: unknown) {
-			const e = err as { status?: number; message?: string };
-			if (e?.status === 404) {
-				notFound = true;
-			} else {
-				profileError = e?.message || t('page48.userPage.loadError');
-			}
-		} finally {
-			loadingProfile = false;
-		}
-	}
-
-	async function fetchTab(tab: Tab, cursor: string | null) {
-		switch (tab) {
-			case 'images':
-				return page48Reads.getUserPosts(username, 20, cursor, 'image');
-			case 'videos':
-				return page48Reads.getUserPosts(username, 20, cursor, 'video');
-			case 'reposts':
-				return page48Reads.getUserReposts(username, 20, cursor);
-			case 'replies':
-				return page48Reads.getUserReplies(username, 20, cursor);
-			case 'likes':
-				return page48Reads.getLikes(20, cursor);
-			case 'bookmarks':
-				return page48Reads.getBookmarks(20, cursor);
-			default:
-				return page48Reads.getUserPosts(username, 20, cursor);
-		}
-	}
-
-	async function loadTab(tab: Tab) {
-		activeTab = tab;
-		try {
-			loadingList = true;
-			const response = await fetchTab(tab, null);
-			posts = response.data;
-			hasMore = response.meta.hasMore;
-			nextCursor = response.meta.nextCursor;
-		} catch (err) {
-			console.error(err);
-			posts = [];
-			hasMore = false;
-			nextCursor = null;
-		} finally {
-			loadingList = false;
-		}
-	}
-
-	async function loadMore() {
-		if (loadingMore || !hasMore || !nextCursor || loadingList) return;
-		try {
-			loadingMore = true;
-			const response = await fetchTab(activeTab, nextCursor);
-			posts = [...posts, ...response.data];
-			hasMore = response.meta.hasMore;
-			nextCursor = response.meta.nextCursor;
-		} catch (err) {
-			console.error(err);
-		} finally {
-			loadingMore = false;
-		}
+		});
 	}
 
 	function handleScroll() {
@@ -268,8 +223,28 @@
 		const offsetHeight = document.body.offsetHeight;
 
 		if (scrollY + innerHeight >= offsetHeight - 500) {
-			loadMore();
+			void page48ProfileStore.loadMoreList(username, activeTab);
 		}
+
+		if (!scrollFrame) {
+			scrollFrame = requestAnimationFrame(() => {
+				scrollFrame = 0;
+				page48ProfileStore.saveScroll(username, activeTab, window.scrollY);
+			});
+		}
+	}
+
+	/**
+	 * Merge new posts on top of the active tab while keeping the viewed content in
+	 * place: when scrolled, the offset is nudged by however tall the new posts are.
+	 */
+	async function revalidateTab(name: string, tab: Tab, force = false) {
+		const scrolled = window.scrollY > 16;
+		const before = scrolled ? document.documentElement.scrollHeight : 0;
+		const changed = await page48ProfileStore.revalidateList(name, tab, force);
+		if (changed === 0) return;
+		await tick();
+		if (scrolled) window.scrollBy(0, document.documentElement.scrollHeight - before);
 	}
 
 	function findPost(postId: string): Page48Post | undefined {
@@ -286,8 +261,8 @@
 		if (post) {
 			await togglePostInteraction(post, 'repost');
 			// Un-reposting from the Repost tab should remove it from the list.
-			if (activeTab === 'reposts' && post && !post.isReposted) {
-				posts = posts.filter((p) => p.postId !== postId);
+			if (activeTab === 'reposts' && !post.isReposted) {
+				page48ProfileStore.removePost(username, 'reposts', postId);
 			}
 		}
 	}
@@ -306,7 +281,7 @@
 	}
 
 	function handleDelete(postId: string) {
-		posts = posts.filter((p) => p.postId !== postId);
+		page48ProfileStore.removePost(username, activeTab, postId);
 	}
 
 	// Only one post can be pinned, so pinning moves it to the top and clears any
@@ -314,9 +289,11 @@
 	// post object, and the order stays as it was.
 	function handlePinChanged(updated: Page48Post) {
 		if (activeTab !== 'posts' || !updated.isPinned) return;
-		const others = posts.filter((p) => p.postId !== updated.postId);
-		for (const p of others) p.isPinned = false;
-		posts = [updated, ...others];
+		page48ProfileStore.updatePosts(username, 'posts', (list) => {
+			const others = list.filter((p) => p.postId !== updated.postId);
+			for (const p of others) p.isPinned = false;
+			return [updated, ...others];
+		});
 	}
 
 	let showReportUser = $state(false);
@@ -340,7 +317,10 @@
 			const res = blocked ? await page48Api.blockUser(target) : await page48Api.unblockUser(target);
 			showBlockConfirm = false;
 			if (profile && profile.username === target) {
-				profile = { ...profile, isBlocked: res.isBlocked, isFollowing: false };
+				page48ProfileStore.patchProfile(username, {
+					isBlocked: res.isBlocked,
+					isFollowing: false
+				});
 			}
 			showToast(t(res.isBlocked ? 'page48.block.success' : 'page48.unblock.success'), 'success');
 		} catch (err: unknown) {
@@ -366,7 +346,7 @@
 			const res = muted ? await page48Api.muteUser(target) : await page48Api.unmuteUser(target);
 			showMuteConfirm = false;
 			if (profile && profile.username === target) {
-				profile = { ...profile, isMuted: res.isMuted };
+				page48ProfileStore.patchProfile(username, { isMuted: res.isMuted });
 			}
 			showToast(t(res.isMuted ? 'page48.mute.success' : 'page48.unmute.success'), 'success');
 		} catch (err: unknown) {
@@ -497,7 +477,7 @@
 			<ErrorState
 				title={t('page48.userPage.loadError')}
 				description={profileError}
-				onRetry={loadProfile}
+				onRetry={() => page48ProfileStore.ensureProfile(username, true)}
 			/>
 		</div>
 	{:else if profile}
