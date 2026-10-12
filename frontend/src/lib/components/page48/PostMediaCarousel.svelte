@@ -31,7 +31,7 @@
 	 * Fraction of the strip one slide takes. ~0.60  shows the leading photo with a
 	 * generous peek of the next; 0.48 would show two equal columns.
 	 */
-	const SLIDE_FRACTION = 0.60;
+	const SLIDE_FRACTION = 0.6;
 	let slideRatio = $derived(carouselMediaRatio(media));
 	let stripRatio = $derived(slideRatio / SLIDE_FRACTION);
 
