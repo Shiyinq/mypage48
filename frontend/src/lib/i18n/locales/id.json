@@ -1994,6 +1994,7 @@
 			"media": "Media postingan",
 			"viewImage": "Lihat gambar {index} dari {total}",
 			"playVideo": "Putar video",
+			"openVideo": "Buka video di penampil",
 			"youtubeVideo": "Video YouTube",
 			"cancelReply": "Batalkan balasan",
 			"openX": "Buka X @{username}",
