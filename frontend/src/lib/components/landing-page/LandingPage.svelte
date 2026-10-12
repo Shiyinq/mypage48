@@ -8,7 +8,14 @@
 		Rocket,
 		ChevronDown,
 		ListOrdered,
-		MonitorPlay
+		MonitorPlay,
+		MessagesSquare,
+		Heart,
+		MessageCircle,
+		Repeat2,
+		Bookmark,
+		Share2,
+		Lock
 	} from 'lucide-svelte';
 	import { spring } from 'svelte/motion';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -55,6 +62,14 @@
 			color: 'text-yellow-500',
 			iconBg: 'bg-yellow-50 dark:bg-yellow-500/10',
 			type: 'achievements'
+		},
+		{
+			title: t('landing.features.page48.title'),
+			description: t('landing.features.page48.description'),
+			icon: MessagesSquare,
+			color: 'text-red-500',
+			iconBg: 'bg-red-50 dark:bg-red-500/10',
+			type: 'page48'
 		},
 		{
 			title: t('landing.features.sorter.title'),
@@ -284,6 +299,53 @@
 								</div>
 							{/if}
 
+							<!-- PAGE48 MOCKUP -->
+							{#if feature.type === 'page48'}
+								<div
+									class="relative w-[320px] mx-auto space-y-3 transform transition-transform duration-500 group-hover:-translate-y-2"
+								>
+									<div
+										class="bg-white dark:bg-zinc-900 rounded-2xl p-5 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-none border border-slate-100 dark:border-zinc-800"
+									>
+										<div class="flex items-center gap-3">
+											<div
+												class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex-shrink-0"
+											></div>
+											<div class="flex-1 space-y-1.5">
+												<div class="h-2 w-24 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+												<div class="h-2 w-16 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											</div>
+											<div class="text-red-500 opacity-70">
+												<Lock size={14} />
+											</div>
+										</div>
+										<div class="mt-4 space-y-2">
+											<div class="h-2 w-full bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-5/6 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-2/3 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+										<div class="mt-4 flex items-center gap-6">
+											<Heart size={16} class="text-rose-400" />
+											<MessageCircle size={16} class="text-slate-300 dark:text-zinc-600" />
+											<Repeat2 size={16} class="text-slate-300 dark:text-zinc-600" />
+											<Bookmark size={16} class="text-slate-300 dark:text-zinc-600" />
+											<Share2 size={16} class="text-slate-300 dark:text-zinc-600" />
+										</div>
+									</div>
+									<div
+										class="bg-white dark:bg-zinc-900 rounded-2xl p-5 shadow-lg dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-center gap-3 scale-95 opacity-70"
+									>
+										<div
+											class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/20 flex-shrink-0"
+										></div>
+										<div class="flex-1 space-y-2">
+											<div class="h-2 w-2/3 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-1/3 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+									</div>
+								</div>
+							{/if}
+
 							<!-- SORTER MOCKUP -->
 							{#if feature.type === 'sorter'}
 								<div
@@ -367,9 +429,11 @@
 										? 'blue'
 										: feature.type === 'achievements'
 											? 'yellow'
-											: feature.type === 'sorter'
-												? 'rose'
-												: 'red'}-50/50 rounded-[3rem] -z-10 transition-colors duration-500"
+											: feature.type === 'page48'
+												? 'red'
+												: feature.type === 'sorter'
+													? 'rose'
+													: 'red'}-50/50 rounded-[3rem] -z-10 transition-colors duration-500"
 						></div>
 					</div>
 

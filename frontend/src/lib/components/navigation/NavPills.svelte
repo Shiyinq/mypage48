@@ -26,9 +26,15 @@
 		currentPath: string;
 		className?: string;
 		item?: Snippet<[{ item: NavItem; isActive: boolean }]>;
+		/**
+		 * Optional click hook. Returning `true` means the caller handled the
+		 * navigation (and the default is prevented) — used to navigate without
+		 * SvelteKit resetting the scroll position.
+		 */
+		onNavigate?: (href: string, event: MouseEvent) => boolean;
 	}
 
-	let { items = [], currentPath, className = '', item: itemSnippet }: Props = $props();
+	let { items = [], currentPath, className = '', item: itemSnippet, onNavigate }: Props = $props();
 </script>
 
 <ul
@@ -45,6 +51,9 @@
 		<li>
 			<a
 				href={entry.disabled ? undefined : entry.href}
+				onclick={(event) => {
+					if (onNavigate?.(entry.href, event)) event.preventDefault();
+				}}
 				class="relative px-2.5 lg:px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-1.5 {isActive
 					? 'text-white'
 					: 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'} {entry.disabled

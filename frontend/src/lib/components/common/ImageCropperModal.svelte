@@ -115,6 +115,7 @@
 		{ label: 'imageEditor.ratios.square', value: 1 },
 		{ label: 'imageEditor.ratios.sixteenNine', value: 16 / 9 },
 		{ label: 'imageEditor.ratios.nineSixteen', value: 9 / 16 },
+		{ label: 'imageEditor.ratios.threeOne', value: 3 },
 		{ label: 'imageEditor.ratios.fourThree', value: 4 / 3 },
 		{ label: 'imageEditor.ratios.threeFour', value: 3 / 4 }
 	];

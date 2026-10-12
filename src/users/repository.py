@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -17,6 +18,38 @@ class UserRepository:
     async def get_user_by_id(self, user_id: str) -> Optional[dict]:
         user = await self.collection.find_one({"userId": user_id})
         return user
+
+    async def get_users_by_ids(self, user_ids: list[str]) -> list[dict]:
+        """Fetch multiple users by their userId in a single query."""
+        if not user_ids:
+            return []
+        cursor = self.collection.find({"userId": {"$in": user_ids}})
+        return await cursor.to_list(length=None)
+
+    async def get_users_by_usernames(self, usernames: list[str]) -> list[dict]:
+        """Fetch multiple users by their (lower-cased) username in one query."""
+        if not usernames:
+            return []
+        cursor = self.collection.find({"username": {"$in": usernames}})
+        return await cursor.to_list(length=None)
+
+    async def search_users(self, term: str, limit: int = 20) -> list[dict]:
+        """Accounts matching a username prefix or a display-name substring.
+
+        Usernames are stored lower-cased, so an anchored pattern stays on the
+        unique index; the display name has no index and is a small scan.
+        """
+        if not term:
+            return []
+        escaped = re.escape(term)
+        query = {
+            "$or": [
+                {"username": {"$regex": f"^{escaped}"}},
+                {"name": {"$regex": escaped, "$options": "i"}},
+            ]
+        }
+        cursor = self.collection.find(query).limit(limit)
+        return await cursor.to_list(length=limit)
 
     async def update_one(self, filter_query: dict, update_data: dict):
         return await self.collection.update_one(filter_query, update_data)
@@ -87,6 +120,29 @@ class UserRepository:
         return await self.collection.update_one(
             {"userId": user_id}, {"$set": update_data}
         )
+
+    async def set_banner_picture(
+        self, user_id: str, banner_picture: str, blur_hash: Optional[str] = None
+    ):
+        update_data = {"bannerPicture": banner_picture}
+        if blur_hash:
+            update_data["bannerBlurHash"] = blur_hash
+
+        return await self.collection.update_one(
+            {"userId": user_id}, {"$set": update_data}
+        )
+
+    async def set_page48_locked(self, user_id: str, locked: bool):
+        """Page48-only lock flag; unrelated to the MyPage48 `isPublic` stat."""
+        return await self.collection.update_one(
+            {"userId": user_id}, {"$set": {"page48Locked": locked}}
+        )
+
+    async def get_page48_locked_ids(self) -> list[str]:
+        """Every account that made its Page48 posts follower-only."""
+        cursor = self.collection.find({"page48Locked": True}, {"userId": 1})
+        rows = await cursor.to_list(length=None)
+        return [row["userId"] for row in rows]
 
     async def update_last_active(self, user_id: str):
         return await self.collection.update_one(

@@ -17,6 +17,7 @@ from src.users.schemas import (
     ProfileFullResponse,
     PublicUserResponse,
     RemoveOshiRequest,
+    UpdateBannerRequest,
     UpdateProfilePictureRequest,
     UpdateProfileRequest,
     UpdatePublicStatusRequest,
@@ -137,6 +138,21 @@ async def update_profile_picture(
     """
     return await user_service.update_profile_picture(
         current_user.userId, request.profilePicture, request.blurHash
+    )
+
+
+@router.post("/users/banner", status_code=200, response_model=MessageResponse)
+async def update_banner(
+    request: UpdateBannerRequest,
+    current_user: UserCurrent = Depends(get_current_user),
+    _=Depends(require_csrf_protection),
+    user_service: UserService = Depends(get_user_service),
+):
+    """
+    Update the user's profile banner (Page48 cover image).
+    """
+    return await user_service.update_banner(
+        current_user.userId, request.bannerPicture, request.blurHash
     )
 
 

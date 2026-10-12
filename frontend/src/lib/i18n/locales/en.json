@@ -36,6 +36,10 @@
 		"logout": "Logout",
 		"settings": "Settings",
 		"profile": "Profile",
+		"accountOfficial": "Official account",
+		"accountOfficialInfo": "A verified official account on Page48.",
+		"accountAdmin": "Page48 admin",
+		"accountAdminInfo": "An official Page48 administrator account.",
 		"dashboard": "Overview",
 		"language": "Language",
 		"noResults": "No results found",
@@ -72,6 +76,7 @@
 			"square": "1:1",
 			"sixteenNine": "16:9",
 			"nineSixteen": "9:16",
+			"threeOne": "3:1",
 			"fourThree": "4:3",
 			"threeFour": "3:4"
 		}
@@ -133,7 +138,8 @@
 		"liveHistory": "Live History",
 		"watchHistory": "Watch History",
 		"startSorter": "Start Sorter",
-		"sorterHistory": "Sorter History"
+		"sorterHistory": "Sorter History",
+		"page48": "Page48"
 	},
 	"header": {
 		"tagline": "JKT48 THEATER TRACKER"
@@ -145,6 +151,7 @@
 			"members": "Members",
 			"events": "Events",
 			"calendar": "Calendar",
+			"page48": "Page48",
 			"sorter": "Sorter",
 			"live": "Live"
 		},
@@ -173,6 +180,10 @@
 			"achievements": {
 				"title": "ACHIEVEMENTS",
 				"description": "Unlock badges and milestones as you support JKT48. From \"First Show\" to \"Legendary Fan\", track your progress and show off your loyalty."
+			},
+			"page48": {
+				"title": "PAGE48",
+				"description": "A social space built for JKT48 fans: share photos, videos and polls, chat through replies and quotes, follow each other, and explore trending hashtags."
 			},
 			"sorter": {
 				"title": "SORTER",
@@ -625,7 +636,11 @@
 			"emailWarning": "Changing your email will require re-verification.",
 			"systemInfo": "Member Information",
 			"systemSubtitle": "Membership details",
-			"verification": "Account Verification"
+			"verification": "Account Verification",
+			"banner": "Banner",
+			"bannerHint": "Ideal size is 3:1. You can adjust the crop in the editor.",
+			"bannerUploadSuccess": "Banner updated successfully!",
+			"bannerUploadError": "Failed to upload banner. Please try again."
 		},
 		"language": {
 			"title": "Language",
@@ -1508,6 +1523,7 @@
 				"members": "Members",
 				"setlists": "Setlists",
 				"feedback": "Feedback",
+				"reports": "Reports",
 				"settings": "Settings",
 				"more": "More"
 			},
@@ -1562,6 +1578,32 @@
 				"notesInfo": "This note will be sent to the user's email and appear on their 'My Feedback' page.",
 				"saving": "Saving...",
 				"saveChanges": "Save Changes"
+			}
+		},
+		"reports": {
+			"title": "Reports",
+			"subtitle": "Post and user reports submitted by other users",
+			"emptyTitle": "No Reports Yet",
+			"emptyDesc": "No reports have been submitted yet.",
+			"errorTitle": "Failed to load reports",
+			"errorDesc": "Failed to load reports from the server.",
+			"loadMore": "Load more",
+			"noMore": "No more reports to load",
+			"filters": {
+				"all": "All",
+				"post": "Posts",
+				"user": "Users"
+			},
+			"reportedBy": "Reported by @{username}",
+			"deletedTarget": "Target no longer exists or has been deleted.",
+			"imageCount": "{count} images",
+			"viewPost": "View post",
+			"viewUser": "View profile",
+			"status": {
+				"pending": "Pending",
+				"reviewed": "Reviewed",
+				"resolved": "Resolved",
+				"dismissed": "Dismissed"
 			}
 		},
 		"settings": {
@@ -1744,6 +1786,7 @@
 			"eventHistory": "Go to Event History",
 			"feedback": "Go to Feedback",
 			"adminFeedback": "Go to Admin Feedback",
+			"adminReports": "Go to Admin Reports",
 			"adminSettings": "Go to Admin Settings",
 			"publicProfile": "Go to Public Profile",
 			"journal": "Go to Journal",
@@ -1891,5 +1934,499 @@
 		"watchOfficialLink": "official IDN app",
 		"readTos": "Read IDN Terms",
 		"goBack": "Go Back"
+	},
+	"page48": {
+		"nav": {
+			"home": "Home",
+			"photos": "Photos",
+			"videos": "Videos",
+			"trending": "Trending",
+			"following": "Following"
+		},
+		"follow": {
+			"follow": "Follow",
+			"following": "Following",
+			"unfollow": "Unfollow",
+			"requested": "Requested",
+			"cancelRequest": "Cancel follow request",
+			"accept": "Accept",
+			"decline": "Decline",
+			"accepted": "Request accepted.",
+			"declined": "Request declined.",
+			"requestPending": "Your follow request is waiting for approval.",
+			"lockedPosts": "This account only shows its posts to approved followers.",
+			"error": "Failed to update follow"
+		},
+		"seo": {
+			"feedTitle": "Page48",
+			"feedDesc": "Page48 - the social space for the JKT48 community. Share text, photo, and video posts, and follow JKT48 member hashtags.",
+			"photosTitle": "Photos on Page48",
+			"photosDesc": "Photo posts from the Page48 JKT48 community.",
+			"videosTitle": "Videos on Page48",
+			"videosDesc": "Video posts from the Page48 JKT48 community.",
+			"trendingTitle": "Trending on Page48",
+			"trendingDesc": "Popular hashtags in the Page48 JKT48 community.",
+			"tagTitle": "#{tag} posts on Page48",
+			"tagDesc": "See all posts tagged #{tag} on Page48.",
+			"postTitle": "Page48 post",
+			"postDesc": "View a post and its replies on Page48.",
+			"userTitle": "Page48 profile",
+			"userDesc": "See a user's posts, reposts, and photos on Page48.",
+			"followingTitle": "Following on Page48",
+			"followingDesc": "Posts from the accounts you follow on Page48."
+		},
+		"aria": {
+			"profile": "Profile",
+			"profilePhoto": "Profile photo",
+			"banner": "Profile banner",
+			"openPost": "Open post",
+			"more": "More options",
+			"like": "Like",
+			"comment": "Comment",
+			"repost": "Repost",
+			"bookmark": "Save",
+			"share": "Share",
+			"removeQuote": "Remove quote",
+			"media": "Post media",
+			"viewImage": "View image {index} of {total}",
+			"playVideo": "Play video",
+			"youtubeVideo": "YouTube video",
+			"cancelReply": "Cancel reply",
+			"openX": "Open X @{username}",
+			"imageCount": "{count} images",
+			"prevImage": "Previous image",
+			"nextImage": "Next image",
+			"close": "Close",
+			"mentionSuggestions": "User suggestions",
+			"userPreview": "User preview",
+			"xPost": "X post",
+			"instagramPost": "Instagram post",
+			"tiktokPost": "TikTok post",
+			"spotifyEmbed": "Spotify embed",
+			"telegramPost": "Telegram post"
+		},
+		"embed": {
+			"viewOnX": "View post on X",
+			"xLoads": "The post loads from X",
+			"viewOnInstagram": "View post on Instagram",
+			"instagramLoads": "The post loads from Instagram",
+			"viewStoryOnInstagram": "View story on Instagram",
+			"storyNotice": "Stories disappear after 24 hours",
+			"viewOnTikTok": "View on TikTok",
+			"tiktokLoads": "The video loads from TikTok",
+			"tiktokShortNotice": "Opens the video on TikTok",
+			"listenOnSpotify": "Listen on Spotify",
+			"spotifyLoads": "The player loads from Spotify",
+			"spotifyShortNotice": "Opens on Spotify",
+			"viewOnTelegram": "View post on Telegram",
+			"telegramLoads": "The post loads from Telegram"
+		},
+		"mentions": {
+			"noResults": "No users found",
+			"searching": "Searching…"
+		},
+		"hover": {
+			"notFoundText": "No account uses this username. It may have been deleted or renamed.",
+			"loadError": "Couldn't load this profile. Hover it again to retry."
+		},
+		"composer": {
+			"placeholder": "What's new?",
+			"replyPlaceholder": "Reply to @{username}",
+			"submit": "Post",
+			"reply": "Reply",
+			"addPhoto": "Add Photo",
+			"maxPhotos": "Maximum 10 photos per post.",
+			"maxMedia": "Maximum 10 media items per post.",
+			"addMedia": "Add photos or videos",
+			"dragToReorder": "Drag to reorder",
+			"dropToUpload": "Drop photos or videos to add them",
+			"mediaCount": "{count} media",
+			"maxSize": "Maximum photo size is 3MB.",
+			"previewAlt": "Upload preview",
+			"addVideo": "Add Video",
+			"removeVideo": "Remove video",
+			"videoTooLong": "Video must be 1 minute or less.",
+			"videoTooLarge": "Video must be 50MB or less.",
+			"videoInvalidType": "Video must be MP4 or WebM.",
+			"videoUnreadable": "This video can't be read.",
+			"addEmoji": "Add emoji",
+			"emojiTooLong": "Character limit reached.",
+			"quoteNotFound": "Couldn't open the quoted post.",
+			"newPost": "Create a new post",
+			"discardTitle": "Discard post?",
+			"discardMessage": "Your unsent post and attachments will be lost.",
+			"discardConfirm": "Discard"
+		},
+		"notifications": {
+			"title": "Notifications",
+			"empty": "No notifications yet.",
+			"loadError": "Couldn't load notifications.",
+			"loadErrorText": "Check your connection and try again.",
+			"postUnavailable": "This post is no longer available.",
+			"likedPost": "liked your post",
+			"repliedPost": "replied to your post",
+			"repostedPost": "reposted your post",
+			"quotedPost": "quoted your post",
+			"mentionedYou": "mentioned you",
+			"followedYou": "followed you",
+			"followRequested": "requested to follow you",
+			"followAccepted": "accepted your follow request",
+			"tab": {
+				"replies": "Replies",
+				"mentions": "Mentions",
+				"likes": "Likes",
+				"reposts": "Reposts",
+				"follows": "Follows"
+			}
+		},
+		"search": {
+			"title": "Search",
+			"description": "Search Page48 posts, people and hashtags.",
+			"placeholder": "Search Page48",
+			"forTerm": "Search for: “{term}”",
+			"enterHint": "Enter ↵",
+			"hint": "Use #tag, @user and from:user",
+			"prompt": "Type at least 2 characters to search.",
+			"empty": "No results found.",
+			"loadError": "Couldn't load the results.",
+			"loadErrorText": "Check your connection and try again.",
+			"tab": {
+				"top": "Top",
+				"posts": "Posts",
+				"media": "Media",
+				"users": "People",
+				"tags": "Hashtags"
+			},
+			"section": {
+				"users": "People",
+				"tags": "Hashtags",
+				"posts": "Posts"
+			}
+		},
+		"poll": {
+			"create": "Add poll",
+			"remove": "Remove poll",
+			"addOption": "Add option",
+			"optionPlaceholder": "Choice {index}",
+			"removeOption": "Remove choice {index}",
+			"hint": "Add at least 2 choices (up to 6, 50 characters each).",
+			"voteFor": "Vote for {option}",
+			"voteError": "Failed to submit your vote.",
+			"endsIn": "Ends in {time}",
+			"ended": "Poll ended",
+			"votes": "{count} votes"
+		},
+		"thread": {
+			"addPost": "Add another post",
+			"removePost": "Remove this post",
+			"removeMedia": "Remove media",
+			"publish": "Post all",
+			"show": "Show this thread ({count} posts)",
+			"sent": "Thread posted ({count} posts)",
+			"error": "Failed to post thread"
+		},
+		"emoji": {
+			"search": "Search emoji",
+			"empty": "No emoji found",
+			"recent": "Recently used",
+			"smileys": "Smileys & emotion",
+			"gestures": "People & gestures",
+			"hearts": "Hearts",
+			"animals": "Animals & nature",
+			"food": "Food & drink",
+			"activities": "Activities",
+			"travel": "Travel & places",
+			"objects": "Objects",
+			"symbols": "Symbols"
+		},
+		"video": {
+			"play": "Play",
+			"pause": "Pause",
+			"mute": "Mute",
+			"unmute": "Unmute",
+			"seek": "Seek video",
+			"prev": "Previous video",
+			"next": "Next video",
+			"showMore": "Show more",
+			"showLess": "Show less",
+			"commentsTitle": "Comments",
+			"commentsEmpty": "No comments yet. Be the first!",
+			"commentsSignIn": "Sign in to comment",
+			"commentReply": "Reply"
+		},
+		"feed": {
+			"emptyTitle": "No posts yet",
+			"emptyText": "Be the first to write something!",
+			"loadError": "Failed to load feed",
+			"end": "You've seen everything",
+			"postSuccess": "Post sent successfully",
+			"postError": "Failed to send post",
+			"followingEmptyTitle": "Your feed is empty",
+			"followingEmptyText": "Posts from accounts you follow will show up here.",
+			"newPosts": "Show {count} posts",
+			"posted": "posted"
+		},
+		"photos": {
+			"emptyTitle": "No photos yet",
+			"emptyText": "Posts with photos will appear here.",
+			"loadError": "Couldn't load the photos."
+		},
+		"videos": {
+			"emptyTitle": "No videos yet",
+			"emptyText": "Posts with videos will appear here."
+		},
+		"videosFeed": {
+			"emptyTitle": "No videos yet",
+			"emptyText": "There are no videos to show yet.",
+			"loadError": "Failed to load videos"
+		},
+		"time": {
+			"secondsShort": "s",
+			"minutesShort": "m",
+			"hoursShort": "h",
+			"daysShort": "d",
+			"monthsShort": "mo",
+			"yearsShort": "y"
+		},
+		"trending": {
+			"title": "Trending on Page48",
+			"subtitle": "Most used tags",
+			"empty": "No tags yet. Use #hashtags in your posts.",
+			"postCount": "{count} posts",
+			"loadError": "Failed to load trending"
+		},
+		"members": {
+			"title": "Member Hashtags",
+			"subtitle": "Active JKT48 members' X usernames",
+			"empty": "No member X accounts yet.",
+			"loadError": "Failed to load member data"
+		},
+		"activeUsers": {
+			"title": "Most Active",
+			"empty": "No user activity yet.",
+			"loadError": "Failed to load active users",
+			"postCount": "{count} posts"
+		},
+		"tag": {
+			"header": "Posts with this tag",
+			"headerFiltered": "Posts with this tag • {media} filter",
+			"mediaText": "Text",
+			"mediaImage": "Photos",
+			"mediaVideo": "Videos",
+			"empty": "No posts with the #{tag} tag yet.",
+			"loadError": "Failed to load"
+		},
+		"post": {
+			"loadError": "Failed to load post",
+			"notFound": "Post not found",
+			"notFoundTitle": "Post not found",
+			"notFoundText": "This post was deleted, or it is not available to you.",
+			"replyingTo": "Replying to",
+			"replySent": "Reply sent",
+			"replyError": "Failed to send reply",
+			"emptyReplies": "No replies yet.",
+			"showMore": "Show more",
+			"showLess": "Show less",
+			"quotedUnavailable": "This post is no longer available."
+		},
+		"userPage": {
+			"notFoundTitle": "User not found",
+			"notFoundText": "The profile you're looking for doesn't exist or was deleted.",
+			"loadError": "Failed to load profile",
+			"editInSettings": "Edit in Settings",
+			"reposted": "Reposted",
+			"pinned": "Pinned",
+			"countPosts": "{count} Posts",
+			"countReposts": "{count} Reposts",
+			"followers": "Followers",
+			"following": "Following",
+			"followersTitle": "Followers",
+			"followingTitle": "Following",
+			"emptyFollowers": "No followers yet.",
+			"emptyFollowing": "Not following anyone yet.",
+			"listErrorText": "Something went wrong while loading this list.",
+			"loadMore": "Load more",
+			"back": "Back"
+		},
+		"mediaViewer": {
+			"title": "Post media",
+			"hideDetails": "Hide details",
+			"showDetails": "Show details",
+			"download": "Download photo"
+		},
+		"activity": {
+			"title": "Post activity",
+			"view": "View activity",
+			"backToPost": "Back to post",
+			"quotes": "Quotes",
+			"reposts": "Reposts",
+			"likes": "Likes",
+			"emptyQuotes": "No quotes yet.",
+			"emptyReposts": "No reposts yet.",
+			"emptyLikes": "No likes yet.",
+			"loadMore": "Load more",
+			"error": "Failed to load the list.",
+			"loadError": "Failed to load activity",
+			"loadErrorText": "Something went wrong while loading this post's activity."
+		},
+		"tabs": {
+			"posts": "Posts",
+			"media": "Photos",
+			"videos": "Videos",
+			"reposts": "Reposts",
+			"replies": "Replies",
+			"likes": "Likes",
+			"bookmarks": "Saved"
+		},
+		"empty": {
+			"posts": "No posts yet.",
+			"media": "No photos yet.",
+			"videos": "No videos yet.",
+			"reposts": "No reposts yet.",
+			"replies": "No replies yet.",
+			"likes": "No liked posts yet.",
+			"bookmarks": "No saved posts yet."
+		},
+		"error": {
+			"action": "Failed to process. Try again.",
+			"shareCopied": "Link copied",
+			"shareError": "Failed to share link"
+		},
+		"menu": {
+			"edit": "Edit",
+			"delete": "Delete",
+			"report": "Report",
+			"pin": "Pin to profile",
+			"unpin": "Unpin from profile",
+			"makePrivate": "Make private",
+			"makePublic": "Make public",
+			"markSpoiler": "Mark spoiler",
+			"unmarkSpoiler": "Remove spoiler"
+		},
+		"private": {
+			"badge": "Only you",
+			"made": "Only you can see this post now.",
+			"madePublic": "This post is public again.",
+			"error": "Could not change post privacy."
+		},
+		"spoiler": {
+			"badge": "Spoiler",
+			"label": "Spoiler",
+			"show": "Show spoiler",
+			"tapToShow": "Tap to reveal this post",
+			"mark": "Mark as spoiler",
+			"marked": "Marked as spoiler.",
+			"unmarked": "Spoiler removed.",
+			"error": "Could not update the spoiler.",
+			"notification": "Spoiler post"
+		},
+		"replyAudience": {
+			"title": "Who can reply?",
+			"everyone": "Everyone",
+			"following": "Accounts you follow",
+			"followers": "Only Followers",
+			"following_and_followers": "Following and Followers",
+			"only_me": "Only me",
+			"mentioned": "Only accounts you mention",
+			"lockedViewer": "You can't reply to this post.",
+			"locked": {
+				"following": "Only accounts the author follows can reply.",
+				"followers": "Only the author's followers can reply.",
+				"following_and_followers": "Only accounts the author follows and the author's followers can reply.",
+				"only_me": "Only the author can reply.",
+				"mentioned": "Only accounts the author mentioned can reply."
+			}
+		},
+		"repostMenu": {
+			"repost": "Repost",
+			"undo": "Undo repost",
+			"quote": "Quote post"
+		},
+		"pin": {
+			"pinned": "Post pinned.",
+			"unpinned": "Post unpinned.",
+			"error": "Failed to update pin."
+		},
+		"edit": {
+			"title": "Edit Post",
+			"placeholder": "What's new?",
+			"save": "Save",
+			"success": "Post updated",
+			"error": "Failed to update post",
+			"discardTitle": "Discard changes?",
+			"discardMessage": "Your unsaved changes will be lost."
+		},
+		"delete": {
+			"title": "Delete Post",
+			"message": "This post will be permanently deleted. Continue?",
+			"confirm": "Delete",
+			"success": "Post deleted",
+			"error": "Failed to delete post"
+		},
+		"report": {
+			"titlePost": "Report Post",
+			"titleUser": "Report User",
+			"reasonLabel": "Reason",
+			"noteLabel": "Additional note (optional)",
+			"reason": {
+				"spam": "Spam",
+				"harassment": "Harassment or hate speech",
+				"inappropriate": "Inappropriate content",
+				"other": "Other"
+			},
+			"submit": "Submit Report",
+			"success": "Report submitted. Thank you.",
+			"error": "Failed to submit report",
+			"already": "You have already reported this."
+		},
+		"reportUser": "Report User",
+		"backHome": "Back to home",
+		"settings": {
+			"title": "Page48",
+			"subtitle": "Privacy and the accounts you've blocked or muted.",
+			"viewList": "View",
+			"lockedTitle": "Lock Page48 profile",
+			"lockedSubtitle": "When on, only followers you approve can see your posts.",
+			"lockedOn": "Your posts are now follower-only.",
+			"lockedOff": "Anyone can see your posts again.",
+			"embedsTitle": "Load embeds automatically",
+			"embedsSubtitle": "Load X, Instagram and TikTok posts as they scroll into view. YouTube keeps its thumbnail."
+		},
+		"blockUser": "Block",
+		"unblockUser": "Unblock",
+		"muteUser": "Mute",
+		"unmuteUser": "Unmute",
+		"block": {
+			"title": "Block user?",
+			"message": "{name} will not be able to see your posts and you will not see theirs. You also stop following each other.",
+			"confirm": "Block",
+			"success": "User blocked.",
+			"error": "Could not block this user.",
+			"youBlocked": "You blocked this user.",
+			"blockedBy": "You cannot view this user's posts."
+		},
+		"unblock": {
+			"success": "User unblocked."
+		},
+		"mute": {
+			"title": "Mute user?",
+			"message": "{name}'s posts will stop showing up in your home timeline. They are not told that you muted them, and you can still view their profile.",
+			"confirm": "Mute",
+			"success": "User muted.",
+			"error": "Could not mute this user."
+		},
+		"unmute": {
+			"success": "User unmuted."
+		},
+		"relations": {
+			"blocks": {
+				"title": "Blocked accounts",
+				"empty": "You haven't blocked anyone."
+			},
+			"mutes": {
+				"title": "Muted accounts",
+				"empty": "You haven't muted anyone."
+			}
+		}
 	}
 }

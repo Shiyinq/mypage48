@@ -8,6 +8,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.config import config
 from src.database import database_instance
 
+# Page48 notifications older than this are deleted by MongoDB itself.
+NOTIFICATION_TTL_DAYS = 30
+
+
 async def create_indexes():
     """Create database indexes."""
     try:
@@ -17,6 +21,11 @@ async def create_indexes():
         await db["users"].create_index("userId", unique=True)
         await db["users"].create_index("username", unique=True)
         await db["users"].create_index("email", unique=True)
+        # Locked Page48 accounts are looked up on every Page48 read; the partial
+        # filter keeps this index tiny when nobody has locked their account.
+        await db["users"].create_index(
+            [("page48Locked", 1)], partialFilterExpression={"page48Locked": True}
+        )
 
         # Refresh token indexes
         await db["refresh_tokens"].create_index("hashRefreshToken", unique=True)
@@ -96,6 +105,96 @@ async def create_indexes():
         await db["watched_live_history"].create_index([("live_id", 1)])
         await db["watched_live_history"].create_index(
             [("user_id", 1), ("member_id", 1), ("started_at", -1)]
+        )
+
+        # Page48 indexes
+        await db["page48_posts"].create_index([("createdAt", -1)])
+        await db["page48_posts"].create_index("postId", unique=True)
+        await db["page48_posts"].create_index([("userId", 1), ("parentPostId", 1), ("createdAt", -1)])
+        await db["page48_posts"].create_index([("rootPostId", 1), ("createdAt", 1)])
+        await db["page48_posts"].create_index([("parentPostId", 1), ("createdAt", 1)])
+        await db["page48_posts"].create_index("tags")
+        # Search: free words match token prefixes, and `@` matches mentions.
+        await db["page48_posts"].create_index("searchTokens")
+        await db["page48_posts"].create_index("mentions")
+        await db["page48_posts"].create_index([("quotedPostId", 1), ("createdAt", -1)])
+        await db["page48_posts"].create_index("quotedPostId")
+        await db["page48_posts"].create_index([("userId", 1), ("pinnedAt", -1)])
+
+        await db["page48_likes"].create_index([("postId", 1), ("userId", 1)], unique=True)
+        await db["page48_likes"].create_index([("userId", 1), ("createdAt", -1)])
+        await db["page48_likes"].create_index([("postId", 1), ("createdAt", -1)])
+
+        await db["page48_bookmarks"].create_index([("postId", 1), ("userId", 1)], unique=True)
+        await db["page48_bookmarks"].create_index([("userId", 1), ("createdAt", -1)])
+
+        await db["page48_reposts"].create_index([("postId", 1), ("userId", 1)], unique=True)
+        await db["page48_reposts"].create_index([("userId", 1), ("createdAt", -1)])
+        await db["page48_reposts"].create_index([("postId", 1), ("createdAt", -1)])
+
+        await db["page48_reports"].create_index([("status", 1), ("createdAt", -1)])
+        await db["page48_reports"].create_index(
+            [("reporterUserId", 1), ("targetType", 1), ("targetId", 1)], unique=True
+        )
+
+        # Blocks and mutes. A block is checked in both directions, so the reverse
+        # pair is indexed too; a mute is only ever read one way.
+        await db["page48_blocks"].create_index(
+            [("blockerId", 1), ("blockedId", 1)], unique=True
+        )
+        await db["page48_blocks"].create_index([("blockedId", 1), ("blockerId", 1)])
+        await db["page48_blocks"].create_index([("blockerId", 1), ("createdAt", -1)])
+        await db["page48_mutes"].create_index(
+            [("muterId", 1), ("mutedId", 1)], unique=True
+        )
+        await db["page48_mutes"].create_index([("muterId", 1), ("createdAt", -1)])
+
+        # Notifications: newest first per recipient for the list, plus the unread
+        # count. They expire on their own so the collection cannot grow forever.
+        await db["page48_notifications"].create_index("notificationId", unique=True)
+        await db["page48_notifications"].create_index(
+            [("recipientUserId", 1), ("createdAt", -1), ("notificationId", -1)]
+        )
+        await db["page48_notifications"].create_index(
+            [("recipientUserId", 1), ("readAt", 1)]
+        )
+        # The per-tab list filters on the type, so it gets its own index instead of
+        # scanning every entry of the recipient's newest-first index.
+        await db["page48_notifications"].create_index(
+            [
+                ("recipientUserId", 1),
+                ("type", 1),
+                ("createdAt", -1),
+                ("notificationId", -1),
+            ]
+        )
+        # Only like/repost/follow carry a dedupe key, so the index is sparse: the
+        # repeatable types keep one row, while replies and mentions stay a log.
+        await db["page48_notifications"].create_index(
+            "dedupeKey", unique=True, sparse=True
+        )
+        await db["page48_notifications"].create_index(
+            "createdAt", expireAfterSeconds=NOTIFICATION_TTL_DAYS * 24 * 60 * 60
+        )
+
+        # Poll votes: the unique key is what guarantees one vote per user, and the
+        # (postId, optionId) index backs the per-option counting aggregation.
+        await db["page48_poll_votes"].create_index(
+            [("postId", 1), ("userId", 1)], unique=True
+        )
+        await db["page48_poll_votes"].create_index([("postId", 1), ("optionId", 1)])
+        await db["page48_poll_votes"].create_index([("userId", 1), ("createdAt", -1)])
+
+        # Follow edges: the unique pair prevents double follows, the two compound
+        # indexes back the followers/following lists and their live counts.
+        await db["page48_follows"].create_index(
+            [("followerId", 1), ("followingId", 1)], unique=True
+        )
+        await db["page48_follows"].create_index([("followerId", 1), ("createdAt", -1)])
+        await db["page48_follows"].create_index([("followingId", 1), ("createdAt", -1)])
+        # Pending requests are read straight off the Follows tab of a locked account.
+        await db["page48_follows"].create_index(
+            [("followingId", 1), ("status", 1), ("createdAt", -1)]
         )
 
         print("Database indexes created successfully")

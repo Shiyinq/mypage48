@@ -2,6 +2,7 @@ import asyncio
 import re
 from datetime import datetime
 from typing import List, Optional
+from urllib.parse import urlsplit
 
 from src.config import Settings
 from src.logging_config import create_logger
@@ -15,6 +16,7 @@ from src.members.schemas import (
     MemberListResponse,
     MemberResponse,
     MemberUpdateRequest,
+    MemberXAccount,
     MessageResponse,
 )
 from src.storage.service import StorageService
@@ -109,6 +111,58 @@ class MemberService:
         except Exception as e:
             logger.exception(f"Error fetching members: {str(e)}")
             raise MemberFetchError()
+
+    @staticmethod
+    def _extract_x_username(value: Optional[str]) -> Optional[str]:
+        """Extract an X/Twitter handle from a URL, `@handle`, or bare handle."""
+        if not value:
+            return None
+
+        raw = value.strip()
+        if not raw:
+            return None
+
+        if raw.startswith("@"):
+            return raw[1:].strip() or None
+
+        if "twitter.com" in raw or "x.com" in raw:
+            try:
+                path = urlsplit(raw).path.strip("/")
+            except Exception:
+                path = raw
+            parts = [part for part in path.split("/") if part]
+            if not parts:
+                return None
+            handle = parts[0]
+            # Skip non-profile paths like /i/flow or /intent
+            if handle.lower() in {"i", "home", "intent", "share", "search"}:
+                return None
+            return handle
+
+        return raw or None
+
+    async def get_x_accounts(self) -> List[MemberXAccount]:
+        """Active members that have an X (Twitter) handle, sorted by name."""
+        members = await self.repository.find_all_active()
+        accounts: List[MemberXAccount] = []
+
+        for member in members:
+            socials = member.get("socials") or {}
+            username = self._extract_x_username(socials.get("twitter"))
+            if not username:
+                continue
+            accounts.append(
+                MemberXAccount(
+                    memberId=str(member.get("id", "")),
+                    name=member.get("name", ""),
+                    nickname=member.get("nickname"),
+                    username=username,
+                    url=f"https://x.com/{username}",
+                )
+            )
+
+        accounts.sort(key=lambda account: account.name.lower())
+        return accounts
 
     async def get_member_by_id(self, member_id: str) -> MemberDetailResponse:
         """Get a single member by ID"""

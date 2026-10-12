@@ -81,6 +81,13 @@ export const auth = {
 		});
 	},
 
+	updateBanner: async (bannerPicture: string, blurHash?: string | null) => {
+		return client<GenericResponse>('/users/banner', {
+			method: 'POST',
+			body: { bannerPicture, blurHash } as unknown as Record<string, unknown>
+		});
+	},
+
 	refresh: async (): Promise<AuthResponse> => {
 		return client<AuthResponse>('/auth/refresh', { method: 'POST' });
 	},

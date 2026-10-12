@@ -1,0 +1,660 @@
+from typing import Optional
+
+from fastapi import APIRouter, Depends, File, Form, Path, Query, UploadFile
+
+from src.auth.schemas import UserCurrent
+from src.config import Settings
+from src.dependencies import (
+    get_current_user,
+    get_current_user_optional,
+    get_page48_service,
+    get_settings,
+    require_admin,
+    require_csrf_protection,
+)
+from src.page48.schemas import (
+    ActiveUsersResponse,
+    AdminReportPaginationResponse,
+    BlockResponse,
+    CreatePostRequest,
+    CreateThreadRequest,
+    CreateThreadResponse,
+    EditPostRequest,
+    FollowResponse,
+    MarkNotificationsReadResponse,
+    MuteResponse,
+    NotificationCountsResponse,
+    NotificationOverviewResponse,
+    NotificationPaginationResponse,
+    Page48SettingsRequest,
+    Page48SettingsResponse,
+    Page48UserProfileResponse,
+    PollResponse,
+    PostActivityResponse,
+    PostPaginationResponse,
+    PostResponse,
+    PostUserListResponse,
+    ReportCreate,
+    ReportResponse,
+    SearchTopResponse,
+    ThreadResponse,
+    ToggleResponse,
+    TrendingTagsResponse,
+    VideoUploadResponse,
+    VotePollRequest,
+)
+from src.page48.service import Page48Service
+
+router = APIRouter()
+
+
+@router.get("/feed", response_model=PostPaginationResponse)
+async def get_feed(
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    media: Optional[str] = Query(
+        None, pattern="^(text|image|video)$", description="Filter by media type"
+    ),
+    following: bool = Query(False, description="Only posts from followed accounts"),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_feed(limit, cursor, user_id, media, following)
+
+
+@router.get("/posts/{postId}", response_model=PostResponse)
+async def get_post(
+    postId: str = Path(...),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_post(postId, user_id)
+
+
+@router.get("/posts/{postId}/thread", response_model=ThreadResponse)
+async def get_thread(
+    postId: str = Path(...),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_thread(postId, user_id)
+
+
+@router.get("/posts/{postId}/replies", response_model=PostPaginationResponse)
+async def get_direct_replies(
+    postId: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_direct_replies(postId, limit, cursor, user_id)
+
+
+@router.get("/posts/{postId}/activity", response_model=PostActivityResponse)
+async def get_post_activity(
+    postId: str = Path(...),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_post_activity(postId, user_id)
+
+
+@router.get("/posts/{postId}/quotes", response_model=PostPaginationResponse)
+async def get_post_quotes(
+    postId: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_post_quotes(postId, limit, cursor, user_id)
+
+
+@router.get("/posts/{postId}/reposts", response_model=PostUserListResponse)
+async def get_post_reposts(
+    postId: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_post_reposts(postId, limit, cursor, user_id)
+
+
+@router.get("/posts/{postId}/likes", response_model=PostUserListResponse)
+async def get_post_likes(
+    postId: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_post_likes(postId, limit, cursor, current_user.userId)
+
+
+@router.get("/users/{username}/posts", response_model=PostPaginationResponse)
+async def get_user_posts(
+    username: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    media: Optional[str] = Query(
+        None, pattern="^(text|image|video)$", description="Filter by media type"
+    ),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_user_posts(username, limit, cursor, user_id, media)
+
+
+@router.get("/users/{username}/replies", response_model=PostPaginationResponse)
+async def get_user_replies(
+    username: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_user_replies(username, limit, cursor, user_id)
+
+
+@router.get("/users/{username}/profile", response_model=Page48UserProfileResponse)
+async def get_user_profile(
+    username: str = Path(...),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_user_profile(username, user_id)
+
+
+@router.post("/users/{username}/follow", response_model=FollowResponse)
+async def follow_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.follow_user(username, current_user.userId)
+
+
+@router.delete("/users/{username}/follow", response_model=FollowResponse)
+async def unfollow_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.unfollow_user(username, current_user.userId)
+
+
+@router.post("/users/{username}/follow/accept", response_model=FollowResponse)
+async def accept_follow_request(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.accept_follow_request(username, current_user.userId)
+
+
+@router.delete("/users/{username}/follow/request", response_model=FollowResponse)
+async def decline_follow_request(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.decline_follow_request(username, current_user.userId)
+
+
+@router.get("/users/{username}/followers", response_model=PostUserListResponse)
+async def get_followers(
+    username: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_followers(username, limit, cursor, current_user.userId)
+
+
+@router.get("/users/{username}/following", response_model=PostUserListResponse)
+async def get_following(
+    username: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_following(username, limit, cursor, current_user.userId)
+
+
+@router.get("/users/{username}/reposts", response_model=PostPaginationResponse)
+async def get_user_reposts(
+    username: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_user_reposts(username, limit, cursor, user_id)
+
+
+@router.get("/tags/trending", response_model=TrendingTagsResponse)
+async def get_trending_tags(
+    limit: int = Query(10, ge=1, le=50),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_trending_tags(limit, user_id)
+
+
+@router.get("/users/active", response_model=ActiveUsersResponse)
+async def get_active_users(
+    limit: int = Query(5, ge=1, le=20),
+    days: int = Query(7, ge=1, le=30),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_active_users(limit, days, user_id)
+
+
+@router.get("/tags/{tag}/posts", response_model=PostPaginationResponse)
+async def get_posts_by_tag(
+    tag: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    media: Optional[str] = Query(
+        None, pattern="^(text|image|video)$", description="Filter by media type"
+    ),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_posts_by_tag(tag, limit, cursor, user_id, media)
+
+
+# Authenticated routes
+@router.post("/posts", response_model=PostResponse, status_code=201)
+async def create_post(
+    request: CreatePostRequest,
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.create_post(request, current_user)
+
+
+@router.post("/posts/thread", response_model=CreateThreadResponse, status_code=201)
+async def create_thread(
+    request: CreateThreadRequest,
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.create_thread(request, current_user)
+
+
+@router.post("/videos", response_model=VideoUploadResponse, status_code=201)
+async def upload_video(
+    file: UploadFile = File(..., description="Video file (MP4 or WebM, max 50MB)"),
+    width: int = Form(0, description="Video width in pixels"),
+    height: int = Form(0, description="Video height in pixels"),
+    duration: float = Form(0.0, description="Video duration in seconds"),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    config: Settings = Depends(get_settings),
+    service: Page48Service = Depends(get_page48_service),
+):
+    # Read one byte past the cap so an oversized body can never be buffered whole
+    # into memory; the service re-checks and answers 413.
+    limit = config.max_page48_video_upload_size_bytes
+    data = await file.read(limit + 1)
+    return await service.upload_video(
+        current_user, data, file.content_type, width, height, duration
+    )
+
+
+@router.patch("/posts/{postId}", response_model=PostResponse)
+async def edit_post(
+    request: EditPostRequest,
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.edit_post(postId, request, current_user.userId)
+
+
+@router.delete("/posts/{postId}")
+async def delete_post(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    await service.delete_post(postId, current_user.userId, is_admin=False)
+    return {"message": "Post deleted successfully"}
+
+
+@router.post("/reports", response_model=ReportResponse, status_code=201)
+async def create_report(
+    request: ReportCreate,
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.create_report(request, current_user)
+
+
+@router.post("/posts/{postId}/like", response_model=ToggleResponse)
+async def toggle_like(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.toggle_like(postId, current_user.userId)
+
+
+@router.post("/posts/{postId}/repost", response_model=ToggleResponse)
+async def toggle_repost(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.toggle_repost(postId, current_user.userId)
+
+
+@router.post("/posts/{postId}/poll/vote", response_model=PollResponse)
+async def vote_poll(
+    request: VotePollRequest,
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.vote_poll(postId, request.optionId, current_user.userId)
+
+
+@router.post("/posts/{postId}/bookmark", response_model=ToggleResponse)
+async def toggle_bookmark(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.toggle_bookmark(postId, current_user.userId)
+
+
+@router.post("/posts/{postId}/pin", response_model=PostResponse)
+async def pin_post(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.pin_post(postId, current_user.userId)
+
+
+@router.delete("/posts/{postId}/pin", response_model=PostResponse)
+async def unpin_post(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.unpin_post(postId, current_user.userId)
+
+
+@router.post("/posts/{postId}/private", response_model=PostResponse)
+async def make_post_private(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.set_post_private(postId, current_user.userId, True)
+
+
+@router.delete("/posts/{postId}/private", response_model=PostResponse)
+async def make_post_public(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.set_post_private(postId, current_user.userId, False)
+
+
+@router.post("/posts/{postId}/spoiler", response_model=PostResponse)
+async def mark_post_spoiler(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.set_post_spoiler(postId, current_user.userId, True)
+
+
+@router.delete("/posts/{postId}/spoiler", response_model=PostResponse)
+async def unmark_post_spoiler(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.set_post_spoiler(postId, current_user.userId, False)
+
+
+@router.get("/me/bookmarks", response_model=PostPaginationResponse)
+async def get_my_bookmarks(
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_user_bookmarks(current_user.userId, limit, cursor)
+
+
+@router.get("/me/likes", response_model=PostPaginationResponse)
+async def get_my_likes(
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_user_likes(current_user.userId, limit, cursor)
+
+
+# Notifications
+@router.get("/notifications", response_model=NotificationPaginationResponse)
+async def get_notifications(
+    tab: str = Query("all"),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_notifications(
+        current_user.userId, tab=tab, limit=limit, cursor=cursor
+    )
+
+
+@router.get("/notifications/overview", response_model=NotificationOverviewResponse)
+async def get_notification_overview(
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_notification_overview(current_user.userId)
+
+
+@router.get("/notifications/counts", response_model=NotificationCountsResponse)
+async def get_notification_counts(
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_notification_counts(current_user.userId)
+
+
+@router.post("/notifications/read", response_model=MarkNotificationsReadResponse)
+async def mark_notifications_read(
+    tab: str = Query("all"),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.mark_notifications_read(current_user.userId, tab)
+
+
+# Blocks and mutes
+@router.post("/users/{username}/block", response_model=BlockResponse)
+async def block_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.block_user(username, current_user.userId)
+
+
+@router.delete("/users/{username}/block", response_model=BlockResponse)
+async def unblock_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.unblock_user(username, current_user.userId)
+
+
+@router.post("/users/{username}/mute", response_model=MuteResponse)
+async def mute_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.mute_user(username, current_user.userId)
+
+
+@router.delete("/users/{username}/mute", response_model=MuteResponse)
+async def unmute_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.unmute_user(username, current_user.userId)
+
+
+@router.get("/me/blocks", response_model=PostUserListResponse)
+async def get_my_blocks(
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_blocked_users(current_user.userId, limit, cursor)
+
+
+@router.get("/me/mutes", response_model=PostUserListResponse)
+async def get_my_mutes(
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_muted_users(current_user.userId, limit, cursor)
+
+
+@router.patch("/me/settings", response_model=Page48SettingsResponse)
+async def update_my_settings(
+    request: Page48SettingsRequest,
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.update_page48_settings(current_user.userId, request.locked)
+
+
+# Search (signed-in only)
+@router.get("/search/top", response_model=SearchTopResponse)
+async def search_top(
+    query: str = Query("", max_length=100),
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.search_top(query, current_user.userId)
+
+
+@router.get("/search/posts", response_model=PostPaginationResponse)
+async def search_posts(
+    query: str = Query("", max_length=100),
+    tab: str = Query("posts"),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.search_posts(
+        query, current_user.userId, tab=tab, limit=limit, cursor=cursor
+    )
+
+
+@router.get("/search/users", response_model=PostUserListResponse)
+async def search_users(
+    query: str = Query("", max_length=100),
+    limit: int = Query(20, le=50),
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.search_users(query, current_user.userId, limit)
+
+
+@router.get("/search/tags", response_model=TrendingTagsResponse)
+async def search_tags(
+    query: str = Query("", max_length=100),
+    limit: int = Query(30, le=50),
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.search_tags(query, limit, current_user.userId)
+
+
+# Admin
+@router.delete("/admin/posts/{postId}")
+async def admin_delete_post(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(require_admin),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    await service.delete_post(postId, current_user.userId, is_admin=True)
+    return {"message": "Post deleted by admin"}
+
+
+@router.get("/admin/reports", response_model=AdminReportPaginationResponse)
+async def get_admin_reports(
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    targetType: Optional[str] = Query(None, pattern="^(post|user)$"),
+    status: Optional[str] = Query(None, max_length=32),
+    _: UserCurrent = Depends(require_admin),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_reports_admin(limit, cursor, targetType, status)
