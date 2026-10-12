@@ -2166,7 +2166,9 @@
 			"postSuccess": "Postingan berhasil dikirim",
 			"postError": "Gagal mengirim postingan",
 			"followingEmptyTitle": "Feed kamu masih kosong",
-			"followingEmptyText": "Postingan dari akun yang kamu ikuti akan muncul di sini."
+			"followingEmptyText": "Postingan dari akun yang kamu ikuti akan muncul di sini.",
+			"newPosts": "Tampilkan {count} postingan",
+			"posted": "postingan baru"
 		},
 		"photos": {
 			"emptyTitle": "Belum ada gambar",

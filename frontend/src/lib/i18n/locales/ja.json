@@ -2160,7 +2160,9 @@
 			"postSuccess": "投稿しました",
 			"postError": "投稿に失敗しました",
 			"followingEmptyTitle": "フィードは空です",
-			"followingEmptyText": "フォロー中のアカウントの投稿がここに表示されます。"
+			"followingEmptyText": "フォロー中のアカウントの投稿がここに表示されます。",
+			"newPosts": "{count}件の投稿を表示",
+			"posted": "件の新しい投稿"
 		},
 		"photos": {
 			"emptyTitle": "まだ画像がありません",

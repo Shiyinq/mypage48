@@ -137,6 +137,20 @@
 			goto('/');
 		}
 	}
+
+	/**
+	 * Home and Following keep their own scroll position, so those two links must
+	 * not let SvelteKit scroll the new page back to the top; the feed restores the
+	 * saved offset itself once it has rendered. Returns true when it handled the
+	 * navigation (so the caller can prevent the default).
+	 */
+	function guardFeedNav(href: string | null | undefined, event: MouseEvent): boolean {
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+			return false;
+		if (href !== basePath && href !== `${basePath}/following`) return false;
+		void goto(href, { noScroll: true });
+		return true;
+	}
 </script>
 
 <svelte:window onfocus={refreshUnread} />
@@ -184,6 +198,7 @@
 				<NavPills
 					items={desktopNavItems}
 					currentPath={$page.url.pathname}
+					onNavigate={guardFeedNav}
 					className="bg-white/50 dark:bg-zinc-900/50 border-gray-200 dark:border-zinc-800 shadow-sm shrink-0"
 				/>
 			</div>
@@ -264,6 +279,9 @@
 					: $page.url.pathname.startsWith(item.href)}
 				<a
 					href={item.href}
+					onclick={(event) => {
+						if (guardFeedNav(item.href, event)) event.preventDefault();
+					}}
 					class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[60px] shrink-0"
 				>
 					<item.icon

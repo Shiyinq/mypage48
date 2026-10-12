@@ -2162,7 +2162,9 @@
 			"postSuccess": "Post sent successfully",
 			"postError": "Failed to send post",
 			"followingEmptyTitle": "Your feed is empty",
-			"followingEmptyText": "Posts from accounts you follow will show up here."
+			"followingEmptyText": "Posts from accounts you follow will show up here.",
+			"newPosts": "Show {count} posts",
+			"posted": "posted"
 		},
 		"photos": {
 			"emptyTitle": "No photos yet",

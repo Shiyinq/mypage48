@@ -2,10 +2,11 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { type Page48Post } from '$lib/api/page48';
-	import { page48Reads } from '$lib/stores/page48.svelte';
+	import { page48FeedStore } from '$lib/stores/page48Feed.svelte';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
+	import NewPostsIndicator from '$lib/components/page48/NewPostsIndicator.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { fade } from 'svelte/transition';
 	import { t } from '$lib/i18n';
@@ -35,72 +36,113 @@
 		emptyText ?? (following ? t('page48.feed.followingEmptyText') : t('page48.feed.emptyText'))
 	);
 
-	let posts: Page48Post[] = $state([]);
-	let loading = $state(true);
-	let error = $state<string | null>(null);
-	let hasMore = $state(false);
-	let nextCursor = $state<string | null>(null);
-	let loadingMore = $state(false);
+	// Home and Following keep their posts and scroll between visits; the media
+	// pages (Photos/Videos) are left as they are for now.
+	// svelte-ignore state_referenced_locally
+	const persistent = media === null;
+	// svelte-ignore state_referenced_locally
+	const feedKey = persistent ? (following ? 'following' : 'home') : `media:${media}`;
 
-	// Load on mount and whenever the media filter or mode changes.
-	$effect(() => {
-		void media;
-		void following;
-		loadFeed();
+	const feed = page48FeedStore;
+	// svelte-ignore state_referenced_locally
+	const params = { media, following };
+	const bucket = feed.bucket(feedKey);
+
+	let posts = $derived(bucket.posts);
+	let loading = $derived(!bucket.isLoaded && !bucket.error);
+	let error = $derived(bucket.error);
+	let loadingMore = $derived(bucket.isLoadingMore);
+	let hasMore = $derived(bucket.hasMore);
+	let pendingCount = $derived(bucket.pending.length);
+	/** True while the timeline sits at the very top (drives the indicator style). */
+	let atTop = $state(true);
+
+	/** Up to three avatars of the authors behind the waiting posts. */
+	let pendingAvatars = $derived.by(() => {
+		const seen = new Set<string>();
+		const out: string[] = [];
+		for (const post of bucket.pending) {
+			const picture = post.userProfilePicture_small ?? post.userProfilePicture;
+			if (picture && !seen.has(post.userId)) {
+				seen.add(post.userId);
+				out.push(picture);
+				if (out.length >= 3) break;
+			}
+		}
+		return out;
 	});
 
-	// A post created from the navbar composer arrives as a window event, so the feed
-	// can show it without a refetch (only when no media/following filter is active).
-	onMount(() => {
-		function handleCreated(event: Event) {
-			if (media || following) return;
-			const post = (event as CustomEvent<Page48Post>).detail;
-			if (post?.postId) posts = [post, ...posts];
-		}
-		window.addEventListener('page48:post-created', handleCreated);
-		return () => window.removeEventListener('page48:post-created', handleCreated);
-	});
+	/** How often an active Home/Following page looks for new posts. */
+	const REFRESH_INTERVAL_MS = 3 * 60 * 1000;
 
-	async function loadFeed() {
-		try {
-			loading = true;
-			error = null;
-			const response = await page48Reads.getFeed(20, null, media, following);
-			posts = response.data;
-			hasMore = response.meta.hasMore;
-			nextCursor = response.meta.nextCursor;
-		} catch (err: unknown) {
-			const e = err as { message?: string };
-			error = e?.message || t('page48.feed.loadError');
-		} finally {
-			loading = false;
-		}
-	}
-
-	async function loadMore() {
-		if (loadingMore || !hasMore || !nextCursor || loading) return;
-		try {
-			loadingMore = true;
-			const response = await page48Reads.getFeed(20, nextCursor, media, following);
-			posts = [...posts, ...response.data];
-			hasMore = response.meta.hasMore;
-			nextCursor = response.meta.nextCursor;
-		} catch (err) {
-			console.error(err);
-		} finally {
-			loadingMore = false;
-		}
-	}
+	let scrollFrame = 0;
+	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	function handleScroll() {
+		atTop = window.scrollY <= 16;
+
 		const scrollY = window.scrollY;
 		const innerHeight = window.innerHeight;
 		const offsetHeight = document.body.offsetHeight;
-
 		if (scrollY + innerHeight >= offsetHeight - 500) {
-			loadMore();
+			void feed.loadMore(feedKey, params);
 		}
+
+		if (scrollFrame || !persistent) return;
+		scrollFrame = requestAnimationFrame(() => {
+			scrollFrame = 0;
+			feed.saveScroll(feedKey, window.scrollY);
+		});
 	}
+
+	/** Refresh only while this page is the active, visible tab. */
+	function backgroundRefresh() {
+		if (!persistent) return;
+		if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
+		void feed.refresh(feedKey, params);
+	}
+
+	function applyPending() {
+		feed.applyPending(feedKey);
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+
+	onMount(() => {
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		window.addEventListener('focus', backgroundRefresh);
+		document.addEventListener('visibilitychange', backgroundRefresh);
+		if (persistent) refreshTimer = setInterval(backgroundRefresh, REFRESH_INTERVAL_MS);
+
+		atTop = window.scrollY <= 16;
+
+		// Already loaded: render instantly from the store and restore scroll.
+		// First visit: load (skeleton) and start at the top.
+		if (bucket.isLoaded) {
+			const restore = persistent ? bucket.scrollY : 0;
+			requestAnimationFrame(() => window.scrollTo(0, restore));
+			backgroundRefresh();
+		} else {
+			void feed.ensure(feedKey, params);
+		}
+
+		// A post created from the navbar composer is prepended without a refetch
+		// (Home only: the Following feed is filtered).
+		function handleCreated(event: Event) {
+			if (!persistent || following) return;
+			const post = (event as CustomEvent<Page48Post>).detail;
+			if (post?.postId) feed.prepend(feedKey, post);
+		}
+		window.addEventListener('page48:post-created', handleCreated);
+
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+			window.removeEventListener('focus', backgroundRefresh);
+			document.removeEventListener('visibilitychange', backgroundRefresh);
+			window.removeEventListener('page48:post-created', handleCreated);
+			if (refreshTimer) clearInterval(refreshTimer);
+			if (scrollFrame) cancelAnimationFrame(scrollFrame);
+		};
+	});
 
 	function findPost(postId: string): Page48Post | undefined {
 		return posts.find((p) => p.postId === postId);
@@ -130,11 +172,9 @@
 	}
 
 	function handleDelete(postId: string) {
-		posts = posts.filter((p) => p.postId !== postId);
+		feed.removePost(feedKey, postId);
 	}
 </script>
-
-<svelte:window onscroll={handleScroll} />
 
 <div
 	class="relative max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"
@@ -158,7 +198,11 @@
 		</div>
 	{:else if error}
 		<div class="p-6">
-			<ErrorState title={t('page48.feed.loadError')} description={error} onRetry={loadFeed} />
+			<ErrorState
+				title={t('page48.feed.loadError')}
+				description={error}
+				onRetry={() => feed.ensure(feedKey, params, true)}
+			/>
 		</div>
 	{:else if posts.length === 0}
 		<div class="flex flex-col items-center justify-center p-16 text-center text-gray-500">
@@ -175,6 +219,13 @@
 			class="flex flex-col divide-y divide-gray-200/60 dark:divide-white/10"
 			in:fade={{ duration: 250 }}
 		>
+			<NewPostsIndicator
+				count={pendingCount}
+				avatars={pendingAvatars}
+				{atTop}
+				onApply={applyPending}
+			/>
+
 			{#each posts as post (post.postId)}
 				<PostCard
 					{post}
