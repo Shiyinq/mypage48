@@ -1595,10 +1595,47 @@
 				"user": "Users"
 			},
 			"reportedBy": "Reported by @{username}",
+			"reportedByLabel": "Reported by",
+			"reportCount": "{count} reports",
 			"deletedTarget": "Target no longer exists or has been deleted.",
 			"imageCount": "{count} images",
 			"viewPost": "View post",
 			"viewUser": "View profile",
+			"tabs": {
+				"banned": "Banned users"
+			},
+			"bannedTitle": "Banned users ({count})",
+			"bannedSubtitle": "Accounts banned from Page48",
+			"bannedEmptyTitle": "No banned users",
+			"bannedEmptyDesc": "Nobody is currently banned.",
+			"bannedUntil": "Banned until {date}",
+			"bannedPermanent": "Permanently banned",
+			"bannedBy": "by @{username}",
+			"unban": "Unban",
+			"confirmUnban": "Unban this account?",
+			"unbanned": "Account unbanned",
+			"deletePost": "Delete post",
+			"confirmDelete": "Delete this post?",
+			"deletedPost": "Post deleted",
+			"banUser": "Ban user",
+			"dismiss": "Dismiss",
+			"confirmDismiss": "Dismiss these reports?",
+			"dismissed": "Reports dismissed",
+			"banned": "User banned",
+			"actionError": "Action failed",
+			"ban": {
+				"title": "Ban user",
+				"target": "Ban @{username}?",
+				"duration": "Duration",
+				"durations": {
+					"permanent": "Permanent",
+					"7d": "7 days",
+					"30d": "30 days"
+				},
+				"reason": "Reason",
+				"reasonPlaceholder": "Free text, or pick a report reason above",
+				"confirm": "Ban"
+			},
 			"status": {
 				"pending": "Pending",
 				"reviewed": "Reviewed",
@@ -1990,6 +2027,7 @@
 			"media": "Post media",
 			"viewImage": "View image {index} of {total}",
 			"playVideo": "Play video",
+			"openVideo": "Open video in viewer",
 			"youtubeVideo": "YouTube video",
 			"cancelReply": "Cancel reply",
 			"openX": "Open X @{username}",
@@ -2252,7 +2290,8 @@
 			"title": "Post media",
 			"hideDetails": "Hide details",
 			"showDetails": "Show details",
-			"download": "Download photo"
+			"download": "Download photo",
+			"downloadVideo": "Download video"
 		},
 		"activity": {
 			"title": "Post activity",
@@ -2381,6 +2420,13 @@
 		},
 		"reportUser": "Report User",
 		"backHome": "Back to home",
+		"banned": {
+			"title": "Your account is banned by the system",
+			"temporary": "Banned until {date}",
+			"permanent": "Permanently banned",
+			"notice": "You can browse Page48, but posting, liking, sharing and reporting are disabled.",
+			"profileBanned": "This account was banned by the system."
+		},
 		"settings": {
 			"title": "Page48",
 			"subtitle": "Privacy and the accounts you've blocked or muted.",

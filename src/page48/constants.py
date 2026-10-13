@@ -1,5 +1,27 @@
+from datetime import datetime, timezone
+from typing import Optional
+
 # A post may hold up to this many media items, images and videos combined.
 MAX_MEDIA = 10
+
+# Page48 ban durations an admin can pick; `permanent` never expires.
+BAN_DURATIONS = {
+    "permanent": None,
+    "7d": 7 * 24 * 3600,
+    "30d": 30 * 24 * 3600,
+}
+
+
+def ban_is_active(banned: bool, until: Optional[datetime]) -> bool:
+    """Whether a Page48 ban still applies (a timed ban lapses on its own)."""
+    if not banned:
+        return False
+    if until is None:
+        return True
+    if until.tzinfo is None:
+        until = until.replace(tzinfo=timezone.utc)
+    return until > datetime.now(timezone.utc)
+
 
 # Who may reply to a post. The author always may, whatever the setting is.
 REPLY_SETTINGS = (
@@ -28,6 +50,9 @@ class Info:
     POST_PINNED = "Post pinned successfully."
     POST_UNPINNED = "Post unpinned successfully."
     NOTIFICATIONS_READ = "Notifications marked as read."
+    USER_BANNED = "User banned successfully."
+    USER_UNBANNED = "User unbanned successfully."
+    REPORT_RESOLVED = "Reports resolved successfully."
 
 
 class ErrorCode:
@@ -68,6 +93,10 @@ class ErrorCode:
     CANNOT_BLOCK_SELF = "You cannot block yourself."
     CANNOT_MUTE_SELF = "You cannot mute yourself."
     REPLY_NOT_ALLOWED = "You are not allowed to reply to this post."
+    ACCOUNT_BANNED = "Your account is banned from posting or interacting."
+    CANNOT_BAN_SELF = "You cannot ban yourself."
+    CANNOT_BAN_ADMIN = "You cannot ban an administrator."
+    INVALID_BAN_DURATION = "The ban duration is invalid."
 
 
 class DomainErrorCode:
@@ -108,3 +137,7 @@ class DomainErrorCode:
     CANNOT_BLOCK_SELF = "You cannot block yourself."
     CANNOT_MUTE_SELF = "You cannot mute yourself."
     REPLY_NOT_ALLOWED = "You are not allowed to reply to this post."
+    ACCOUNT_BANNED = "Your account is banned from posting or interacting."
+    CANNOT_BAN_SELF = "You cannot ban yourself."
+    CANNOT_BAN_ADMIN = "You cannot ban an administrator."
+    INVALID_BAN_DURATION = "The ban duration is invalid."

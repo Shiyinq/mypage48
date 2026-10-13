@@ -6,7 +6,7 @@
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
 	import PostEmbedView from '$lib/components/page48/PostEmbedView.svelte';
 	import SpoilerCover from '$lib/components/page48/SpoilerCover.svelte';
-	import SpoilerText from '$lib/components/page48/SpoilerText.svelte';
+	import RichText from '$lib/components/page48/RichText.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
@@ -17,7 +17,6 @@
 		formatPostTime,
 		getActiveMedia,
 		parseContent,
-		tagUrl,
 		userUrl
 	} from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -158,33 +157,7 @@
 					<p
 						class="pointer-events-none relative z-[1] mt-1 line-clamp-6 whitespace-pre-wrap break-words text-[14px] leading-relaxed text-gray-700 dark:text-gray-300"
 					>
-						{#each contentParts as part, i (i)}
-							{#if part.tag}
-								<a
-									href={tagUrl(part.tag, activeMedia)}
-									class="pointer-events-auto text-red-500 hover:underline cursor-pointer"
-									>{part.text}</a
-								>
-							{:else if part.mention}
-								<UserHoverCard
-									username={part.mention}
-									href={userUrl(part.mention)}
-									class="pointer-events-auto font-semibold text-red-500 hover:underline cursor-pointer"
-									>{part.text}</UserHoverCard
-								>
-							{:else if part.link}
-								<a
-									href={part.link}
-									target="_blank"
-									rel="noopener noreferrer nofollow"
-									class="pointer-events-auto text-blue-500 hover:underline break-all">{part.text}</a
-								>
-							{:else if part.spoiler}
-								<SpoilerText text={part.text} />
-							{:else}
-								{part.text}
-							{/if}
-						{/each}
+						<RichText text={post.content} media={activeMedia} mentionHover spoilers />
 					</p>
 				{/if}
 

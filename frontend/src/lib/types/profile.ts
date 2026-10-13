@@ -50,6 +50,10 @@ export interface ProfileFullResponse {
  * These optional fields are populated from ProfileFullResponse when fetching profile.
  */
 export interface UserWithProfileStats extends User {
+	/** Page48-only ban: the account is hidden and read-only. */
+	isBanned?: boolean;
+	/** When a timed ban lapses; null for a permanent ban. */
+	bannedUntil?: string | null;
 	profileRank?: RankInfo;
 	profileStats?: ProfileStats;
 	profileOshiTwoShots?: OshiTwoShotCounts;

@@ -9,8 +9,8 @@
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import PostMedia from '$lib/components/page48/PostMedia.svelte';
 	import PostEmbedView from '$lib/components/page48/PostEmbedView.svelte';
+	import RichText from '$lib/components/page48/RichText.svelte';
 	import SpoilerCover from '$lib/components/page48/SpoilerCover.svelte';
-	import SpoilerText from '$lib/components/page48/SpoilerText.svelte';
 	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
@@ -28,8 +28,7 @@
 		formatPostTime,
 		getActiveMedia,
 		parseContent,
-		tagUrl,
-		userUrl
+		tagUrl
 	} from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -447,33 +446,7 @@
 					class={`pointer-events-auto relative z-[1] cursor-pointer text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'max-h-[250px] overflow-hidden' : ''}`}
 					onclick={handleContentClick}
 				>
-					{#each contentParts as part, i (i)}
-						{#if part.tag}
-							<a
-								href={tagUrl(part.tag, activeMedia)}
-								class="pointer-events-auto text-red-500 hover:underline cursor-pointer"
-								>{part.text}</a
-							>
-						{:else if part.mention}
-							<UserHoverCard
-								username={part.mention}
-								href={userUrl(part.mention)}
-								class="pointer-events-auto font-semibold text-red-500 hover:underline cursor-pointer"
-								>{part.text}</UserHoverCard
-							>
-						{:else if part.link}
-							<a
-								href={part.link}
-								target="_blank"
-								rel="noopener noreferrer nofollow"
-								class="pointer-events-auto text-blue-500 hover:underline break-all">{part.text}</a
-							>
-						{:else if part.spoiler}
-							<SpoilerText text={part.text} />
-						{:else}
-							{part.text}
-						{/if}
-					{/each}
+					<RichText text={post.content} media={activeMedia} mentionHover spoilers />
 				</p>
 
 				{#if showContentToggle}

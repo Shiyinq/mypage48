@@ -6,6 +6,7 @@
 		ZoomOut,
 		RotateCcw,
 		Download,
+		LoaderCircle,
 		ChevronLeft,
 		ChevronRight
 	} from 'lucide-svelte';
@@ -37,6 +38,8 @@
 	let src = $derived(
 		isGallery ? images[currentIndex] || '' : singleSrc || images[currentIndex] || ''
 	);
+	/** True while a download is in flight, so the button can show a spinner. */
+	let isDownloading = $state(false);
 
 	function goTo(index: number) {
 		if (!isGallery) return;
@@ -136,8 +139,14 @@
 	}
 
 	async function downloadImage() {
+		if (isDownloading) return;
+		// Cross-origin storage media can't be read by `fetch` (no CORS headers), so
+		// route it through our same-origin proxy before downloading.
+		const target = src.startsWith('http') ? `/proxy/image?url=${encodeURIComponent(src)}` : src;
+		isDownloading = true;
 		try {
-			const response = await fetch(src);
+			const response = await fetch(target);
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
 			const blob = await response.blob();
 			const url = window.URL.createObjectURL(blob);
 			const link = document.createElement('a');
@@ -152,7 +161,9 @@
 			window.URL.revokeObjectURL(url);
 		} catch (error) {
 			console.error('Download failed:', error);
-			window.open(src, '_blank');
+			window.open(target, '_blank');
+		} finally {
+			isDownloading = false;
 		}
 	}
 
@@ -241,11 +252,16 @@
 
 			<button
 				onclick={downloadImage}
-				class="flex p-2.5 md:p-3 bg-zinc-900/80 hover:bg-zinc-800 backdrop-blur-md rounded-full transition-all text-white border border-white/10 shadow-2xl cursor-pointer"
+				disabled={isDownloading}
+				class="flex p-2.5 md:p-3 bg-zinc-900/80 hover:bg-zinc-800 backdrop-blur-md rounded-full transition-all text-white border border-white/10 shadow-2xl cursor-pointer disabled:cursor-not-allowed"
 				title="Download"
 				aria-label="Download image"
 			>
-				<Download class="w-4 h-4 md:w-5 md:h-5" />
+				{#if isDownloading}
+					<LoaderCircle class="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+				{:else}
+					<Download class="w-4 h-4 md:w-5 md:h-5" />
+				{/if}
 			</button>
 
 			<button

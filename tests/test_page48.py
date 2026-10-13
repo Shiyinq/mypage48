@@ -1729,6 +1729,280 @@ async def test_admin_reports_list_and_filters(client, create_user, make_post):
     ).status_code == 404
 
 
+async def test_admin_reports_grouped_by_target(client, create_user, make_post):
+    _, _, author = await create_user("p48_grp_author")
+    post = await make_post(author, "grouped reported")
+
+    _, _, r1 = await create_user("p48_grp_r1")
+    _, _, r2 = await create_user("p48_grp_r2")
+    for reporter in (r1, r2):
+        res = await client.post(
+            "/api/page48/reports",
+            json={"targetType": "post", "targetId": post["postId"], "reason": "spam"},
+            headers=reporter,
+        )
+        assert res.status_code == 201
+
+    _, _, admin = await create_user("p48_grp_admin", is_admin=True)
+    body = (await client.get("/api/page48/admin/reports", headers=admin)).json()
+    assert body["meta"]["total"] == 1
+    assert body["meta"]["totalReports"] == 2
+
+    group = body["data"][0]
+    assert group["targetId"] == post["postId"]
+    assert group["reportCount"] == 2
+    assert group["status"] == "pending"
+    usernames = {r["username"] for r in group["reporters"]}
+    assert usernames == {"p48_grp_r1", "p48_grp_r2"}
+
+
+async def test_admin_resolve_report_group(client, create_user, make_post):
+    _, _, author = await create_user("p48_res_author")
+    post = await make_post(author, "resolve me")
+
+    _, _, reporter = await create_user("p48_res_r1")
+    await client.post(
+        "/api/page48/reports",
+        json={"targetType": "post", "targetId": post["postId"], "reason": "spam"},
+        headers=reporter,
+    )
+
+    _, _, admin = await create_user("p48_res_admin", is_admin=True)
+    resolved = await client.post(
+        f"/api/page48/admin/reports/post/{post['postId']}/status?status=resolved",
+        headers=admin,
+    )
+    assert resolved.status_code == 200
+    assert resolved.json()["modified"] == 1
+
+    body = (await client.get("/api/page48/admin/reports", headers=admin)).json()
+    assert body["data"][0]["status"] == "resolved"
+
+
+async def test_admin_ban_blocks_writes_and_hides(client, create_user, make_post):
+    _, author_id, author = await create_user("p48_ban_author")
+    post = await make_post(author, "ban me")
+
+    _, _, admin = await create_user("p48_ban_admin", is_admin=True)
+    banned = await client.post(
+        f"/api/page48/admin/users/{author_id}/ban",
+        json={"duration": "permanent", "reason": "spam"},
+        headers=admin,
+    )
+    assert banned.status_code == 200, banned.text
+    assert banned.json()["reason"] == "spam"
+
+    # Every write is refused while banned.
+    assert (
+        await client.post(
+            "/api/page48/posts", json={"content": "nope"}, headers=author
+        )
+    ).status_code == 403
+    assert (
+        await client.post(
+            f"/api/page48/posts/{post['postId']}/like", headers=author
+        )
+    ).status_code == 403
+
+    # Reads still work, but the banned author's own post is hidden even from them.
+    feed = await client.get("/api/page48/feed", headers=author)
+    assert feed.status_code == 200
+    assert all(p["postId"] != post["postId"] for p in feed.json()["data"])
+
+    profile = await client.get(
+        "/api/page48/users/p48_ban_author/profile", headers=author
+    )
+    assert profile.status_code == 200
+    assert profile.json()["isBanned"] is True
+
+    # Unban restores writes.
+    assert (
+        await client.delete(
+            f"/api/page48/admin/users/{author_id}/ban", headers=admin
+        )
+    ).status_code == 200
+    assert (
+        await client.post(
+            "/api/page48/posts", json={"content": "back"}, headers=author
+        )
+    ).status_code == 201
+
+
+async def test_admin_cannot_ban_self_or_admin(client, create_user):
+    _, admin_id, admin = await create_user("p48_ban_self", is_admin=True)
+    assert (
+        await client.post(
+            f"/api/page48/admin/users/{admin_id}/ban", json={}, headers=admin
+        )
+    ).status_code == 400
+
+    _, other_admin_id, _ = await create_user("p48_ban_otheradmin", is_admin=True)
+    assert (
+        await client.post(
+            f"/api/page48/admin/users/{other_admin_id}/ban",
+            json={},
+            headers=admin,
+        )
+    ).status_code == 400
+
+
+async def test_admin_banned_users_listing(client, create_user):
+    _, victim_id, _ = await create_user("p48_ban_victim")
+    _, _, admin = await create_user("p48_ban_list_admin", is_admin=True)
+    await client.post(
+        f"/api/page48/admin/users/{victim_id}/ban",
+        json={"duration": "7d", "reason": "harassment"},
+        headers=admin,
+    )
+
+    listing = await client.get("/api/page48/admin/banned-users", headers=admin)
+    assert listing.status_code == 200
+    data = listing.json()["data"]
+    assert len(data) == 1
+    assert data[0]["userId"] == victim_id
+    assert data[0]["reason"] == "harassment"
+    assert data[0]["bannedUntil"] is not None
+    assert data[0]["bannedByUsername"] == "p48_ban_list_admin"
+
+    _, _, normal = await create_user("p48_ban_list_normal")
+    assert (
+        await client.get("/api/page48/admin/banned-users", headers=normal)
+    ).status_code == 404
+
+
+async def test_admin_can_open_hidden_reported_post(client, create_user, make_post):
+    # A private post: hidden from everyone but the author.
+    _, _, author = await create_user("p48_adm_view_author")
+    private_post = await make_post(author, "secret")
+    await client.post(
+        f"/api/page48/posts/{private_post['postId']}/private", headers=author
+    )
+
+    # A banned author: hidden from everyone, the author included.
+    _, banned_id, banned_author = await create_user("p48_adm_view_banned")
+    banned_post = await make_post(banned_author, "banned content")
+
+    _, _, admin = await create_user("p48_adm_view_admin", is_admin=True)
+    await client.post(
+        f"/api/page48/admin/users/{banned_id}/ban",
+        json={"duration": "permanent", "reason": "spam"},
+        headers=admin,
+    )
+
+    _, _, other = await create_user("p48_adm_view_other")
+    assert (
+        await client.get(f"/api/page48/posts/{private_post['postId']}", headers=other)
+    ).status_code == 404
+    assert (
+        await client.get(f"/api/page48/posts/{banned_post['postId']}", headers=other)
+    ).status_code == 404
+
+    # The admin can still open both, so moderation can see what was reported.
+    private_res = await client.get(
+        f"/api/page48/posts/{private_post['postId']}", headers=admin
+    )
+    assert private_res.status_code == 200
+    assert private_res.json()["postId"] == private_post["postId"]
+
+    banned_res = await client.get(
+        f"/api/page48/posts/{banned_post['postId']}", headers=admin
+    )
+    assert banned_res.status_code == 200
+    assert banned_res.json()["postId"] == banned_post["postId"]
+
+
+async def test_ban_endpoints_require_admin(client, create_user):
+    _, victim_id, victim = await create_user("p48_sec_victim")
+    _, _, normal = await create_user("p48_sec_normal")
+
+    # A non-admin cannot ban anyone...
+    assert (
+        await client.post(
+            f"/api/page48/admin/users/{victim_id}/ban", json={}, headers=normal
+        )
+    ).status_code == 404
+    # ...nor unban anyone.
+    assert (
+        await client.delete(
+            f"/api/page48/admin/users/{victim_id}/ban", headers=normal
+        )
+    ).status_code == 404
+
+    _, _, admin = await create_user("p48_sec_admin", is_admin=True)
+    await client.post(
+        f"/api/page48/admin/users/{victim_id}/ban",
+        json={"duration": "permanent"},
+        headers=admin,
+    )
+
+    # The banned user cannot lift their own ban: admin routes stay hidden, so a
+    # non-admin gets the same 404 as anyone else (the ban guard skips admin paths).
+    assert (
+        await client.delete(
+            f"/api/page48/admin/users/{victim_id}/ban", headers=victim
+        )
+    ).status_code == 404
+    # ...nor flip their own settings (a write is refused).
+    assert (
+        await client.patch(
+            "/api/page48/me/settings", json={"locked": True}, headers=victim
+        )
+    ).status_code == 403
+
+
+async def test_ban_blocks_api_key_auth(client, create_user):
+    _, user_id, headers = await create_user("p48_sec_apikey")
+    key_res = await client.post("/api/key", headers=headers)
+    assert key_res.status_code == 201, key_res.text
+    api_headers = {"Authorization": f"Bearer {key_res.json()['apiKey']}"}
+
+    # The API key works before the ban.
+    assert (
+        await client.post(
+            "/api/page48/posts", json={"content": "before"}, headers=api_headers
+        )
+    ).status_code == 201
+
+    _, _, admin = await create_user("p48_sec_apikey_admin", is_admin=True)
+    await client.post(
+        f"/api/page48/admin/users/{user_id}/ban",
+        json={"duration": "permanent", "reason": "spam"},
+        headers=admin,
+    )
+
+    # And is refused afterwards: the ban is enforced for API-key auth too.
+    assert (
+        await client.post(
+            "/api/page48/posts", json={"content": "after"}, headers=api_headers
+        )
+    ).status_code == 403
+
+
+async def test_expired_ban_lapses(client, create_user, db):
+    _, user_id, headers = await create_user("p48_sec_expired")
+    created = await client.post(
+        "/api/page48/posts", json={"content": "hello"}, headers=headers
+    )
+    assert created.status_code == 201
+
+    # A timed ban whose window already passed is not active.
+    past = datetime.now(timezone.utc) - timedelta(days=1)
+    await db["users"].update_one(
+        {"userId": user_id},
+        {"$set": {"page48Banned": True, "page48BannedUntil": past}},
+    )
+
+    # Writes are allowed again, and the post is visible again.
+    assert (
+        await client.post(
+            "/api/page48/posts", json={"content": "back"}, headers=headers
+        )
+    ).status_code == 201
+    feed = await client.get("/api/page48/feed", headers=headers)
+    assert feed.status_code == 200
+    assert any(p["postId"] == created.json()["postId"] for p in feed.json()["data"])
+
+
 # --------------------------------------------------------------------------- #
 # Additional use cases (edge branches beyond the happy path)
 # --------------------------------------------------------------------------- #

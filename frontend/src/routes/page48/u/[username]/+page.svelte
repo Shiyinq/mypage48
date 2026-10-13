@@ -12,6 +12,7 @@
 	import UserMenu from '$lib/components/page48/UserMenu.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
+	import RichText from '$lib/components/page48/RichText.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
@@ -23,6 +24,7 @@
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
 	import { fade } from 'svelte/transition';
 
@@ -52,6 +54,10 @@
 
 	let isOwnProfile = $derived(!!profile && userProfile.data?.username === profile.username);
 
+	// The viewer's own profile must be known before "own" can be told from "other",
+	// otherwise the follow button flashes on your own profile before it loads.
+	let viewerReady = $derived(isAuthenticated.value && !!userProfile.data);
+
 	// Known before the profile loads (from the route param), so the loading
 	// skeleton matches the real header (settings pill vs. 3-dot menu).
 	let isSameUser = $derived(!!userProfile.data?.username && userProfile.data.username === username);
@@ -77,8 +83,24 @@
 	// A follower-only account hides its posts until the follow is approved.
 	let isLockedOut = $derived(!!profile?.isLocked && !isOwnProfile && !profile?.isFollowing);
 
+	// A banned account is hidden from everyone (the owner included): no tabs, no posts.
+	let isBannedProfile = $derived(!!profile?.isBanned);
+
+	// Human-readable ban window for the notice below.
+	let bannedPeriod = $derived(
+		profile?.bannedUntil
+			? t('page48.banned.temporary', {
+					date: formatDate(profile.bannedUntil, {
+						year: 'numeric',
+						month: 'short',
+						day: 'numeric'
+					})
+				})
+			: t('page48.banned.permanent')
+	);
+
 	// Everything the list area should render: tabs and posts, or a notice.
-	let showPosts = $derived(canViewPosts && !isLockedOut);
+	let showPosts = $derived(canViewPosts && !isLockedOut && !isBannedProfile);
 
 	let seoTitle = $derived(
 		profile ? `${profile.name} (@${profile.username}) · Page48` : t('page48.seo.userTitle')
@@ -519,7 +541,7 @@
 							<Settings class="w-5 h-5" />
 						</button>
 					{/if}
-					{#if !isOwnProfile && isAuthenticated.value}
+					{#if !isOwnProfile && viewerReady && !isBannedProfile}
 						<UserMenu
 							onReport={() => (showReportUser = true)}
 							onToggleBlock={requestToggleBlock}
@@ -546,7 +568,7 @@
 								@{profile.username}
 							</p>
 						</div>
-						{#if !isOwnProfile && isAuthenticated.value && !profile.isBlocked && !profile.isBlockedBy}
+						{#if !isOwnProfile && viewerReady && !profile.isBlocked && !profile.isBlockedBy && !isBannedProfile}
 							<div class="hidden shrink-0 sm:block">
 								<FollowButton
 									username={profile.username}
@@ -598,7 +620,7 @@
 						<p
 							class="mt-2 text-[14px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words"
 						>
-							{profile.bio}
+							<RichText text={profile.bio} mentionHover spoilers />
 						</p>
 					{/if}
 				</div>
@@ -639,7 +661,7 @@
 		</div>
 
 		<!-- Mobile: full-width follow CTA above the tabs, so it never squeezes the name -->
-		{#if !isOwnProfile && isAuthenticated.value && !profile.isBlocked && !profile.isBlockedBy}
+		{#if !isOwnProfile && viewerReady && !profile.isBlocked && !profile.isBlockedBy && !isBannedProfile}
 			<div class="px-5 pt-1 sm:hidden">
 				<FollowButton
 					username={profile.username}
@@ -655,7 +677,10 @@
 		<!-- Tabs -->
 		{#if !showPosts}
 			<div class="p-12 text-center text-[13px] font-medium text-gray-400 dark:text-gray-500">
-				{#if !canViewPosts}
+				{#if isBannedProfile}
+					<p>{t('page48.banned.profileBanned')}</p>
+					<p class="mt-1 text-[12px] opacity-80">({bannedPeriod})</p>
+				{:else if !canViewPosts}
 					{profile.isBlocked ? t('page48.block.youBlocked') : t('page48.block.blockedBy')}
 				{:else}
 					{profile.isFollowPending

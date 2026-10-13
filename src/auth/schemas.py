@@ -58,6 +58,9 @@ class UserLoginBase(BaseModel):
     bio: str | None = None
     isPublic: bool = False
     publicYear: int | None = None
+    # Page48-only ban; unrelated to the MyPage48 login lockout (`isAccountLocked`).
+    page48Banned: bool = False
+    page48BannedUntil: datetime | None = None
     isAdmin: bool = False
     isEmailVerified: bool = False
     createdAt: datetime | None = None

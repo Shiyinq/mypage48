@@ -270,6 +270,10 @@ class Page48UserProfileResponse(BaseModel):
     isFollowPending: bool = False
     # True when this account only shows its posts to approved followers.
     isLocked: bool = False
+    # True when this account is Page48-banned (hidden, read-only).
+    isBanned: bool = False
+    # When a timed ban lapses; null means the ban is permanent.
+    bannedUntil: Optional[datetime] = None
 
 
 class Page48SettingsRequest(BaseModel):
@@ -354,15 +358,78 @@ class AdminReportItem(BaseModel):
     targetProfilePicture: Optional[str] = None
 
 
+class AdminReportReporter(BaseModel):
+    userId: str
+    username: Optional[str] = None
+    reason: ReportReason
+    note: Optional[str] = None
+    status: str = "pending"
+    createdAt: datetime
+
+
+class AdminReportGroup(BaseModel):
+    """One reported target, with every report against it collapsed in."""
+
+    targetType: ReportTargetType
+    targetId: str
+    reportCount: int = 0
+    reasons: list[str] = []
+    status: str = "pending"
+    note: Optional[str] = None
+    latestAt: datetime
+
+    # Target preview (post content or reported user profile).
+    targetExists: bool = True
+    targetUserId: Optional[str] = None
+    targetUsername: Optional[str] = None
+    targetDisplayName: Optional[str] = None
+    targetContent: Optional[str] = None
+    targetImageCount: int = 0
+    targetProfilePicture: Optional[str] = None
+
+    # Reporters, capped server-side for display.
+    reporters: list[AdminReportReporter] = []
+
+
 class AdminReportPaginationMeta(BaseModel):
     nextCursor: Optional[str] = None
     hasMore: bool = False
     total: int = 0
+    totalReports: int = 0
 
 
 class AdminReportPaginationResponse(BaseModel):
-    data: list[AdminReportItem]
+    data: list[AdminReportGroup]
     meta: AdminReportPaginationMeta
+
+
+BanDuration = Literal["permanent", "7d", "30d"]
+
+
+class BanUserRequest(BaseModel):
+    duration: BanDuration = "permanent"
+    reason: Optional[str] = Field(default=None, max_length=500)
+
+
+class BannedUserItem(BaseModel):
+    userId: str
+    username: Optional[str] = None
+    displayName: Optional[str] = None
+    profilePicture: Optional[str] = None
+    bannedAt: Optional[datetime] = None
+    bannedUntil: Optional[datetime] = None
+    bannedByUsername: Optional[str] = None
+    reason: Optional[str] = None
+
+
+class BannedUserPaginationMeta(BaseModel):
+    total: int = 0
+    hasMore: bool = False
+
+
+class BannedUserPaginationResponse(BaseModel):
+    data: list[BannedUserItem]
+    meta: BannedUserPaginationMeta
 
 
 class ThreadResponse(BaseModel):

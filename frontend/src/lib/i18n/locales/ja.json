@@ -1185,10 +1185,47 @@
 				"user": "ユーザー"
 			},
 			"reportedBy": "@{username} による報告",
+			"reportedByLabel": "報告者",
+			"reportCount": "{count} 件の報告",
 			"deletedTarget": "対象は存在しないか削除されています。",
 			"imageCount": "画像{count}枚",
 			"viewPost": "投稿を見る",
 			"viewUser": "プロフィールを見る",
+			"tabs": {
+				"banned": "停止中のユーザー"
+			},
+			"bannedTitle": "停止中のユーザー ({count})",
+			"bannedSubtitle": "Page48で停止されたアカウント",
+			"bannedEmptyTitle": "停止中のユーザーはいません",
+			"bannedEmptyDesc": "現在停止されているユーザーはいません。",
+			"bannedUntil": "{date} まで停止",
+			"bannedPermanent": "永久停止",
+			"bannedBy": "@{username} による",
+			"unban": "停止解除",
+			"confirmUnban": "このアカウントの停止を解除しますか？",
+			"unbanned": "停止を解除しました",
+			"deletePost": "投稿を削除",
+			"confirmDelete": "この投稿を削除しますか？",
+			"deletedPost": "投稿を削除しました",
+			"banUser": "ユーザーを停止",
+			"dismiss": "却下",
+			"confirmDismiss": "この報告を却下しますか？",
+			"dismissed": "報告を却下しました",
+			"banned": "ユーザーを停止しました",
+			"actionError": "操作に失敗しました",
+			"ban": {
+				"title": "ユーザーを停止",
+				"target": "@{username} を停止しますか？",
+				"duration": "期間",
+				"durations": {
+					"permanent": "永久",
+					"7d": "7日間",
+					"30d": "30日間"
+				},
+				"reason": "理由",
+				"reasonPlaceholder": "自由記述、または上の報告理由を選択",
+				"confirm": "停止"
+			},
 			"status": {
 				"pending": "保留中",
 				"reviewed": "確認済み",
@@ -1988,6 +2025,7 @@
 			"media": "投稿メディア",
 			"viewImage": "画像 {index} / {total} を表示",
 			"playVideo": "動画を再生",
+			"openVideo": "ビューアで動画を開く",
 			"youtubeVideo": "YouTube 動画",
 			"cancelReply": "返信をキャンセル",
 			"openX": "X @{username} を開く",
@@ -2250,7 +2288,8 @@
 			"title": "投稿メディア",
 			"hideDetails": "詳細を隠す",
 			"showDetails": "詳細を表示",
-			"download": "写真をダウンロード"
+			"download": "写真をダウンロード",
+			"downloadVideo": "動画をダウンロード"
 		},
 		"activity": {
 			"title": "投稿のアクティビティ",
@@ -2379,6 +2418,13 @@
 		},
 		"reportUser": "ユーザーを報告",
 		"backHome": "ホームに戻る",
+		"banned": {
+			"title": "アカウントはシステムにより利用停止されました",
+			"temporary": "{date} まで利用停止",
+			"permanent": "永久利用停止",
+			"notice": "Page48は閲覧できますが、投稿・いいね・共有・報告は利用できません。",
+			"profileBanned": "このアカウントはシステムにより利用停止されました。"
+		},
 		"settings": {
 			"title": "Page48",
 			"subtitle": "プライバシーと、ブロック・ミュートしたアカウント。",
