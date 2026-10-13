@@ -5,6 +5,7 @@
 	import { portal } from '$lib/actions/portal';
 	import type { Page48UserProfile } from '$lib/api/page48';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
+	import RichText from '$lib/components/page48/RichText.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import { page48HoverProfileStore } from '$lib/stores/page48.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -33,6 +34,7 @@
 	const GAP = 8;
 
 	let trigger = $state<HTMLAnchorElement>();
+	let cardEl = $state<HTMLDivElement>();
 	let visible = $state(false);
 	let profile = $state<Page48UserProfile | null>(null);
 	/** The handle has no account (deleted, renamed, or never existed). */
@@ -78,11 +80,21 @@
 	function place() {
 		if (!trigger) return;
 		const rect = trigger.getBoundingClientRect();
+		// Measure the card so a long bio still fits instead of overflowing the viewport.
+		const height = cardEl?.offsetHeight ?? CARD_HEIGHT;
 		const left = Math.max(GAP, Math.min(rect.left, window.innerWidth - CARD_WIDTH - GAP));
 		// Sits under the handle, lifted when there is no room below it.
-		const top = Math.min(rect.bottom + GAP, window.innerHeight - CARD_HEIGHT - GAP);
+		const top = Math.min(rect.bottom + GAP, window.innerHeight - height - GAP);
 		position = { left, top: Math.max(GAP, top) };
 	}
+
+	// Re-place once the card's content (and with it its height) has rendered.
+	$effect(() => {
+		void profile;
+		void missing;
+		void failed;
+		if (visible && cardEl) place();
+	});
 
 	$effect(() => {
 		if (!visible || profile || missing || failed) return;
@@ -140,6 +152,7 @@
 	     so a 3-dot menu opened on top of it is never covered. -->
 	<div
 		use:portal
+		bind:this={cardEl}
 		class="fixed z-[10020] rounded-2xl border border-gray-200 bg-white p-3 shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
 		style={`left:${position.left}px; top:${position.top}px; width:${CARD_WIDTH}px;`}
 		role="dialog"
@@ -175,9 +188,9 @@
 
 			{#if profile.bio}
 				<p
-					class="mt-2 line-clamp-3 text-[13px] whitespace-pre-wrap break-words text-gray-700 dark:text-gray-300"
+					class="mt-2 text-[13px] whitespace-pre-wrap break-words text-gray-700 dark:text-gray-300"
 				>
-					{profile.bio}
+					<RichText text={profile.bio} spoilers />
 				</p>
 			{/if}
 

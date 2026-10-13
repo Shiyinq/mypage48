@@ -144,6 +144,63 @@ class UserRepository:
         rows = await cursor.to_list(length=None)
         return [row["userId"] for row in rows]
 
+    async def set_page48_ban(
+        self,
+        user_id: str,
+        banned: bool,
+        banned_by: Optional[str] = None,
+        reason: Optional[str] = None,
+        until: Optional[datetime] = None,
+    ):
+        """Set (or clear) the Page48-only ban. `until=None` means permanent."""
+        if banned:
+            update = {
+                "page48Banned": True,
+                "page48BannedAt": datetime.now(timezone.utc),
+                "page48BannedBy": banned_by,
+                "page48BanReason": reason,
+                "page48BannedUntil": until,
+            }
+        else:
+            update = {
+                "page48Banned": False,
+                "page48BannedAt": None,
+                "page48BannedBy": None,
+                "page48BanReason": None,
+                "page48BannedUntil": None,
+            }
+        return await self.collection.update_one({"userId": user_id}, {"$set": update})
+
+    async def get_page48_banned_ids(self) -> list[str]:
+        """Accounts whose Page48 ban is active (a lapsed timed ban is skipped)."""
+        now = datetime.now(timezone.utc)
+        cursor = self.collection.find(
+            {
+                "page48Banned": True,
+                "$or": [
+                    {"page48BannedUntil": None},
+                    {"page48BannedUntil": {"$gt": now}},
+                ],
+            },
+            {"userId": 1},
+        )
+        rows = await cursor.to_list(length=None)
+        return [row["userId"] for row in rows]
+
+    async def get_page48_banned_users(
+        self, limit: int = 20, offset: int = 0
+    ) -> tuple[list[dict], int]:
+        """Banned accounts, newest ban first, plus the total."""
+        query = {"page48Banned": True}
+        total = await self.collection.count_documents(query)
+        cursor = (
+            self.collection.find(query)
+            .sort("page48BannedAt", -1)
+            .skip(offset)
+            .limit(limit)
+        )
+        return await cursor.to_list(length=limit), total
+
     async def update_last_active(self, user_id: str):
         return await self.collection.update_one(
             {"userId": user_id}, {"$set": {"lastActiveAt": datetime.now(timezone.utc)}}

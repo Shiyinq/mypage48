@@ -975,6 +975,98 @@ class Page48Repository:
             self._reports_query(target_type, status)
         )
 
+    async def get_report_groups(
+        self,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        target_type: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> List[dict]:
+        """Reports collapsed to one row per reported target, newest activity first."""
+        pipeline: List[dict] = []
+        base = self._reports_query(target_type, status)
+        if base:
+            pipeline.append({"$match": base})
+        pipeline += [
+            {"$sort": {"createdAt": -1}},
+            {
+                "$group": {
+                    "_id": {"targetType": "$targetType", "targetId": "$targetId"},
+                    "latestAt": {"$max": "$createdAt"},
+                    "count": {"$sum": 1},
+                    "pending": {
+                        "$sum": {"$cond": [{"$eq": ["$status", "pending"]}, 1, 0]}
+                    },
+                    "reasons": {"$addToSet": "$reason"},
+                    "targetOwnerUserId": {"$first": "$targetOwnerUserId"},
+                    "reports": {
+                        "$push": {
+                            "reportId": "$reportId",
+                            "reporterUserId": "$reporterUserId",
+                            "reason": "$reason",
+                            "note": "$note",
+                            "status": "$status",
+                            "createdAt": "$createdAt",
+                        }
+                    },
+                }
+            },
+            {
+                "$addFields": {
+                    "targetType": "$_id.targetType",
+                    "targetId": "$_id.targetId",
+                }
+            },
+        ]
+        if cursor:
+            pipeline.append(
+                {
+                    "$match": {
+                        "$or": [
+                            {"latestAt": {"$lt": cursor["latestAt"]}},
+                            {
+                                "latestAt": cursor["latestAt"],
+                                "targetType": {"$gt": cursor["targetType"]},
+                            },
+                            {
+                                "latestAt": cursor["latestAt"],
+                                "targetType": cursor["targetType"],
+                                "targetId": {"$gt": cursor["targetId"]},
+                            },
+                        ]
+                    }
+                }
+            )
+        pipeline += [
+            {"$sort": {"latestAt": -1, "targetType": 1, "targetId": 1}},
+            {"$limit": limit},
+        ]
+        return await self.reports.aggregate(pipeline).to_list(length=limit)
+
+    async def count_report_groups(
+        self, target_type: Optional[str] = None, status: Optional[str] = None
+    ) -> int:
+        pipeline: List[dict] = []
+        base = self._reports_query(target_type, status)
+        if base:
+            pipeline.append({"$match": base})
+        pipeline += [
+            {"$group": {"_id": {"targetType": "$targetType", "targetId": "$targetId"}}},
+            {"$count": "total"},
+        ]
+        rows = await self.reports.aggregate(pipeline).to_list(length=1)
+        return rows[0]["total"] if rows else 0
+
+    async def set_reports_status(
+        self, target_type: str, target_id: str, status: str
+    ) -> int:
+        """Mark every report on one target with a single status (resolve/dismiss)."""
+        result = await self.reports.update_many(
+            {"targetType": target_type, "targetId": target_id},
+            {"$set": {"status": status}},
+        )
+        return result.modified_count
+
     async def get_user_interactions(
         self, post_ids: List[str], user_id: str
     ) -> Dict[str, Dict[str, object]]:

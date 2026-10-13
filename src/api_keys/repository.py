@@ -44,6 +44,9 @@ class ApiKeyRepository:
                     "username": "$user.username",
                     "email": "$user.email",
                     "isAdmin": "$user.isAdmin",
+                    # Carried so a Page48 ban is enforced for API-key auth too.
+                    "page48Banned": "$user.page48Banned",
+                    "page48BannedUntil": "$user.page48BannedUntil",
                 }
             },
         ]

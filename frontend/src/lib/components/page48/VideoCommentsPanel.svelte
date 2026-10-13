@@ -11,15 +11,13 @@
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
-	import SpoilerText from '$lib/components/page48/SpoilerText.svelte';
+	import RichText from '$lib/components/page48/RichText.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		formatPostTime,
-		parseContent,
-		tagUrl,
 		userUrl,
 		togglePostInteraction,
 		resolveDraftMedia,
@@ -307,30 +305,7 @@
 							<p
 								class="mt-0.5 text-[14px] leading-snug break-words whitespace-pre-wrap text-gray-800 dark:text-gray-200"
 							>
-								{#each parseContent(comment.content) as part, i (i)}
-									{#if part.tag}
-										<a href={tagUrl(part.tag)} class="cursor-pointer text-red-500 hover:underline"
-											>{part.text}</a
-										>
-									{:else if part.mention}
-										<a
-											href={userUrl(part.mention)}
-											class="cursor-pointer font-semibold text-red-500 hover:underline"
-											>{part.text}</a
-										>
-									{:else if part.link}
-										<a
-											href={part.link}
-											target="_blank"
-											rel="noopener noreferrer nofollow"
-											class="break-all text-blue-500 hover:underline">{part.text}</a
-										>
-									{:else if part.spoiler}
-										<SpoilerText text={part.text} />
-									{:else}
-										{part.text}
-									{/if}
-								{/each}
+								<RichText text={comment.content} spoilers />
 							</p>
 						{/if}
 

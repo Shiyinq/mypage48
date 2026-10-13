@@ -7,6 +7,7 @@
 		ChevronLeft,
 		ChevronRight,
 		Download,
+		LoaderCircle,
 		PanelRightClose,
 		PanelRightOpen
 	} from 'lucide-svelte';
@@ -31,6 +32,8 @@
 	let index = $state(0);
 	/** Whether the post + comments pane is shown; toggled from the top-right corner. */
 	let detailVisible = $state(true);
+	/** True while a download is in flight, so the button can show a spinner. */
+	let downloading = $state(false);
 	let media = $derived(post.media ?? []);
 	let current = $derived(media[index] ?? null);
 	let currentUrl = $derived(current?.type === 'image' ? (current.url ?? '') : '');
@@ -55,19 +58,30 @@
 		index = Math.max(0, Math.min(next, media.length - 1));
 	}
 
-	/** Same behaviour as the single-image lightbox: save the shown photo. */
-	async function downloadImage() {
-		const src = currentUrl;
-		if (!src) return;
+	/**
+	 * Media is served from the storage origin, where the browser refuses to hand the
+	 * bytes to `fetch` (no CORS headers). Route it through our same-origin proxy so
+	 * the download button can save the file instead of falling back to a new tab.
+	 */
+	function proxiedSrc(src: string): string {
+		return src.startsWith('http') ? `/proxy/image?url=${encodeURIComponent(src)}` : src;
+	}
+
+	/** Save a media file via a blob download, falling back to a new tab on failure. */
+	async function downloadMedia(src: string, fallbackExt: string) {
+		if (!src || downloading) return;
+		const target = proxiedSrc(src);
+		downloading = true;
 		try {
-			const response = await fetch(src);
+			const response = await fetch(target);
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
 			const blob = await response.blob();
 			const url = window.URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			link.href = url;
 
 			const name = src.split('/').pop()?.split('?')[0] || `page48-${index + 1}`;
-			link.download = name.includes('.') ? name : `${name}.jpg`;
+			link.download = name.includes('.') ? name : `${name}.${fallbackExt}`;
 
 			document.body.appendChild(link);
 			link.click();
@@ -75,8 +89,20 @@
 			window.URL.revokeObjectURL(url);
 		} catch (error) {
 			console.error('Download failed:', error);
-			window.open(src, '_blank');
+			window.open(target, '_blank');
+		} finally {
+			downloading = false;
 		}
+	}
+
+	/** Same behaviour as the single-image lightbox: save the shown photo. */
+	function downloadImage() {
+		void downloadMedia(currentUrl, 'jpg');
+	}
+
+	/** Save the shown video. */
+	function downloadVideo() {
+		void downloadMedia(current.url ?? '', 'mp4');
 	}
 
 	// --- Keyboard + scroll lock ----------------------------------------------
@@ -148,14 +174,23 @@
 						{index + 1} / {media.length}
 					</span>
 				{/if}
-				{#if current?.type === 'image'}
+				{#if current?.type === 'image' || current?.type === 'video'}
+					{@const downloadLabel =
+						current.type === 'video'
+							? t('page48.mediaViewer.downloadVideo')
+							: t('page48.mediaViewer.download')}
 					<button
-						class="flex cursor-pointer items-center rounded-full border border-white/10 bg-zinc-900/80 p-2.5 text-white backdrop-blur-md transition-colors hover:bg-zinc-800"
-						onclick={downloadImage}
-						aria-label={t('page48.mediaViewer.download')}
-						title={t('page48.mediaViewer.download')}
+						class="flex cursor-pointer items-center rounded-full border border-white/10 bg-zinc-900/80 p-2.5 text-white backdrop-blur-md transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed"
+						onclick={current.type === 'video' ? downloadVideo : downloadImage}
+						disabled={downloading}
+						aria-label={downloadLabel}
+						title={downloadLabel}
 					>
-						<Download class="h-5 w-5" />
+						{#if downloading}
+							<LoaderCircle class="h-5 w-5 animate-spin" />
+						{:else}
+							<Download class="h-5 w-5" />
+						{/if}
 					</button>
 				{/if}
 			</div>

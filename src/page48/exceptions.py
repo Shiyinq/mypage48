@@ -140,3 +140,19 @@ class TooManyRelationsError(DomainException):
 
 class ReplyNotAllowedError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.REPLY_NOT_ALLOWED
+
+
+class AccountBannedError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.ACCOUNT_BANNED
+
+
+class CannotBanSelfError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.CANNOT_BAN_SELF
+
+
+class CannotBanAdminError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.CANNOT_BAN_ADMIN
+
+
+class InvalidBanDurationError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_BAN_DURATION

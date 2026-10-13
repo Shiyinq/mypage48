@@ -97,6 +97,12 @@ class UserInDB(BaseModel):
     isAccountLocked: bool = Field(default=False)
     accountLockedUntil: Optional[datetime] = Field(default=None)
     lastActiveAt: Optional[datetime] = Field(default=None)
+    # Page48-only ban flags; unrelated to the MyPage48 login lockout.
+    page48Banned: bool = Field(default=False)
+    page48BannedUntil: Optional[datetime] = Field(default=None)
+    page48BanReason: Optional[str] = Field(default=None)
+    page48BannedBy: Optional[str] = Field(default=None)
+    page48BannedAt: Optional[datetime] = Field(default=None)
 
 
 class UserCreateResponse(BaseModel):

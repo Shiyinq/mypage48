@@ -146,3 +146,19 @@ class TooManyRelations(BadRequest):
 
 class ReplyNotAllowed(BadRequest):
     DETAIL = ErrorCode.REPLY_NOT_ALLOWED
+
+
+class AccountBanned(PermissionDenied):
+    DETAIL = ErrorCode.ACCOUNT_BANNED
+
+
+class CannotBanSelf(BadRequest):
+    DETAIL = ErrorCode.CANNOT_BAN_SELF
+
+
+class CannotBanAdmin(BadRequest):
+    DETAIL = ErrorCode.CANNOT_BAN_ADMIN
+
+
+class InvalidBanDuration(BadRequest):
+    DETAIL = ErrorCode.INVALID_BAN_DURATION
