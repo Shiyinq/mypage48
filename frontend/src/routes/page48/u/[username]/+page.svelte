@@ -12,6 +12,7 @@
 	import UserMenu from '$lib/components/page48/UserMenu.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
+	import RichText from '$lib/components/page48/RichText.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
@@ -598,7 +599,7 @@
 						<p
 							class="mt-2 text-[14px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words"
 						>
-							{profile.bio}
+							<RichText text={profile.bio} mentionHover spoilers />
 						</p>
 					{/if}
 				</div>

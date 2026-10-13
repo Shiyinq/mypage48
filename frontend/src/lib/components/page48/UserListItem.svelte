@@ -2,6 +2,7 @@
 	import type { PostUserItem } from '$lib/api/page48';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
+	import RichText from '$lib/components/page48/RichText.svelte';
 
 	interface Props {
 		user: PostUserItem;
@@ -46,7 +47,7 @@
 		</a>
 		{#if user.bio}
 			<p class="mt-0.5 line-clamp-2 break-words text-[14px] text-gray-600 dark:text-gray-300">
-				{user.bio}
+				<RichText text={user.bio} spoilers />
 			</p>
 		{/if}
 	</div>
