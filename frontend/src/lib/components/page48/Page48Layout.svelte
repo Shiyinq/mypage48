@@ -10,7 +10,8 @@
 		Users,
 		Image as ImageIcon,
 		Video,
-		X
+		X,
+		ShieldAlert
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -26,6 +27,7 @@
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate } from '$lib/i18n';
 
 	const { t } = useTranslation();
 
@@ -45,6 +47,20 @@
 	);
 	let profileAvatar = $derived(
 		userProfile.data?.profilePicture_small || userProfile.data?.profilePicture || null
+	);
+	/** A Page48-banned viewer is read-only: no composer, no interactions. */
+	let isBanned = $derived(!!userProfile.data?.isBanned);
+	// Human-readable ban window shown in the notice.
+	let bannedPeriod = $derived(
+		userProfile.data?.bannedUntil
+			? t('page48.banned.temporary', {
+					date: formatDate(userProfile.data.bannedUntil, {
+						year: 'numeric',
+						month: 'short',
+						day: 'numeric'
+					})
+				})
+			: t('page48.banned.permanent')
 	);
 
 	interface NavItem {
@@ -210,7 +226,7 @@
 			</div>
 
 			<div class="flex-1 flex justify-end items-center gap-2">
-				{#if isAuthenticated.value}
+				{#if isAuthenticated.value && !isBanned}
 					<!-- New post -->
 					<button
 						onclick={() => (composerOpen = true)}
@@ -269,6 +285,20 @@
 	<div
 		class={`flex-1 relative w-full ${isVideoMode ? 'pt-0 xl:pt-16 pb-0' : 'pt-16 pb-16 xl:pb-0'}`}
 	>
+		{#if isBanned}
+			<div class="relative z-[45] mx-auto my-4 w-full max-w-[652px] px-4">
+				<div
+					class="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300"
+				>
+					<ShieldAlert size={18} class="mt-0.5 shrink-0" />
+					<div>
+						<p class="text-sm font-bold">{t('page48.banned.title')}</p>
+						<p class="text-[13px] font-semibold opacity-90">{bannedPeriod}</p>
+						<p class="text-[13px] opacity-90">{t('page48.banned.notice')}</p>
+					</div>
+				</div>
+			</div>
+		{/if}
 		{@render children()}
 	</div>
 

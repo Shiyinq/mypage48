@@ -203,6 +203,10 @@ export interface Page48UserProfile {
 	isMuted: boolean;
 	/** Follower-only account: posts are hidden until a follow is approved. */
 	isLocked: boolean;
+	/** Page48-banned account: hidden from everyone and read-only. */
+	isBanned: boolean;
+	/** When a timed ban lapses; null for a permanent ban. */
+	bannedUntil: string | null;
 	/** The viewer's follow request is still waiting for approval. */
 	isFollowPending: boolean;
 	followerCount: number;
@@ -386,30 +390,61 @@ export interface ReportResponse {
 	createdAt: string;
 }
 
-export interface AdminReportItem {
-	reportId: string;
-	targetType: ReportTargetType;
-	targetId: string;
+export interface AdminReportReporter {
+	userId: string;
+	username: string | null;
 	reason: ReportReason;
 	note: string | null;
 	status: string;
 	createdAt: string;
-	reporterUserId: string;
-	reporterUsername: string | null;
+}
+
+export interface AdminReportGroup {
+	targetType: ReportTargetType;
+	targetId: string;
+	reportCount: number;
+	reasons: string[];
+	status: string;
+	note: string | null;
+	latestAt: string;
 	targetExists: boolean;
+	targetUserId: string | null;
 	targetUsername: string | null;
 	targetDisplayName: string | null;
 	targetContent: string | null;
 	targetImageCount: number;
 	targetProfilePicture: string | null;
+	reporters: AdminReportReporter[];
+}
+
+export type BanDuration = 'permanent' | '7d' | '30d';
+
+export interface BannedUserItem {
+	userId: string;
+	username: string | null;
+	displayName: string | null;
+	profilePicture: string | null;
+	bannedAt: string | null;
+	bannedUntil: string | null;
+	bannedByUsername: string | null;
+	reason: string | null;
 }
 
 export interface AdminReportPaginationResponse {
-	data: AdminReportItem[];
+	data: AdminReportGroup[];
 	meta: {
 		nextCursor: string | null;
 		hasMore: boolean;
 		total: number;
+		totalReports: number;
+	};
+}
+
+export interface BannedUserPaginationResponse {
+	data: BannedUserItem[];
+	meta: {
+		total: number;
+		hasMore: boolean;
 	};
 }
 
@@ -636,15 +671,66 @@ export const page48Api = {
 	getAdminReports: async (
 		limit: number = 20,
 		cursor: string | null = null,
-		targetType: ReportTargetType | null = null
+		targetType: ReportTargetType | null = null,
+		status: string | null = null
 	): Promise<AdminReportPaginationResponse> => {
 		const searchParams = new URLSearchParams();
 		searchParams.set('limit', limit.toString());
 		if (cursor) searchParams.set('cursor', cursor);
 		if (targetType) searchParams.set('targetType', targetType);
+		if (status) searchParams.set('status', status);
 		return client<AdminReportPaginationResponse>(
 			`/page48/admin/reports?${searchParams.toString()}`
 		);
+	},
+
+	adminDeletePost: async (postId: string): Promise<{ message: string }> => {
+		clearListResponseCache();
+		return client(`/page48/admin/posts/${encodeURIComponent(postId)}`, {
+			method: 'DELETE'
+		});
+	},
+
+	resolveReportGroup: async (
+		targetType: ReportTargetType,
+		targetId: string,
+		status: 'pending' | 'reviewed' | 'resolved' | 'dismissed' = 'resolved'
+	): Promise<{ message: string; modified: number }> => {
+		return client(
+			`/page48/admin/reports/${targetType}/${encodeURIComponent(targetId)}/status?status=${status}`,
+			{ method: 'POST' }
+		);
+	},
+
+	getBannedUsers: async (
+		limit: number = 20,
+		offset: number = 0
+	): Promise<BannedUserPaginationResponse> => {
+		const searchParams = new URLSearchParams();
+		searchParams.set('limit', limit.toString());
+		searchParams.set('offset', offset.toString());
+		return client<BannedUserPaginationResponse>(
+			`/page48/admin/banned-users?${searchParams.toString()}`
+		);
+	},
+
+	banUser: async (
+		userId: string,
+		duration: BanDuration,
+		reason: string | null = null
+	): Promise<BannedUserItem> => {
+		clearListResponseCache();
+		return client<BannedUserItem>(`/page48/admin/users/${encodeURIComponent(userId)}/ban`, {
+			method: 'POST',
+			body: { duration, reason }
+		});
+	},
+
+	unbanUser: async (userId: string): Promise<{ message: string }> => {
+		clearListResponseCache();
+		return client(`/page48/admin/users/${encodeURIComponent(userId)}/ban`, {
+			method: 'DELETE'
+		});
 	},
 
 	toggleLike: async (postId: string): Promise<ToggleResponse> => {

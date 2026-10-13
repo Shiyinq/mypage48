@@ -1497,10 +1497,47 @@
 				"user": "Pengguna"
 			},
 			"reportedBy": "Dilaporkan oleh @{username}",
+			"reportedByLabel": "Dilaporkan oleh",
+			"reportCount": "{count} laporan",
 			"deletedTarget": "Target sudah tidak ada atau telah dihapus.",
 			"imageCount": "{count} gambar",
 			"viewPost": "Lihat postingan",
 			"viewUser": "Lihat profil",
+			"tabs": {
+				"banned": "Pengguna dibanned"
+			},
+			"bannedTitle": "Pengguna dibanned ({count})",
+			"bannedSubtitle": "Akun yang dibanned dari Page48",
+			"bannedEmptyTitle": "Tidak ada pengguna dibanned",
+			"bannedEmptyDesc": "Saat ini tidak ada yang dibanned.",
+			"bannedUntil": "Dibanned sampai {date}",
+			"bannedPermanent": "Dibanned permanen",
+			"bannedBy": "oleh @{username}",
+			"unban": "Batalkan ban",
+			"confirmUnban": "Batalkan ban akun ini?",
+			"unbanned": "Ban akun dibatalkan",
+			"deletePost": "Hapus postingan",
+			"confirmDelete": "Hapus postingan ini?",
+			"deletedPost": "Postingan dihapus",
+			"banUser": "Ban pengguna",
+			"dismiss": "Abaikan",
+			"confirmDismiss": "Abaikan laporan ini?",
+			"dismissed": "Laporan diabaikan",
+			"banned": "Pengguna dibanned",
+			"actionError": "Aksi gagal",
+			"ban": {
+				"title": "Ban pengguna",
+				"target": "Ban @{username}?",
+				"duration": "Durasi",
+				"durations": {
+					"permanent": "Permanen",
+					"7d": "7 hari",
+					"30d": "30 hari"
+				},
+				"reason": "Alasan",
+				"reasonPlaceholder": "Teks bebas, atau pilih alasan laporan di atas",
+				"confirm": "Ban"
+			},
 			"status": {
 				"pending": "Menunggu",
 				"reviewed": "Ditinjau",
@@ -2387,6 +2424,13 @@
 		},
 		"reportUser": "Laporkan Pengguna",
 		"backHome": "Kembali ke beranda",
+		"banned": {
+			"title": "Akunmu dibanned oleh sistem",
+			"temporary": "Dibanned sampai {date}",
+			"permanent": "Dibanned permanen",
+			"notice": "Kamu masih bisa menjelajah Page48, tapi tidak bisa posting, like, bagikan, atau lapor.",
+			"profileBanned": "Akun ini dibanned oleh sistem."
+		},
 		"settings": {
 			"title": "Page48",
 			"subtitle": "Privasi dan daftar akun yang kamu blokir atau bisukan.",
