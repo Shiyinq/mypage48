@@ -10,14 +10,23 @@ from src.auth.schemas import UserCurrent
 from src.config import Settings
 from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
-from src.page48.constants import DEFAULT_REPLY_SETTING, MAX_MEDIA, REPLY_SETTINGS
+from src.page48.constants import (
+    BAN_DURATIONS,
+    DEFAULT_REPLY_SETTING,
+    MAX_MEDIA,
+    REPLY_SETTINGS,
+    ban_is_active,
+)
 from src.page48.exceptions import (
+    CannotBanAdminError,
+    CannotBanSelfError,
     CannotBlockSelfError,
     CannotFollowSelfError,
     CannotMuteSelfError,
     CannotPinReplyError,
     CannotPrivateReplyError,
     CannotReportSelfError,
+    InvalidBanDurationError,
     InvalidImageError,
     InvalidPollOptionError,
     InvalidPollOptionsError,
@@ -51,9 +60,14 @@ from src.page48.repository import Page48Repository
 from src.page48.schemas import (
     ActiveUserItem,
     ActiveUsersResponse,
-    AdminReportItem,
+    AdminReportGroup,
     AdminReportPaginationMeta,
     AdminReportPaginationResponse,
+    AdminReportReporter,
+    BannedUserItem,
+    BannedUserPaginationMeta,
+    BannedUserPaginationResponse,
+    BanUserRequest,
     BlockResponse,
     CreatePostRequest,
     CreateThreadRequest,
@@ -106,6 +120,8 @@ MAX_TAG_LENGTH = 50
 # characters right after an `@`.
 MENTION_PATTERN = re.compile(r"(?:^|[^\w@])@(\w{1,50})", re.UNICODE)
 MAX_MENTIONS = 10
+# How many reporters a single report group carries to the admin UI.
+MAX_REPORTERS = 50
 NOTIFICATION_LIMIT_DEFAULT = 20
 # How many notifications the overview shows per tab as a preview.
 NOTIFICATION_OVERVIEW_PREVIEW = 2
@@ -236,6 +252,9 @@ class Page48Service:
                 )
                 hidden |= locked - following
             hidden.discard(viewer_id or "")
+            # A banned account is hidden from everyone, the author included, so this
+            # is applied after the self-exemption above.
+            hidden |= set(await self.user_repository.get_page48_banned_ids())
             self._hidden_authors = list(hidden)
         return self._hidden_authors
 
@@ -1664,13 +1683,16 @@ class Page48Service:
         )
 
     async def get_post(
-        self, post_id: str, user_id: Optional[str] = None
+        self, post_id: str, user_id: Optional[str] = None, is_admin: bool = False
     ) -> PostResponse:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
 
-        await self._assert_post_visible(post, user_id)
+        # An admin opening a reported post may bypass visibility (private post,
+        # locked or banned author), so moderation can actually see the content.
+        if not is_admin:
+            await self._assert_post_visible(post, user_id)
 
         enriched_posts = await self._enrich_posts([post], user_id)
         return enriched_posts[0]
@@ -1689,13 +1711,15 @@ class Page48Service:
         return ThreadResponse(post=post, replies=replies)
 
     async def get_thread(
-        self, post_id: str, user_id: Optional[str] = None
+        self, post_id: str, user_id: Optional[str] = None, is_admin: bool = False
     ) -> ThreadResponse:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
 
-        await self._assert_post_visible(post, user_id)
+        # See `get_post`: an admin sees a reported thread regardless of visibility.
+        if not is_admin:
+            await self._assert_post_visible(post, user_id)
 
         root_id = post.get("rootPostId") or post_id
 
@@ -2465,21 +2489,24 @@ class Page48Service:
         cache[raw] = url
         return url
 
-    async def _enrich_reports(self, reports: List[dict]) -> List[AdminReportItem]:
-        """Attach target previews and reporter info to raw report documents."""
-        if not reports:
+    async def _enrich_report_groups(self, groups: List[dict]) -> List[AdminReportGroup]:
+        """Attach target previews and reporter info to grouped report documents."""
+        if not groups:
             return []
 
-        post_ids = [r["targetId"] for r in reports if r.get("targetType") == "post"]
+        post_ids = [g["targetId"] for g in groups if g.get("targetType") == "post"]
         post_targets = await self.repository.get_posts_by_ids(post_ids)
         post_map = {p["postId"]: p for p in post_targets}
 
         user_ids: set = set()
-        for r in reports:
-            if r.get("reporterUserId"):
-                user_ids.add(r["reporterUserId"])
-            if r.get("targetType") == "user" and r.get("targetId"):
-                user_ids.add(r["targetId"])
+        for g in groups:
+            if g.get("targetOwnerUserId"):
+                user_ids.add(g["targetOwnerUserId"])
+            if g.get("targetType") == "user" and g.get("targetId"):
+                user_ids.add(g["targetId"])
+            for rep in g.get("reports", []):
+                if rep.get("reporterUserId"):
+                    user_ids.add(rep["reporterUserId"])
         for p in post_targets:
             if p.get("userId"):
                 user_ids.add(p["userId"])
@@ -2488,17 +2515,15 @@ class Page48Service:
         user_map = {u["userId"]: u for u in users}
 
         avatar_cache: dict = {}
-        items: List[AdminReportItem] = []
-        for r in reports:
-            target_type = r.get("targetType")
+        items: List[AdminReportGroup] = []
+        for g in groups:
+            target_type = g.get("targetType")
             if target_type not in ("post", "user"):
                 target_type = "post"
-            reason = r.get("reason")
-            if reason not in ("spam", "harassment", "inappropriate", "other"):
-                reason = "other"
 
-            target_id = r.get("targetId", "")
+            target_id = g.get("targetId", "")
             target_exists = True
+            target_user_id = None
             target_username = None
             target_display_name = None
             target_content = None
@@ -2510,16 +2535,17 @@ class Page48Service:
                 if post:
                     target_content = post.get("content")
                     target_image_count = len(post.get("images") or [])
-                    owner = user_map.get(post.get("userId"))
+                    target_user_id = post.get("userId")
+                    owner = user_map.get(target_user_id)
                     target_username = (owner or {}).get("username")
                     target_display_name = (owner or {}).get("name")
-                    raw_picture = (owner or {}).get("profilePicture")
                     target_picture = await self._resolve_picture(
-                        raw_picture, avatar_cache
+                        (owner or {}).get("profilePicture"), avatar_cache
                     )
                 else:
                     target_exists = False
             else:
+                target_user_id = target_id
                 user = user_map.get(target_id)
                 if user:
                     target_username = user.get("username")
@@ -2530,29 +2556,57 @@ class Page48Service:
                 else:
                     target_exists = False
 
-            reporter = user_map.get(r.get("reporterUserId"))
-            reporter_username = (reporter or {}).get("username")
-
-            items.append(
-                AdminReportItem(
-                    reportId=r["reportId"],
-                    targetType=target_type,
-                    targetId=target_id,
-                    reason=reason,
+            raw_reports = g.get("reports", [])
+            reasons = [r for r in (g.get("reasons") or []) if r]
+            reporters = [
+                AdminReportReporter(
+                    userId=r.get("reporterUserId", ""),
+                    username=(user_map.get(r.get("reporterUserId")) or {}).get(
+                        "username"
+                    ),
+                    reason=self._safe_reason(r.get("reason")),
                     note=r.get("note"),
                     status=r.get("status", "pending"),
                     createdAt=r["createdAt"],
-                    reporterUserId=r.get("reporterUserId", ""),
-                    reporterUsername=reporter_username,
+                )
+                for r in raw_reports[:MAX_REPORTERS]
+            ]
+            latest_note = next(
+                (r.get("note") for r in raw_reports if r.get("note")), None
+            )
+            if g.get("pending"):
+                status = "pending"
+            elif raw_reports:
+                status = raw_reports[0].get("status", "pending")
+            else:
+                status = "pending"
+
+            items.append(
+                AdminReportGroup(
+                    targetType=target_type,
+                    targetId=target_id,
+                    reportCount=g.get("count", len(raw_reports)),
+                    reasons=reasons,
+                    status=status,
+                    note=latest_note,
+                    latestAt=g["latestAt"],
                     targetExists=target_exists,
+                    targetUserId=target_user_id,
                     targetUsername=target_username,
                     targetDisplayName=target_display_name,
                     targetContent=target_content,
                     targetImageCount=target_image_count,
                     targetProfilePicture=target_picture,
+                    reporters=reporters,
                 )
             )
         return items
+
+    @staticmethod
+    def _safe_reason(reason: Optional[str]) -> str:
+        if reason in ("spam", "harassment", "inappropriate", "other"):
+            return reason
+        return "other"
 
     async def get_reports_admin(
         self,
@@ -2564,34 +2618,124 @@ class Page48Service:
         cursor_dict = None
         if cursor:
             try:
-                parts = cursor.split("_")
+                parts = cursor.split("|")
                 cursor_dict = {
-                    "createdAt": datetime.fromisoformat(parts[0]),
-                    "reportId": parts[1],
+                    "latestAt": datetime.fromisoformat(parts[0]),
+                    "targetType": parts[1],
+                    "targetId": parts[2],
                 }
             except Exception:
                 pass
 
-        reports = await self.repository.get_reports(
+        groups = await self.repository.get_report_groups(
             limit + 1, cursor_dict, target_type, status
         )
 
-        has_more = len(reports) > limit
+        has_more = len(groups) > limit
         if has_more:
-            reports = reports[:limit]
+            groups = groups[:limit]
 
-        items = await self._enrich_reports(reports)
-        total = await self.repository.count_reports(target_type, status)
+        items = await self._enrich_report_groups(groups)
+        total = await self.repository.count_report_groups(target_type, status)
+        total_reports = await self.repository.count_reports(target_type, status)
 
         next_cursor = None
-        if has_more and reports:
-            last = reports[-1]
-            next_cursor = f"{last['createdAt'].isoformat()}_{last['reportId']}"
+        if has_more and groups:
+            last = groups[-1]
+            next_cursor = (
+                f"{last['latestAt'].isoformat()}|"
+                f"{last['targetType']}|{last['targetId']}"
+            )
 
         return AdminReportPaginationResponse(
             data=items,
             meta=AdminReportPaginationMeta(
-                nextCursor=next_cursor, hasMore=has_more, total=total
+                nextCursor=next_cursor,
+                hasMore=has_more,
+                total=total,
+                totalReports=total_reports,
+            ),
+        )
+
+    async def resolve_report_group(
+        self, target_type: str, target_id: str, status: str = "resolved"
+    ) -> int:
+        """Mark every report on one target with a single status."""
+        if status not in ("pending", "reviewed", "resolved", "dismissed"):
+            status = "resolved"
+        return await self.repository.set_reports_status(target_type, target_id, status)
+
+    async def ban_user(
+        self, admin: UserCurrent, user_id: str, data: BanUserRequest
+    ) -> BannedUserItem:
+        """Page48-only ban. Duration is permanent, 7 days or 30 days."""
+        if user_id == admin.userId:
+            raise CannotBanSelfError()
+        if data.duration not in BAN_DURATIONS:
+            raise InvalidBanDurationError()
+        user = await self.user_repository.get_user_by_id(user_id)
+        if not user:
+            raise UserProfileNotFoundError()
+        if user.get("isAdmin"):
+            raise CannotBanAdminError()
+
+        seconds = BAN_DURATIONS[data.duration]
+        now = datetime.now(timezone.utc)
+        until = now + timedelta(seconds=seconds) if seconds else None
+        await self.user_repository.set_page48_ban(
+            user_id, True, banned_by=admin.userId, reason=data.reason, until=until
+        )
+
+        avatar_cache: dict = {}
+        return BannedUserItem(
+            userId=user_id,
+            username=user.get("username"),
+            displayName=user.get("name"),
+            profilePicture=await self._resolve_picture(
+                user.get("profilePicture"), avatar_cache
+            ),
+            bannedAt=now,
+            bannedUntil=until,
+            bannedByUsername=admin.username,
+            reason=data.reason,
+        )
+
+    async def unban_user(self, user_id: str) -> None:
+        user = await self.user_repository.get_user_by_id(user_id)
+        if not user:
+            raise UserProfileNotFoundError()
+        await self.user_repository.set_page48_ban(user_id, False)
+
+    async def get_banned_users(
+        self, limit: int = 20, offset: int = 0
+    ) -> BannedUserPaginationResponse:
+        users, total = await self.user_repository.get_page48_banned_users(limit, offset)
+        admin_ids = {u.get("page48BannedBy") for u in users if u.get("page48BannedBy")}
+        admin_map: dict = {}
+        if admin_ids:
+            admins = await self.user_repository.get_users_by_ids(list(admin_ids))
+            admin_map = {a["userId"]: a.get("username") for a in admins}
+        avatar_cache: dict = {}
+        items: List[BannedUserItem] = []
+        for u in users:
+            items.append(
+                BannedUserItem(
+                    userId=u["userId"],
+                    username=u.get("username"),
+                    displayName=u.get("name"),
+                    profilePicture=await self._resolve_picture(
+                        u.get("profilePicture"), avatar_cache
+                    ),
+                    bannedAt=u.get("page48BannedAt"),
+                    bannedUntil=u.get("page48BannedUntil"),
+                    bannedByUsername=admin_map.get(u.get("page48BannedBy")),
+                    reason=u.get("page48BanReason"),
+                )
+            )
+        return BannedUserPaginationResponse(
+            data=items,
+            meta=BannedUserPaginationMeta(
+                total=total, hasMore=offset + len(items) < total
             ),
         )
 
@@ -2927,6 +3071,16 @@ class Page48Service:
             isBlockedBy=is_blocked_by,
             isMuted=is_muted,
             isLocked=bool(user.get("page48Locked")),
+            isBanned=ban_is_active(
+                bool(user.get("page48Banned")), user.get("page48BannedUntil")
+            ),
+            bannedUntil=(
+                user.get("page48BannedUntil")
+                if ban_is_active(
+                    bool(user.get("page48Banned")), user.get("page48BannedUntil")
+                )
+                else None
+            ),
             isFollowPending=is_follow_pending,
             followerCount=follower_count,
             followingCount=following_count,

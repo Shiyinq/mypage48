@@ -130,12 +130,16 @@ from src.news.http_exceptions import (
     NewsNotFound,
 )
 from src.page48.exceptions import (
+    AccountBannedError,
+    CannotBanAdminError,
+    CannotBanSelfError,
     CannotBlockSelfError,
     CannotFollowSelfError,
     CannotMuteSelfError,
     CannotPinReplyError,
     CannotPrivateReplyError,
     CannotReportSelfError,
+    InvalidBanDurationError,
     InvalidImageError,
     InvalidPollOptionError,
     InvalidPollOptionsError,
@@ -166,12 +170,16 @@ from src.page48.exceptions import (
     VideoUploadError,
 )
 from src.page48.http_exceptions import (
+    AccountBanned,
+    CannotBanAdmin,
+    CannotBanSelf,
     CannotBlockSelf,
     CannotFollowSelf,
     CannotMuteSelf,
     CannotPinReply,
     CannotPrivateReply,
     CannotReportSelf,
+    InvalidBanDuration,
     InvalidImage,
     InvalidPollOption,
     InvalidPollOptions,
@@ -558,6 +566,14 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, ReportAlreadyExists())
     if isinstance(exc, InvalidReportTargetError):
         return await detailed_http_exception_handler(request, InvalidReportTarget())
+    if isinstance(exc, AccountBannedError):
+        return await detailed_http_exception_handler(request, AccountBanned())
+    if isinstance(exc, CannotBanSelfError):
+        return await detailed_http_exception_handler(request, CannotBanSelf())
+    if isinstance(exc, CannotBanAdminError):
+        return await detailed_http_exception_handler(request, CannotBanAdmin())
+    if isinstance(exc, InvalidBanDurationError):
+        return await detailed_http_exception_handler(request, InvalidBanDuration())
     if isinstance(exc, VideoTooLargeError):
         return await detailed_http_exception_handler(request, VideoTooLarge())
     if isinstance(exc, InvalidVideoTypeError):

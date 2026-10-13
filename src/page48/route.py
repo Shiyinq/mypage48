@@ -9,12 +9,16 @@ from src.dependencies import (
     get_current_user_optional,
     get_page48_service,
     get_settings,
+    require_active_account,
     require_admin,
     require_csrf_protection,
 )
 from src.page48.schemas import (
     ActiveUsersResponse,
     AdminReportPaginationResponse,
+    BannedUserItem,
+    BannedUserPaginationResponse,
+    BanUserRequest,
     BlockResponse,
     CreatePostRequest,
     CreateThreadRequest,
@@ -45,7 +49,7 @@ from src.page48.schemas import (
 )
 from src.page48.service import Page48Service
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_active_account)])
 
 
 @router.get("/feed", response_model=PostPaginationResponse)
@@ -70,7 +74,8 @@ async def get_post(
     service: Page48Service = Depends(get_page48_service),
 ):
     user_id = current_user.userId if current_user else None
-    return await service.get_post(postId, user_id)
+    is_admin = bool(current_user and current_user.isAdmin)
+    return await service.get_post(postId, user_id, is_admin=is_admin)
 
 
 @router.get("/posts/{postId}/thread", response_model=ThreadResponse)
@@ -80,7 +85,8 @@ async def get_thread(
     service: Page48Service = Depends(get_page48_service),
 ):
     user_id = current_user.userId if current_user else None
-    return await service.get_thread(postId, user_id)
+    is_admin = bool(current_user and current_user.isAdmin)
+    return await service.get_thread(postId, user_id, is_admin=is_admin)
 
 
 @router.get("/posts/{postId}/replies", response_model=PostPaginationResponse)
@@ -645,6 +651,7 @@ async def admin_delete_post(
     service: Page48Service = Depends(get_page48_service),
 ):
     await service.delete_post(postId, current_user.userId, is_admin=True)
+    await service.resolve_report_group("post", postId, "resolved")
     return {"message": "Post deleted by admin"}
 
 
@@ -658,3 +665,50 @@ async def get_admin_reports(
     service: Page48Service = Depends(get_page48_service),
 ):
     return await service.get_reports_admin(limit, cursor, targetType, status)
+
+
+@router.post(
+    "/admin/reports/{targetType}/{targetId}/status",
+)
+async def resolve_report_group(
+    targetType: str = Path(..., pattern="^(post|user)$"),
+    targetId: str = Path(...),
+    status: str = Query("resolved", pattern="^(pending|reviewed|resolved|dismissed)$"),
+    _: UserCurrent = Depends(require_admin),
+    _csrf: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    modified = await service.resolve_report_group(targetType, targetId, status)
+    return {"message": "Reports updated", "modified": modified}
+
+
+@router.get("/admin/banned-users", response_model=BannedUserPaginationResponse)
+async def get_banned_users(
+    limit: int = Query(20, le=100),
+    offset: int = Query(0, ge=0),
+    _: UserCurrent = Depends(require_admin),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_banned_users(limit, offset)
+
+
+@router.post("/admin/users/{userId}/ban", response_model=BannedUserItem)
+async def ban_user(
+    request: BanUserRequest,
+    userId: str = Path(...),
+    current_user: UserCurrent = Depends(require_admin),
+    _csrf: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.ban_user(current_user, userId, request)
+
+
+@router.delete("/admin/users/{userId}/ban")
+async def unban_user(
+    userId: str = Path(...),
+    _: UserCurrent = Depends(require_admin),
+    _csrf: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    await service.unban_user(userId)
+    return {"message": "User unbanned"}

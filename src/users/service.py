@@ -21,6 +21,7 @@ from src.image_validation import validate_base64_image
 from src.live_history.repository import LiveHistoryRepository
 from src.logging_config import create_logger
 from src.members.service import MemberService
+from src.page48.constants import ban_is_active
 from src.storage.service import StorageService
 from src.tickets.service import TicketsService
 from src.users.constants import Info
@@ -803,6 +804,16 @@ class UserService:
                 "ofcStatus": current_user.ofcStatus,
                 "isPublic": current_user.isPublic,
                 "publicYear": current_user.publicYear,
+                "isBanned": ban_is_active(
+                    current_user.page48Banned, current_user.page48BannedUntil
+                ),
+                "bannedUntil": (
+                    current_user.page48BannedUntil
+                    if ban_is_active(
+                        current_user.page48Banned, current_user.page48BannedUntil
+                    )
+                    else None
+                ),
                 "isAdmin": current_user.isAdmin,
                 "isEmailVerified": current_user.isEmailVerified,
                 "createdAt": current_user.createdAt,

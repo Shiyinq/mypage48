@@ -46,6 +46,8 @@ from src.memories.repository import MemoriesRepository
 from src.memories.service import MemoriesService
 from src.news.repository import NewsRepository
 from src.news.service import NewsService
+from src.page48.constants import ban_is_active
+from src.page48.http_exceptions import AccountBanned
 from src.page48.repository import Page48Repository
 from src.page48.service import Page48Service
 from src.replay.repository import ReplayRepository
@@ -203,6 +205,29 @@ async def get_current_user_optional(
     except Exception as e:
         logger.warning(f"Optional auth failed: {e}")
         raise InvalidJWTToken()
+
+
+async def require_active_account(
+    request: Request,
+    current_user: typing.Optional[UserCurrent] = Depends(get_current_user_optional),
+) -> None:
+    """Reject mutating Page48 requests from a banned account.
+
+    Attached at the Page48 router, so a banned user stays read-only: reads pass
+    (they can still browse), writes are refused. Admins are never banned, so the
+    admin routes on the same router are unaffected.
+    """
+    if request.method in ("GET", "HEAD", "OPTIONS"):
+        return
+    # Admin routes carry their own guard (`require_admin`), which answers a
+    # non-admin with 404 (the endpoint is hidden). Let that run instead, so a
+    # banned non-admin still gets the same 404 there rather than this 403.
+    if "/admin/" in request.url.path:
+        return
+    if current_user and ban_is_active(
+        current_user.page48Banned, current_user.page48BannedUntil
+    ):
+        raise AccountBanned()
 
 
 def require_csrf_protection(request: Request, config: Settings = Depends(get_settings)):
