@@ -403,7 +403,9 @@ def _format_schedule_caption(payload: dict) -> str:
         for sch in updated_schedules:
             caption += _format_schedule_summary(sch)
 
-    caption += "• <a href='https://jkt48.com/schedule'>Cek selengkapnya di jkt48.com</a>"
+    caption += (
+        "• <a href='https://jkt48.com/schedule'>Cek selengkapnya di jkt48.com</a>"
+    )
     return caption.strip()
 
 

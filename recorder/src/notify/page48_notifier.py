@@ -18,6 +18,7 @@ import logging
 import os
 import random
 import re
+import time
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -55,6 +56,11 @@ PAGE48_IMAGE_CATEGORY = "page48"
 # post of a live is remembered on disk between events (they are hours apart).
 PAGE48_THREAD_STATE_FILE = "page48_live_threads.json"
 PAGE48_THREAD_STATE_MAX = 300
+# Member X handles rarely change, so the lookup is cached in memory: the endpoint is
+# hit at most once per TTL per process, and a failed fetch retries sooner than that.
+SOCIALS_TTL_SECONDS = 12 * 3600
+SOCIALS_RETRY_SECONDS = 300
+_socials_cache: dict = {"next": 0.0, "by_key": {}}
 
 _ANCHOR_OPEN_RE = re.compile(
     r"<a\s+href=['\"]([^'\"]+)['\"][^>]*>", re.IGNORECASE | re.DOTALL
@@ -128,6 +134,79 @@ def _thread_parent(config: RecorderConfig, live_id: str) -> Optional[str]:
         return None
     entry = _load_threads(config).get(live_id)
     return entry.get("postId") if isinstance(entry, dict) else None
+
+
+async def _load_x_handles(config: RecorderConfig) -> dict:
+    """Map lower-cased member name/nickname -> X account row, cached in memory."""
+    now = time.monotonic()
+    if now < _socials_cache["next"]:
+        return _socials_cache["by_key"]
+
+    url = f"{config.api_base_url.rstrip('/')}/members/socials/x"
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.get(url)
+        if not resp.is_success:
+            log.warning("Page48 member socials failed: %s", resp.status_code)
+            _socials_cache["next"] = now + SOCIALS_RETRY_SECONDS
+            return _socials_cache["by_key"]
+        rows = resp.json()
+    except Exception as e:
+        log.warning("Page48 member socials error: %s", e)
+        _socials_cache["next"] = now + SOCIALS_RETRY_SECONDS
+        return _socials_cache["by_key"]
+
+    by_key: dict = {}
+    for row in rows if isinstance(rows, list) else []:
+        if not (row or {}).get("username"):
+            continue
+        for key in (row.get("name"), row.get("nickname")):
+            if key:
+                by_key[str(key).strip().lower()] = row
+    _socials_cache["by_key"] = by_key
+    _socials_cache["next"] = now + SOCIALS_TTL_SECONDS
+    return by_key
+
+
+def _hashtag_word(value: str) -> str:
+    """Strip anything that cannot live in a `#hashtag` (keeps letters/digits/_)."""
+    return re.sub(r"[^\w]", "", value or "", flags=re.UNICODE)
+
+
+async def _x_row(
+    config: RecorderConfig, member_name: str, member_nickname: str
+) -> Optional[dict]:
+    """The X account row for a member, matched by nickname then name."""
+    handles = await _load_x_handles(config)
+    for key in (member_nickname, member_name):
+        if key:
+            row = handles.get(str(key).strip().lower())
+            if row:
+                return row
+    return None
+
+
+async def _member_hashtags(
+    config: RecorderConfig, member_name: str, member_nickname: str
+) -> str:
+    """Page48-only trailing hashtag for a live post: `#NicknameJKT48`.
+
+    Built from the member's nickname in the members API (the same source the Page48
+    sidebar uses), so a post's tag matches the one the sidebar links to; it falls back
+    to the live's own nickname when the member is not in that list.
+    """
+    row = await _x_row(config, member_name, member_nickname)
+    if row:
+        source = row.get("nickname") or row.get("name")
+    else:
+        source = member_nickname or member_name
+
+    nickname = _hashtag_word(source)
+    if not nickname:
+        return ""
+    if not nickname.lower().endswith("jkt48"):
+        nickname += "JKT48"
+    return f"#{nickname}"
 
 
 def _escape_markers(text: str) -> str:
@@ -304,6 +383,7 @@ async def _publish(
     image_sources: Optional[list[str]] = None,
     parent_post_id: Optional[str] = None,
     thread_key: Optional[str] = None,
+    hashtags: Optional[str] = None,
 ) -> bool:
     """Convert a caption, upload its images, and post it to Page48.
 
@@ -311,7 +391,8 @@ async def _publish(
     posts), and `parent_post_id` makes the whole notification hang off an earlier one.
     Together these let a live's start, end and recap read as a single thread even
     though they are sent hours apart; `thread_key` (the live id) remembers the newest
-    post so the next event can continue it.
+    post so the next event can continue it. `hashtags` (already marker text) is appended
+    last, after conversion, so its `#`/`_` are never escaped.
     """
     if not _enabled(config):
         return False
@@ -319,6 +400,9 @@ async def _publish(
     text = _html_to_markers(caption_html)
     if not text:
         return False
+
+    if hashtags:
+        text = f"{text}\n\n{hashtags}"
 
     image_sources = [s for s in (image_sources or []) if s]
 
@@ -396,11 +480,13 @@ async def send_live_start_notification(live: LiveInfo, config: RecorderConfig) -
     if not _enabled(config):
         return False
     log.info("Sending live start Page48 notification for %s", live.live_id)
+    hashtags = await _member_hashtags(config, live.member_name, live.member_nickname)
     return await _publish(
         config,
         _format_live_start_caption(live),
         [live.image or live.member_image],
         thread_key=live.live_id,
+        hashtags=hashtags,
     )
 
 
@@ -410,11 +496,17 @@ async def send_end_live_notification(config: RecorderConfig, data: dict) -> bool
         return False
     live_id = str(data.get("live_id") or "")
     log.info("Sending simple end live Page48 notification")
+    hashtags = await _member_hashtags(
+        config,
+        str(data.get("member_name") or ""),
+        str(data.get("member_nickname") or ""),
+    )
     return await _publish(
         config,
         _format_end_live_caption(data),
         parent_post_id=_thread_parent(config, live_id),
         thread_key=live_id or None,
+        hashtags=hashtags,
     )
 
 
@@ -451,6 +543,11 @@ async def send_recap_end_live_notification(
         caption = _format_recap_end_live_caption(
             data, live_id=live_id, live_type=live_type
         )
+        hashtags = await _member_hashtags(
+            config,
+            str(data.get("member_name") or ""),
+            str(data.get("member_nickname") or ""),
+        )
         # The recap itself carries only the gift-recap web screenshot; the live's own
         # screenshots go up as a separate gallery post below.
         web_images = await _collect_recap_web_image(live_id, folder_path)
@@ -460,6 +557,7 @@ async def send_recap_end_live_notification(
             web_images,
             parent_post_id=_thread_parent(config, live_id),
             thread_key=live_id,
+            hashtags=hashtags,
         )
 
         # A standalone album (a new root post, not a reply on the live thread).
@@ -478,6 +576,7 @@ async def send_recap_end_live_notification(
                     data, live_id=live_id, live_type=live_type
                 ),
                 picked,
+                hashtags=hashtags,
             )
 
         return ok
