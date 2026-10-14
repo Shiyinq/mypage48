@@ -98,8 +98,8 @@
 
 	let resolvedPlaceholder = $derived(placeholder ?? t('page48.composer.placeholder'));
 
-	// Matches the backend limit (CreatePostRequest.content: max_length=500).
-	const MAX_CONTENT_LENGTH = 500;
+	// Matches the backend limit (CreatePostRequest.content: max_length=2000).
+	const MAX_CONTENT_LENGTH = 2000;
 
 	/** Suggestions shown at once, and how many follows to search as a fallback. */
 	const MENTION_LIMIT = 6;

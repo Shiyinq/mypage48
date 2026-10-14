@@ -41,8 +41,8 @@ from .web_screenshot import capture_web_screenshot
 
 log = logging.getLogger("notify")
 
-# A Page48 post holds up to 500 characters; longer captions become a thread.
-PAGE48_MAX_CONTENT = 500
+# A Page48 post holds up to 2000 characters; longer captions become a thread.
+PAGE48_MAX_CONTENT = 2000
 PAGE48_MAX_POSTS = 50
 PAGE48_MAX_MEDIA = 10
 PAGE48_IMAGE_CATEGORY = "page48"
