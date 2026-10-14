@@ -190,6 +190,33 @@ def _format_recap_end_live_caption(
     return caption
 
 
+def _format_recap_gallery_caption(
+    data: dict, live_id: str = "", live_type: str = "public"
+) -> str:
+    """Format the Page48-only gallery caption for a live's screenshots.
+
+    The screenshots only exist for Page48: Telegram already attaches a few to the
+    recap, while Page48 posts the whole set as a separate album instead.
+    """
+    member_nickname = html.escape(
+        data.get("member_nickname") or data.get("member_name", "Unknown")
+    )
+    title = data.get("title") or "Siaran Langsung"
+    title = html.escape(unicodedata.normalize("NFKC", str(title)).strip())
+    platform = html.escape(_format_platform_name(str(data.get("platform", ""))))
+
+    start_at_iso = data.get("start_at", "")
+    end_at_iso = data.get("end_at", "")
+    date_wib_range = _format_date_range_wib(start_at_iso, end_at_iso)
+
+    caption = f"📸 <b>Galeri Live {platform} {member_nickname}</b>\n\n"
+    caption += f"❝<i>{title}</i>❞\n"
+    if date_wib_range:
+        caption += f"{date_wib_range}\n"
+
+    return caption.strip()
+
+
 def _format_end_live_caption(data: dict) -> str:
     """Format the Telegram caption for simple end live."""
     member_nickname = html.escape(

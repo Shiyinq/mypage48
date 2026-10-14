@@ -16,6 +16,7 @@ import io
 import json
 import logging
 import os
+import random
 import re
 from datetime import datetime, timezone
 from typing import Optional
@@ -35,6 +36,7 @@ from .formatters import (
     _format_monthly_birthday_caption,
     _format_news_caption,
     _format_recap_end_live_caption,
+    _format_recap_gallery_caption,
     _format_replay_live_caption,
     _format_schedule_caption,
     _format_upcoming_schedule_caption,
@@ -357,8 +359,8 @@ async def _publish(
         return False
 
 
-async def _collect_recap_images(live_id: str, folder_path: str) -> list[str]:
-    """Local image paths for a recap, mirroring the Telegram image set."""
+async def _collect_recap_web_image(live_id: str, folder_path: str) -> list[str]:
+    """The gift-recap web screenshot (the reward table) for the recap post."""
     images: list[str] = []
     if not folder_path:
         return images
@@ -372,15 +374,21 @@ async def _collect_recap_images(live_id: str, folder_path: str) -> list[str]:
     except Exception as e:
         log.warning("Page48 web screenshot failed, continuing: %s", e)
 
-    screenshot_dir = os.path.join(folder_path, "screenshots")
-    if os.path.isdir(screenshot_dir):
-        for fname in sorted(os.listdir(screenshot_dir)):
-            if fname.endswith(".jpg"):
-                images.append(os.path.join(screenshot_dir, fname))
-                if len(images) >= 5:
-                    break
-
     return images
+
+
+def _collect_live_screenshots(folder_path: str) -> list[str]:
+    """Every live screenshot on disk, for the separate gallery post."""
+    if not folder_path:
+        return []
+    screenshot_dir = os.path.join(folder_path, "screenshots")
+    if not os.path.isdir(screenshot_dir):
+        return []
+    return [
+        os.path.join(screenshot_dir, name)
+        for name in sorted(os.listdir(screenshot_dir))
+        if name.endswith(".jpg")
+    ]
 
 
 async def send_live_start_notification(live: LiveInfo, config: RecorderConfig) -> bool:
@@ -443,14 +451,36 @@ async def send_recap_end_live_notification(
         caption = _format_recap_end_live_caption(
             data, live_id=live_id, live_type=live_type
         )
-        images = await _collect_recap_images(live_id, folder_path)
-        return await _publish(
+        # The recap itself carries only the gift-recap web screenshot; the live's own
+        # screenshots go up as a separate gallery post below.
+        web_images = await _collect_recap_web_image(live_id, folder_path)
+        ok = await _publish(
             config,
             caption,
-            images,
+            web_images,
             parent_post_id=_thread_parent(config, live_id),
             thread_key=live_id,
         )
+
+        # A standalone album (a new root post, not a reply on the live thread).
+        shots = _collect_live_screenshots(folder_path)
+        if shots:
+            picked = random.sample(shots, min(PAGE48_MAX_MEDIA, len(shots)))
+            log.info(
+                "Posting Page48 live gallery for %s (%d of %d screenshots)",
+                live_id,
+                len(picked),
+                len(shots),
+            )
+            await _publish(
+                config,
+                _format_recap_gallery_caption(
+                    data, live_id=live_id, live_type=live_type
+                ),
+                picked,
+            )
+
+        return ok
     except Exception:
         log.exception("Exception during Page48 recap notification for %s:", live_id)
         return False
