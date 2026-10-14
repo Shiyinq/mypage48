@@ -264,7 +264,9 @@ def _format_live_start_caption(live: LiveInfo) -> str:
     elif official_url:
         caption += f"• <a href='{official_url}'>Nonton di {platform}</a>\n\n"
 
-    if live.live_type == "public":
+    # The MyPage48 / MultiView links are Showroom-only; an IDN live already links to
+    # the IDN app and web above, so those would be redundant.
+    if live.live_type == "public" and live.platform.lower() == "showroom":
         caption += f"• <a href='{watch_url}'>Nonton di MyPage48</a>\n"
         caption += f"• <a href='{multiview_url}'>Nonton via MultiView</a>\n\n"
 
