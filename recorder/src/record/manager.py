@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 from ..config import RecorderConfig
 from ..models import LiveInfo, RecordingSession
-from ..notify import telegram_notifier
+from ..notify import notifier
 from . import chat_capture, srt_generator, stream_recorder
 from .live_detector import LiveDetector
 
@@ -557,7 +557,7 @@ class RecordingManager:
 
         if not resumed_folder:
             asyncio.create_task(
-                telegram_notifier.send_live_start_notification(live, self.config)
+                notifier.send_live_start_notification(live, self.config)
             )
 
         self.log.info(
@@ -1198,7 +1198,7 @@ class RecordingManager:
             if reason == "completed":
                 metadata["end_at"] = recording_ended_at
                 asyncio.create_task(
-                    telegram_notifier.send_end_live_notification(self.config, metadata)
+                    notifier.send_end_live_notification(self.config, metadata)
                 )
 
         except Exception as e:

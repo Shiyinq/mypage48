@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 import httpx
 
 from ..config import RecorderConfig
-from ..notify.telegram_notifier import _format_date_wib
+from ..notify.formatters import _format_date_wib
 from .html_screenshot import capture_html_screenshot
 
 IDN_LOGO_URL = "https://www.idn.app/_next/static/media/logo_light.d99f40cc.svg"

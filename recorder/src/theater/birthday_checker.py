@@ -5,10 +5,7 @@ from datetime import datetime, timedelta, timezone
 import httpx
 
 from ..config import RecorderConfig
-from ..notify.telegram_notifier import (
-    send_birthday_notification,
-    send_monthly_birthday_list,
-)
+from ..notify import notifier
 
 MONTHS_ID = [
     "Januari",
@@ -83,7 +80,7 @@ class BirthdayChecker:
                 )
 
                 for member in birthday_members:
-                    await send_birthday_notification(member, self.config)
+                    await notifier.send_birthday_notification(member, self.config)
 
         except Exception:
             self.log.exception("Exception in birthday checker:")
@@ -137,7 +134,9 @@ class BirthdayChecker:
 
                 month_members.sort(key=get_day)
 
-                await send_monthly_birthday_list(month_name, month_members, self.config)
+                await notifier.send_monthly_birthday_list(
+                    month_name, month_members, self.config
+                )
 
         except Exception:
             self.log.exception("Exception in monthly birthday list sender:")
