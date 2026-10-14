@@ -2,10 +2,12 @@
 
 Mirrors ``telegram_notifier`` one channel over: the same caption builders from
 ``formatters`` feed a Page48 post instead of a Telegram message. Captions keep their
-formatting, converted from Telegram HTML into Page48 display markers, and are split into
-a thread when longer than the post limit; any images Telegram would attach are uploaded
-to storage first. The recorder posts as a dedicated (non-admin) official Page48 account,
-whose API key is supplied via ``REC_PAGE48_API_KEY``.
+formatting, converted from Telegram HTML into Page48 display markers, and a caption
+longer than the post limit becomes a chain of replies; any images Telegram would attach
+are uploaded to storage first. A live's start, end and recap notifications are chained
+into a single thread (the newest post is remembered per live id), so they read together
+even though they are sent hours apart. The recorder posts as a dedicated (non-admin)
+official Page48 account, whose API key is supplied via ``REC_PAGE48_API_KEY``.
 """
 
 import base64
@@ -15,6 +17,7 @@ import json
 import logging
 import os
 import re
+from datetime import datetime, timezone
 from typing import Optional
 
 import httpx
@@ -46,6 +49,10 @@ PAGE48_MAX_CONTENT = 2000
 PAGE48_MAX_POSTS = 50
 PAGE48_MAX_MEDIA = 10
 PAGE48_IMAGE_CATEGORY = "page48"
+# Live start, end and recap share one Page48 thread, keyed by the live id, so the newest
+# post of a live is remembered on disk between events (they are hours apart).
+PAGE48_THREAD_STATE_FILE = "page48_live_threads.json"
+PAGE48_THREAD_STATE_MAX = 300
 
 _ANCHOR_OPEN_RE = re.compile(
     r"<a\s+href=['\"]([^'\"]+)['\"][^>]*>", re.IGNORECASE | re.DOTALL
@@ -73,6 +80,52 @@ def _enabled(config: RecorderConfig) -> bool:
 
 def _auth_headers(config: RecorderConfig) -> dict:
     return {"Authorization": f"Bearer {config.page48_api_key}"}
+
+
+def _thread_state_path(config: RecorderConfig) -> str:
+    return os.path.join(config.logs_dir, PAGE48_THREAD_STATE_FILE)
+
+
+def _load_threads(config: RecorderConfig) -> dict:
+    """Read the live-id -> newest post-id map, tolerating a missing/corrupt file."""
+    try:
+        with open(_thread_state_path(config)) as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except FileNotFoundError:
+        return {}
+    except Exception as e:
+        log.warning("Page48 could not read thread state: %s", e)
+        return {}
+
+
+def _remember_thread(config: RecorderConfig, live_id: str, post_id: str) -> None:
+    """Remember a live's newest post so the next event can reply to it."""
+    if not live_id or not post_id:
+        return
+    threads = _load_threads(config)
+    threads[live_id] = {
+        "postId": post_id,
+        "at": datetime.now(timezone.utc).isoformat(),
+    }
+    if len(threads) > PAGE48_THREAD_STATE_MAX:
+        newest = sorted(threads.items(), key=lambda item: item[1].get("at", ""))
+        threads = dict(newest[-PAGE48_THREAD_STATE_MAX:])
+    path = _thread_state_path(config)
+    try:
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(threads, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        log.warning("Page48 could not write thread state: %s", e)
+
+
+def _thread_parent(config: RecorderConfig, live_id: str) -> Optional[str]:
+    """The post this live's next notification should reply to, if any."""
+    if not live_id:
+        return None
+    entry = _load_threads(config).get(live_id)
+    return entry.get("postId") if isinstance(entry, dict) else None
 
 
 def _escape_markers(text: str) -> str:
@@ -221,50 +274,43 @@ async def _upload_image(
 
 
 async def _create_post(
-    client: httpx.AsyncClient, config: RecorderConfig, content: str, media: list
-) -> bool:
+    client: httpx.AsyncClient,
+    config: RecorderConfig,
+    content: str,
+    media: list,
+    parent_post_id: Optional[str] = None,
+) -> Optional[str]:
+    """Create one Page48 post; returns its id, or None on failure."""
     url = f"{config.page48_api_base_url}/page48/posts"
+    payload: dict = {"content": content, "media": media or []}
+    if parent_post_id:
+        payload["parentPostId"] = parent_post_id
     try:
-        resp = await client.post(
-            url,
-            json={"content": content, "media": media or []},
-            headers=_auth_headers(config),
-        )
+        resp = await client.post(url, json=payload, headers=_auth_headers(config))
         if not resp.is_success:
             log.error("Page48 post failed: %s %s", resp.status_code, resp.text)
-            return False
-        return True
+            return None
+        return (resp.json() or {}).get("postId")
     except Exception:
         log.exception("Exception during Page48 post")
-        return False
-
-
-async def _create_thread(
-    client: httpx.AsyncClient, config: RecorderConfig, contents: list, media: list
-) -> bool:
-    url = f"{config.page48_api_base_url}/page48/posts/thread"
-    posts = [{"content": c} for c in contents]
-    if media:
-        posts[0]["media"] = media
-    try:
-        resp = await client.post(
-            url, json={"posts": posts}, headers=_auth_headers(config)
-        )
-        if not resp.is_success:
-            log.error("Page48 thread failed: %s %s", resp.status_code, resp.text)
-            return False
-        return True
-    except Exception:
-        log.exception("Exception during Page48 thread")
-        return False
+        return None
 
 
 async def _publish(
     config: RecorderConfig,
     caption_html: str,
     image_sources: Optional[list[str]] = None,
+    parent_post_id: Optional[str] = None,
+    thread_key: Optional[str] = None,
 ) -> bool:
-    """Convert a caption, upload its images, and post it to Page48."""
+    """Convert a caption, upload its images, and post it to Page48.
+
+    A caption longer than the post limit becomes a chain of replies (not separate
+    posts), and `parent_post_id` makes the whole notification hang off an earlier one.
+    Together these let a live's start, end and recap read as a single thread even
+    though they are sent hours apart; `thread_key` (the live id) remembers the newest
+    post so the next event can continue it.
+    """
     if not _enabled(config):
         return False
 
@@ -286,9 +332,26 @@ async def _publish(
                     media.append(item)
 
             chunks = _chunk_text(text)
-            if len(chunks) == 1:
-                return await _create_post(client, config, chunks[0], media)
-            return await _create_thread(client, config, chunks, media)
+            parent = parent_post_id
+            last_post_id: Optional[str] = None
+            for index, chunk in enumerate(chunks):
+                # Uploaded media rides on the first post of this notification only.
+                post_id = await _create_post(
+                    client, config, chunk, media if index == 0 else [], parent
+                )
+                if not post_id:
+                    log.error(
+                        "Page48 notification aborted at post %d/%d",
+                        index + 1,
+                        len(chunks),
+                    )
+                    break
+                last_post_id = post_id
+                parent = post_id
+
+            if last_post_id and thread_key:
+                _remember_thread(config, thread_key, last_post_id)
+            return last_post_id is not None
     except Exception:
         log.exception("Exception during Page48 notification")
         return False
@@ -326,7 +389,10 @@ async def send_live_start_notification(live: LiveInfo, config: RecorderConfig) -
         return False
     log.info("Sending live start Page48 notification for %s", live.live_id)
     return await _publish(
-        config, _format_live_start_caption(live), [live.image or live.member_image]
+        config,
+        _format_live_start_caption(live),
+        [live.image or live.member_image],
+        thread_key=live.live_id,
     )
 
 
@@ -334,8 +400,14 @@ async def send_end_live_notification(config: RecorderConfig, data: dict) -> bool
     """Post a Page48 notification when a live stream ends."""
     if not _enabled(config):
         return False
+    live_id = str(data.get("live_id") or "")
     log.info("Sending simple end live Page48 notification")
-    return await _publish(config, _format_end_live_caption(data))
+    return await _publish(
+        config,
+        _format_end_live_caption(data),
+        parent_post_id=_thread_parent(config, live_id),
+        thread_key=live_id or None,
+    )
 
 
 async def send_recap_end_live_notification(
@@ -372,7 +444,13 @@ async def send_recap_end_live_notification(
             data, live_id=live_id, live_type=live_type
         )
         images = await _collect_recap_images(live_id, folder_path)
-        return await _publish(config, caption, images)
+        return await _publish(
+            config,
+            caption,
+            images,
+            parent_post_id=_thread_parent(config, live_id),
+            thread_key=live_id,
+        )
     except Exception:
         log.exception("Exception during Page48 recap notification for %s:", live_id)
         return False
