@@ -181,13 +181,11 @@ def _format_recap_end_live_caption(
 
     youtube_id = data.get("youtube_id")
     if youtube_id and live_type == "public":
-        caption += f"\n• <a href='https://youtu.be/{youtube_id}'>Tayangan ulang di YouTube</a>\n"
-    else:
-        caption += "\n"
+        caption += (
+            f"\n• <a href='https://youtu.be/{youtube_id}'>Tayangan ulang di YouTube</a>"
+        )
 
-    caption += "\n<i>~ MyPage48 ~</i>"
-
-    return caption
+    return caption.strip()
 
 
 def _format_recap_gallery_caption(
@@ -236,8 +234,7 @@ def _format_end_live_caption(data: dict) -> str:
     if date_wib_range:
         caption += f"📅 {date_wib_range}\n\n"
 
-    caption += "<i>~ MyPage48 ~</i>"
-    return caption
+    return caption.strip()
 
 
 def _format_replay_live_caption(meta: dict, youtube_title: str, youtube_id: str) -> str:
@@ -250,9 +247,8 @@ def _format_replay_live_caption(meta: dict, youtube_title: str, youtube_id: str)
     caption = f"▶️ <b>Replay Live {platform} {member_nickname} telah diupload</b>\n\n"
     caption += f"❝<i>{html.escape(youtube_title)}</i>❞\n\n"
     caption += f"• <a href='https://youtu.be/{youtube_id}'>Nonton di YouTube</a>\n"
-    caption += f"• <a href='https://mypage48.com/jkt48/live/replay/{youtube_id}'>Nonton di MyPage48</a>\n\n"
-    caption += "<i>~ MyPage48 ~</i>"
-    return caption
+    caption += f"• <a href='https://mypage48.com/jkt48/live/replay/{youtube_id}'>Nonton di MyPage48</a>"
+    return caption.strip()
 
 
 def _format_live_start_caption(live: LiveInfo) -> str:
@@ -297,8 +293,7 @@ def _format_live_start_caption(live: LiveInfo) -> str:
         caption += f"• <a href='{watch_url}'>Nonton di MyPage48</a>\n"
         caption += f"• <a href='{multiview_url}'>Nonton via MultiView</a>\n\n"
 
-    caption += "<i>~ MyPage48 ~</i>"
-    return caption
+    return caption.strip()
 
 
 def _format_news_caption(news_data: dict) -> str:
@@ -317,9 +312,8 @@ def _format_news_caption(news_data: dict) -> str:
     if category:
         caption += f"🏷 {category}\n"
 
-    caption += f"\n• <a href='{url}'>Baca selengkapnya di jkt48.com</a>\n\n"
-    caption += "<i>~ MyPage48 ~</i>"
-    return caption
+    caption += f"\n• <a href='{url}'>Baca selengkapnya di jkt48.com</a>"
+    return caption.strip()
 
 
 def _format_schedule_summary(sch: dict) -> str:
@@ -409,9 +403,8 @@ def _format_schedule_caption(payload: dict) -> str:
         for sch in updated_schedules:
             caption += _format_schedule_summary(sch)
 
-    caption += "• <a href='https://jkt48.com/theater/schedule'>Cek selengkapnya di jkt48.com</a>\n\n"
-    caption += "<i>~ MyPage48 ~</i>"
-    return caption
+    caption += "• <a href='https://jkt48.com/schedule'>Cek selengkapnya di jkt48.com</a>"
+    return caption.strip()
 
 
 def _format_idn_live_plus_summary(sch: dict) -> str:
@@ -456,8 +449,7 @@ def _format_idn_live_plus_caption(payload: dict) -> str:
         for sch in updated_schedules:
             caption += _format_idn_live_plus_summary(sch)
 
-    caption += "<i>~ MyPage48 ~</i>"
-    return caption
+    return caption.strip()
 
 
 def _format_daily_schedule_caption(payload: dict) -> str:
@@ -516,15 +508,14 @@ def _format_daily_schedule_caption(payload: dict) -> str:
         entry += f"\n  • <a href='{url}'>Detail</a>\n\n"
         caption += entry
 
-    caption += "<i>~ MyPage48 ~</i>"
-    return caption
+    return caption.strip()
 
 
 def _format_birthday_caption(member: dict) -> str:
     name = html.escape(member.get("name", "Member"))
     age = member.get("age", "?")
 
-    return f"🎂 Selamat ulang tahun {name} yang ke {age}\n\n<i>~ MyPage48 ~</i>"
+    return f"🎂 Selamat ulang tahun {name} yang ke {age}"
 
 
 def _format_upcoming_schedule_caption(sch: dict) -> str:
@@ -556,9 +547,9 @@ def _format_upcoming_schedule_caption(sch: dict) -> str:
             team_name = "JKT48"
         else:
             team_name = f"Team {m_type_up} JKT48"
-        return f"Selamat {greeting}! Sudah siapkah untuk menyaksikan pertunjukan {title} oleh {team_name}?\n\n<i>~ MyPage48 ~</i>"
+        return f"Selamat {greeting}! Sudah siapkah untuk menyaksikan pertunjukan {title} oleh {team_name}?"
 
-    return f"Selamat {greeting}! Sudah siapkah untuk mengikuti {title}?\n\n<i>~ MyPage48 ~</i>"
+    return f"Selamat {greeting}! Sudah siapkah untuk mengikuti {title}?"
 
 
 def _format_monthly_birthday_caption(month_name: str, members: list) -> str:
@@ -570,8 +561,7 @@ def _format_monthly_birthday_caption(month_name: str, members: list) -> str:
         age = m.get("new_age", "")
         text += f"• {name} - {b_date} ({age} Tahun)\n"
 
-    text += "\n<i>~ MyPage48 ~</i>"
-    return text
+    return text.strip()
 
 
 def _format_health_caption(payload: dict) -> str:
@@ -598,5 +588,4 @@ def _format_health_caption(payload: dict) -> str:
         text = "🟢 <b>Monitoring Alert</b>\n\n"
         text += "<a href='https://mypage48.com'>MyPage48.com</a> kembali beroperasi dengan normal.\n"
 
-    text += "\n<i>~ MyPage48 ~</i>"
-    return text
+    return text.strip()
