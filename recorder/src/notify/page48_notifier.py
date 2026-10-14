@@ -1,11 +1,11 @@
 """Post MyPage48 notifications to the Page48 social feed.
 
 Mirrors ``telegram_notifier`` one channel over: the same caption builders from
-``formatters`` feed a Page48 post instead of a Telegram message. Captions are
-converted to plain text, split into a thread when longer than the 500-character
-post limit, and any images Telegram would attach are uploaded to storage first.
-The recorder posts as a dedicated (non-admin) official Page48 account, whose
-API key is supplied via ``REC_PAGE48_API_KEY``.
+``formatters`` feed a Page48 post instead of a Telegram message. Captions keep their
+formatting, converted from Telegram HTML into Page48 display markers, and are split into
+a thread when longer than the post limit; any images Telegram would attach are uploaded
+to storage first. The recorder posts as a dedicated (non-admin) official Page48 account,
+whose API key is supplied via ``REC_PAGE48_API_KEY``.
 """
 
 import base64
@@ -47,10 +47,24 @@ PAGE48_MAX_POSTS = 50
 PAGE48_MAX_MEDIA = 10
 PAGE48_IMAGE_CATEGORY = "page48"
 
-_ANCHOR_RE = re.compile(
-    r"<a\s+href=['\"]([^'\"]+)['\"][^>]*>(.*?)</a>", re.IGNORECASE | re.DOTALL
+_ANCHOR_OPEN_RE = re.compile(
+    r"<a\s+href=['\"]([^'\"]+)['\"][^>]*>", re.IGNORECASE | re.DOTALL
 )
-_TAG_RE = re.compile(r"<[^>]+>")
+_TAG_SPLIT_RE = re.compile(r"(<[^>]+>)")
+# HTML tag → the Page48 display marker it maps to (symmetric: same on open and close).
+_STYLE_TAGS = {
+    "b": "**",
+    "strong": "**",
+    "i": "*",
+    "em": "*",
+    "u": "__",
+    "s": "~~",
+    "strike": "~~",
+    "del": "~~",
+    "code": "`",
+    "pre": "`",
+}
+_MARKER_LITERAL_RE = re.compile(r"([\\*_~`|])")
 
 
 def _enabled(config: RecorderConfig) -> bool:
@@ -61,19 +75,51 @@ def _auth_headers(config: RecorderConfig) -> dict:
     return {"Authorization": f"Bearer {config.page48_api_key}"}
 
 
-def _html_to_text(text: str) -> str:
-    """Flatten a Telegram HTML caption into plain text for a Page48 post."""
+def _escape_markers(text: str) -> str:
+    """Backslash-escape marker characters so caption text never triggers formatting."""
+    return _MARKER_LITERAL_RE.sub(r"\\\1", text)
+
+
+def _html_to_markers(text: str) -> str:
+    """Convert a Telegram HTML caption into Page48 display markers.
+
+    Bold/italic/underline/strike/code keep their styling and links become
+    ``[label](url)``, so a Page48 notification reads like its Telegram original. Loose
+    marker characters in the caption body are escaped so literal text cannot trigger
+    formatting.
+    """
     if not text:
         return ""
 
-    def _anchor(match: "re.Match") -> str:
-        url = match.group(1)
-        label = _TAG_RE.sub("", match.group(2)).strip()
-        return f"{label} ({url})" if label else url
+    out: list[str] = []
+    anchor_stack: list[str] = []
 
-    text = _ANCHOR_RE.sub(_anchor, text)
-    text = _TAG_RE.sub("", text)
-    text = html_module.unescape(text)
+    for token in _TAG_SPLIT_RE.split(text):
+        if not token:
+            continue
+
+        if not token.startswith("<"):
+            out.append(_escape_markers(html_module.unescape(token)))
+            continue
+
+        anchor = _ANCHOR_OPEN_RE.match(token)
+        if anchor:
+            anchor_stack.append(anchor.group(1))
+            out.append("[")
+            continue
+
+        name = token.strip("</> ").lower()
+        if token.startswith("</"):
+            if name == "a":
+                url = anchor_stack.pop() if anchor_stack else ""
+                out.append(f"]({url})")
+            elif name in _STYLE_TAGS:
+                out.append(_STYLE_TAGS[name])
+        elif name in _STYLE_TAGS:
+            out.append(_STYLE_TAGS[name])
+        # Any other tag (e.g. <br>) is dropped; captions already use plain newlines.
+
+    text = "".join(out)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
@@ -222,7 +268,7 @@ async def _publish(
     if not _enabled(config):
         return False
 
-    text = _html_to_text(caption_html)
+    text = _html_to_markers(caption_html)
     if not text:
         return False
 

@@ -7,6 +7,7 @@
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
+	import { toPlainText } from '$lib/utils/page48';
 
 	const { t } = useTranslation();
 
@@ -15,9 +16,10 @@
 	let focused = $state<Page48Post | null>(null);
 
 	let seoTitle = $derived(focused ? `@${focused.username} · Page48` : t('page48.seo.postTitle'));
-	let seoDescription = $derived(
-		focused?.content?.trim() ? focused.content.trim().slice(0, 160) : t('page48.seo.postDesc')
-	);
+	let seoDescription = $derived.by(() => {
+		const plain = toPlainText(focused?.content ?? '').trim();
+		return plain ? plain.slice(0, 160) : t('page48.seo.postDesc');
+	});
 	let seoImage = $derived(focused?.images?.[0]?.url ?? undefined);
 
 	onMount(() => {
