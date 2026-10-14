@@ -83,9 +83,9 @@
 	}: Props = $props();
 
 	// Long posts would stretch a feed row, so the text is clamped and a red "show more"
-	// toggle is offered whenever it does not fit. Capped at half the height of the tallest
-	// single photo (a 9/16 portrait, see IMAGE_MAX_HEIGHT) so text stays photo-sized.
-	const CONTENT_CLAMP_PX = 250;
+	// toggle is offered whenever it does not fit. Capped at about one photo tall
+	// (see IMAGE_MAX_HEIGHT in PostMedia) so a clamped post stays photo-sized.
+	const CONTENT_CLAMP_PX = 480;
 
 	let contentEl = $state<HTMLParagraphElement>();
 	let contentExpanded = $state(false);
@@ -443,7 +443,8 @@
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<p
 					bind:this={contentEl}
-					class={`pointer-events-auto relative z-[1] cursor-pointer text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'max-h-[250px] overflow-hidden' : ''}`}
+					style={showClamp ? `max-height: ${CONTENT_CLAMP_PX}px` : ''}
+					class={`pointer-events-auto relative z-[1] cursor-pointer text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'overflow-hidden' : ''}`}
 					onclick={handleContentClick}
 				>
 					<RichText text={post.content} media={activeMedia} mentionHover spoilers />

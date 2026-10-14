@@ -9,11 +9,8 @@ from curl_cffi.requests import AsyncSession
 
 from ..config import RecorderConfig
 from ..flaresolverr import fetch_with_retry
-from ..notify.telegram_notifier import (
-    _format_date_only_wib,
-    send_daily_schedule_reminder,
-    send_upcoming_schedule_reminder,
-)
+from ..notify import notifier
+from ..notify.formatters import _format_date_only_wib
 from .html_screenshot import capture_html_screenshot
 
 
@@ -684,7 +681,7 @@ class ScheduleChecker:
                     "schedules": today_schedules,
                 }
 
-                await send_daily_schedule_reminder(payload, self.config)
+                await notifier.send_daily_schedule_reminder(payload, self.config)
 
         except Exception:
             self.log.exception("Exception in daily reminder:")
@@ -749,8 +746,10 @@ class ScheduleChecker:
                                     "Sending upcoming (H-30) reminder for schedule: %s",
                                     sch_id,
                                 )
-                                success = await send_upcoming_schedule_reminder(
-                                    sch, self.config
+                                success = (
+                                    await notifier.send_upcoming_schedule_reminder(
+                                        sch, self.config
+                                    )
                                 )
                                 if success:
                                     upcoming_state[sch_id] = today_str

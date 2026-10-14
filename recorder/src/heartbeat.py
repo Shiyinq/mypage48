@@ -16,10 +16,11 @@ async def run_heartbeat(config, mode: str, stop_event: asyncio.Event):
     if config.api_key:
         headers["Authorization"] = f"Bearer {config.api_key}"
 
+    telegram_on = config.telegram_enabled
     payload = {
         "mode": mode,
-        "bot_token": config.telegram_bot_token if config.telegram_bot_token else None,
-        "chat_id": config.telegram_chat_id if config.telegram_chat_id else None,
+        "bot_token": (config.telegram_bot_token or None) if telegram_on else None,
+        "chat_id": (config.telegram_chat_id or None) if telegram_on else None,
     }
 
     logger.info("Starting Recorder Heartbeat task (Mode: %s)...", mode)

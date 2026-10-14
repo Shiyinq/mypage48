@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 from ..config import RecorderConfig
 from ..models import RecordingSession
-from ..notify import telegram_notifier
+from ..notify import notifier
 from . import r2_uploader
 from .thumbnail_generator import generate_youtube_thumbnail
 from .youtube_uploader import (
@@ -307,7 +307,7 @@ class Watcher:
 
             # 3. Send Recap Notification
             self._processing[live_id]["phase"] = "sending notification"
-            await telegram_notifier.send_recap_end_live_notification(
+            await notifier.send_recap_end_live_notification(
                 live_id, self.config, folder_path
             )
 
@@ -446,7 +446,7 @@ class Watcher:
                     and live_type == "public"
                     and yt_privacy == "public"
                 ):
-                    await telegram_notifier.send_replay_live_notification(
+                    await notifier.send_replay_live_notification(
                         live_id, title_log, ytid, self.config, folder_path
                     )
 

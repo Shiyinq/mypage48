@@ -299,8 +299,12 @@ This format is 100% compatible with the `ReplayChat.svelte` parser on the fronte
 | `REC_GOOGLE_CLIENT_SECRET` | `""` | Google OAuth client secret |
 | `REC_YOUTUBE_REFRESH_TOKEN` | `""` | YouTube refresh token |
 | `REC_YOUTUBE_PRIVACY_STATUS` | `unlisted` | YouTube video privacy (`public`, `unlisted`, `private`) |
+| `REC_TELEGRAM_ENABLED` | `True` | Turn Telegram notifications on/off. Also gates the heartbeat credentials, so when `false` the backend stops sending recorder down/up alerts too. |
 | `REC_TELEGRAM_BOT_TOKEN` | `""` | Telegram Bot Token for notifications |
 | `REC_TELEGRAM_CHAT_ID` | `""` | Telegram Chat/Channel ID for notifications |
+| `REC_PAGE48_ENABLED` | `False` | Also cross-post notifications to the Page48 feed |
+| `REC_PAGE48_API_KEY` | `""` | Page48 official account API key (`ffk_...`) |
+| `REC_PAGE48_BASE_URL` | `""` | Override API base URL for Page48 (defaults to `REC_API_BASE_URL`) |
 
 ## Platform Support
 
@@ -427,4 +431,32 @@ Add the credentials to your `recorder/.env` file:
 # In recorder/.env
 REC_TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklxxxxxzzzxxxxxxzzzzzz
 REC_TELEGRAM_CHAT_ID=-1001234567890
+```
+
+## Page48 Notification Setup
+
+When enabled, every notification the recorder sends to Telegram is also posted
+to your own Page48 feed (`/jkt48/page48`). Telegram keeps working unchanged; the
+Page48 post is best-effort and never blocks the Telegram delivery. Captions are
+converted to plain text and split into a thread when longer than the 500-character
+post limit, and the same images (screenshots, live cover, replay thumbnail) are
+uploaded to storage and attached to the first post.
+
+### 1. Create the official account
+
+The recorder posts as a **dedicated Page48 account**, not an admin account:
+
+1. Register a normal account for the recorder (e.g. a "MyPage48" bot account).
+2. Ask an admin to set its `page48AccountType` to `official_account` so it shows
+   the official check mark.
+3. Sign in as that account and generate its API key (Account settings → API Keys).
+
+### 2. Set environment variables
+
+```bash
+# In recorder/.env
+REC_PAGE48_ENABLED=true
+REC_PAGE48_API_KEY=ffk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# Optional: only needed if Page48 lives on a different backend than REC_API_BASE_URL
+# REC_PAGE48_BASE_URL=https://mypage48.com/api
 ```

@@ -18,7 +18,7 @@
 	import AccountBadge from '$lib/components/page48/AccountBadge.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
-	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
+	import { sharePost, toPlainText, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -245,6 +245,7 @@
 			{#each items as item (item.post.postId + ':' + item.video.filename)}
 				{@const post = item.post}
 				{@const video = item.video}
+				{@const caption = toPlainText(post.content ?? '')}
 				{@const ratio =
 					video.width > 0 && video.height > 0
 						? Math.min(Math.max(video.width / video.height, 0.5625), 1.91)
@@ -300,7 +301,7 @@
 									class="pointer-events-auto drop-shadow"
 								/>
 							</div>
-							{#if post.content}
+							{#if caption}
 								<p
 									class={`text-[15px] sm:text-[13px] leading-snug mt-1 drop-shadow-lg break-words ${
 										isExpanded(post.postId)
@@ -308,9 +309,9 @@
 											: 'line-clamp-2'
 									}`}
 								>
-									{post.content}
+									{caption}
 								</p>
-								{#if isLongCaption(post.content)}
+								{#if isLongCaption(caption)}
 									<button
 										class="pointer-events-auto text-[13px] font-bold opacity-90 mt-1 cursor-pointer drop-shadow"
 										onclick={() => toggleExpanded(post.postId)}
