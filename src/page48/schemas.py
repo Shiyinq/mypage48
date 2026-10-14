@@ -115,7 +115,7 @@ class VotePollRequest(BaseModel):
 class ThreadPostItem(BaseModel):
     """One post of a thread, chained to the item before it."""
 
-    content: str = Field(..., max_length=500)
+    content: str = Field(..., max_length=2000)
     images: list[ImageRef] = Field(default_factory=list, max_length=10)
     videos: list[VideoRef] = Field(default_factory=list, max_length=1)
     poll: Optional[CreatePollRequest] = None
@@ -137,7 +137,7 @@ class CreateThreadRequest(BaseModel):
 
 
 class CreatePostRequest(BaseModel):
-    content: str = Field(..., max_length=500)
+    content: str = Field(..., max_length=2000)
     images: list[ImageRef] = Field(default_factory=list, max_length=10)
     parentPostId: Optional[str] = None
     tags: list[str] = Field(default_factory=list)
@@ -155,7 +155,7 @@ class CreatePostRequest(BaseModel):
 
 
 class EditPostRequest(BaseModel):
-    content: str = Field(..., max_length=500)
+    content: str = Field(..., max_length=2000)
     tags: list[str] = Field(default_factory=list)
     # None leaves the current spoiler flag untouched.
     isSpoiler: Optional[bool] = None

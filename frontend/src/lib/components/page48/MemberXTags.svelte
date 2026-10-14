@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { memberXTagsStore } from '$lib/stores/page48.svelte';
 	import { getActiveMedia, tagUrl } from '$lib/utils/page48';
+	import type { MemberXAccount } from '$lib/apis/members';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
@@ -36,8 +37,19 @@
 		void memberXTagsStore.load();
 	});
 
-	function tagHref(username: string): string {
-		return tagUrl(username, activeMedia);
+	/** The member's Page48 hashtag: nickname + JKT48 (e.g. `#AralieJKT48`). This is the
+	 *  same tag the live notifications carry, so the sidebar link finds those posts. */
+	function memberTag(account: MemberXAccount): string {
+		const base = (account.nickname || account.name || account.username).replace(
+			/[^\p{L}\p{N}_]/gu,
+			''
+		);
+		if (!base) return account.username;
+		return /jkt48$/i.test(base) ? base : `${base}JKT48`;
+	}
+
+	function tagHref(tag: string): string {
+		return tagUrl(tag, activeMedia);
 	}
 </script>
 
@@ -92,14 +104,15 @@
 			}`}
 		>
 			{#each accounts as account (account.memberId)}
+				{@const tag = memberTag(account)}
 				<li class="flex items-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
 					<a
-						href={tagHref(account.username)}
+						href={tagHref(tag)}
 						class={`flex-1 min-w-0 flex items-center gap-2 cursor-pointer ${rowPadX} ${rowPadY}`}
 						title={account.name}
 					>
 						<span class={`truncate font-semibold text-red-500 ${tagSize}`}>
-							#{account.username}
+							#{tag}
 						</span>
 						{#if account.nickname}
 							<span class={`truncate text-gray-400 dark:text-gray-500 ${nickSize}`}>

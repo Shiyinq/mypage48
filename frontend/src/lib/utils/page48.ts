@@ -201,7 +201,12 @@ export interface MentionCandidate {
 	profilePicture?: string | null;
 }
 
-/** A run of post content: plain text, a link, a `#hashtag`, an `@mention` or a spoiler. */
+/**
+ * A run of post content: plain text, a link, a `#hashtag`, an `@mention`, a spoiler or a
+ * styled span. Inline markers (``**bold**``, ``*italic*``, ``__underline__``, ``~~strike~~``,
+ * `` `code` ``) are stripped from `text` and reported as flags instead, so styling is a
+ * render-time concern and nothing is ever turned into raw HTML (no XSS surface).
+ */
 export interface ContentPart {
 	text: string;
 	link?: string;
@@ -209,6 +214,14 @@ export interface ContentPart {
 	mention?: string;
 	/** Inline `||spoiler||` run: hidden until the reader taps it. */
 	spoiler?: boolean;
+	/** Inline markers; several can apply to one run when markers are nested. */
+	bold?: boolean;
+	italic?: boolean;
+	underline?: boolean;
+	strike?: boolean;
+	code?: boolean;
+	/** A line that started with `> `, rendered with a quote bar. */
+	quote?: boolean;
 }
 
 /**
@@ -227,39 +240,362 @@ const USERNAME_CHAR = /[\p{L}\p{N}_]/u;
 // Mirrors the backend's `username` field limit.
 const MAX_MENTION_LENGTH = 50;
 
-/** Inline spoilers, e.g. `||the twist||`. */
-const SPOILER_PATTERN = /\|\|([\s\S]+?)\|\|/g;
+/**
+ * Characters a backslash may escape. Restricting the set keeps ordinary backslashes
+ * (e.g. in `C:\Users`) intact while letting an author write a literal `*` as `\*`.
+ */
+const ESCAPABLE = new Set(['\\', '*', '_', '~', '`', '|', '[', ']', '(', ')', '#', '@']);
+
+/** Inline styles a marker pair turns on. */
+interface InlineStyle {
+	bold?: boolean;
+	italic?: boolean;
+	underline?: boolean;
+	strike?: boolean;
+}
+
+/** A `**`-style delimiter run, plus whether it may open and/or close a span. */
+interface DelimiterToken {
+	kind: 'delim';
+	raw: string;
+	key: string;
+	style: InlineStyle;
+	canOpen: boolean;
+	canClose: boolean;
+}
+
+type MarkerToken =
+	| { kind: 'text'; value: string }
+	| { kind: 'code'; value: string }
+	| { kind: 'spoiler'; value: string }
+	| { kind: 'link'; label: string; url: string }
+	| DelimiterToken;
+
+const WORD_CHAR = /[\p{L}\p{N}_]/u;
+const MARKDOWN_LINK = /^\[([^\]]*)\]\(([^)]*)\)/;
 
 /**
- * Split content into plain text, link, `#hashtag`, `@mention` and inline `||spoiler||`
- * runs. Spoilers are pulled out first so a `#`/`@`/URL inside one is not turned into a
- * link; the rest of the text is parsed as before.
+ * Split content into plain text, links, `#hashtags`, `@mentions`, `||spoilers||` and
+ * inline markers. A marker only counts at a word boundary, so `2*2*2`, `a_b_c` and
+ * `~100~` stay literal; a backslash escapes the next marker character (`\*` → `*`).
  */
 export function parseContent(content: string): ContentPart[] {
+	if (!content) return [];
+
+	const tokens = tokenizeMarkers(content);
+	const roles = matchDelimiters(tokens);
 	const parts: ContentPart[] = [];
-	const regex = new RegExp(SPOILER_PATTERN.source, 'gu');
-	let lastIndex = 0;
-	let match: RegExpExecArray | null;
+	const styleStack: InlineStyle[] = [];
 
-	while ((match = regex.exec(content)) !== null) {
-		if (match.index > lastIndex) {
-			parts.push(...parsePlainRuns(content.slice(lastIndex, match.index)));
+	const activeStyle = (): InlineStyle =>
+		styleStack.reduce<InlineStyle>((acc, style) => ({ ...acc, ...style }), {});
+
+	tokens.forEach((token, index) => {
+		if (token.kind === 'delim') {
+			const role = roles.get(index);
+			if (role === 'open') {
+				styleStack.push(token.style);
+			} else if (role === 'close') {
+				styleStack.pop();
+			} else {
+				// An unmatched marker is literal text, e.g. a lone `**` that never closes.
+				parts.push(...parsePlainRuns(token.raw, activeStyle()));
+			}
+			return;
 		}
-		parts.push({ text: match[1], spoiler: true });
-		lastIndex = match.index + match[0].length;
-	}
 
-	if (lastIndex < content.length) {
-		parts.push(...parsePlainRuns(content.slice(lastIndex)));
-	}
-	return parts;
+		const style = activeStyle();
+		if (token.kind === 'text') {
+			parts.push(...parsePlainRuns(token.value, style));
+		} else if (token.kind === 'code') {
+			parts.push({ text: token.value, code: true, ...style });
+		} else if (token.kind === 'spoiler') {
+			parts.push({ text: token.value, spoiler: true, ...style });
+		} else {
+			parts.push({ text: token.label, link: token.url, ...style });
+		}
+	});
+
+	return applyQuotes(parts, false);
 }
 
 /**
- * Split a spoiler-free run into plain text, link, `#hashtag` and `@mention` parts.
- * `tag`/`mention` are lower-cased for URL building; `text` keeps what the author typed.
+ * Mark lines starting with `> ` as quotes. The newline that ends the line stays a plain
+ * part so the surrounding layout is untouched; only the line itself carries the flag, so
+ * the renderer can draw a quote bar per line. In the composer (`keepMarker`) the `> ` stays
+ * as a dimmed marker to keep the highlight layer the same length as the textarea.
  */
-function parsePlainRuns(content: string): ContentPart[] {
+function applyQuotes(parts: EditorPart[], keepMarker: boolean): EditorPart[] {
+	const out: EditorPart[] = [];
+	let atLineStart = true;
+	let inQuote = false;
+
+	for (const part of parts) {
+		const opaque = !!(part.code || part.spoiler);
+		let chunk = '';
+		const flush = () => {
+			if (!chunk) return;
+			out.push({ ...part, text: chunk, ...(inQuote ? { quote: true } : {}) });
+			chunk = '';
+		};
+
+		let i = 0;
+		const text = part.text;
+		while (i < text.length) {
+			const char = text[i];
+			if (atLineStart) {
+				// A quote marker is only recognised on a plain line start (never inside a
+				// code span or a spoiler), and only as the exact two characters `> `.
+				if (!opaque && char === '>' && text[i + 1] === ' ') {
+					if (keepMarker) out.push({ text: '> ', marker: true, quote: true });
+					inQuote = true;
+					atLineStart = false;
+					i += 2;
+					continue;
+				}
+				inQuote = false;
+				atLineStart = false;
+			}
+			if (char === '\n') {
+				flush();
+				out.push({ text: '\n' });
+				atLineStart = true;
+				inQuote = false;
+				i += 1;
+				continue;
+			}
+			chunk += char;
+			i += 1;
+		}
+		flush();
+	}
+
+	return out;
+}
+
+/**
+ * Like `parseContent`, but lossless: marker characters are kept so the composer's
+ * highlight layer can dim them and still line up with the textarea character for
+ * character. `#hashtags`, `@mentions`, links and `||spoilers||` are flagged too.
+ */
+export interface EditorPart extends ContentPart {
+	/** A marker run (`**`, `*`, `__`, `~~`, `` ` ``, `||`, `[`/`](url)`); shown dimmed. */
+	marker?: boolean;
+}
+
+/**
+ * Parse content for the composer: unlike `parseContent`, nothing is stripped, so the
+ * rendered output is the same length as the text the author typed.
+ */
+export function parseEditor(content: string): EditorPart[] {
+	if (!content) return [];
+
+	const tokens = tokenizeMarkers(content, true);
+	const roles = matchDelimiters(tokens);
+	const parts: EditorPart[] = [];
+	const styleStack: InlineStyle[] = [];
+	const activeStyle = (): InlineStyle =>
+		styleStack.reduce<InlineStyle>((acc, style) => ({ ...acc, ...style }), {});
+
+	tokens.forEach((token, index) => {
+		if (token.kind === 'delim') {
+			const role = roles.get(index);
+			if (!role) {
+				// Unmatched markers are literal text, shown as typed.
+				parts.push({ text: token.raw });
+				return;
+			}
+			parts.push({ text: token.raw, marker: true });
+			if (role === 'open') styleStack.push(token.style);
+			else styleStack.pop();
+			return;
+		}
+
+		const style = activeStyle();
+		if (token.kind === 'text') {
+			parts.push(...parsePlainRuns(token.value, style));
+		} else if (token.kind === 'code') {
+			parts.push(
+				{ text: '`', marker: true },
+				{ text: token.value, code: true, ...style },
+				{ text: '`', marker: true }
+			);
+		} else if (token.kind === 'spoiler') {
+			parts.push(
+				{ text: '||', marker: true },
+				{ text: token.value, spoiler: true, ...style },
+				{ text: '||', marker: true }
+			);
+		} else {
+			parts.push(
+				{ text: '[', marker: true },
+				{ text: token.label, link: token.url, ...style },
+				{ text: `](${token.url})`, marker: true }
+			);
+		}
+	});
+
+	return applyQuotes(parts, true);
+}
+
+/** The visible text of a post: markers and escapes resolved, spoilers kept. */
+export function toPlainText(content: string): string {
+	if (!content) return '';
+	return parseContent(content)
+		.map((part) => part.text)
+		.join('');
+}
+
+/** Break content into marker/escape-aware tokens. Delimiters are resolved separately. */
+function tokenizeMarkers(content: string, keepEscapes = false): MarkerToken[] {
+	const tokens: MarkerToken[] = [];
+	let buffer = '';
+	const flush = () => {
+		if (buffer) {
+			tokens.push({ kind: 'text', value: buffer });
+			buffer = '';
+		}
+	};
+
+	let i = 0;
+	while (i < content.length) {
+		const char = content[i];
+
+		if (char === '\\' && ESCAPABLE.has(content[i + 1])) {
+			// The composer keeps the backslash so the layer stays the same length as typed.
+			buffer += keepEscapes ? char + content[i + 1] : content[i + 1];
+			i += 2;
+			continue;
+		}
+
+		if (char === '`') {
+			const end = content.indexOf('`', i + 1);
+			if (end !== -1) {
+				flush();
+				tokens.push({ kind: 'code', value: content.slice(i + 1, end) });
+				i = end + 1;
+				continue;
+			}
+		}
+
+		if (char === '|' && content[i + 1] === '|') {
+			const end = content.indexOf('||', i + 2);
+			if (end !== -1) {
+				flush();
+				tokens.push({ kind: 'spoiler', value: content.slice(i + 2, end) });
+				i = end + 2;
+				continue;
+			}
+		}
+
+		if (char === '[') {
+			const match = MARKDOWN_LINK.exec(content.slice(i));
+			const url = match && match[1] ? safeHref(match[2]) : null;
+			if (match && url) {
+				flush();
+				tokens.push({ kind: 'link', label: match[1], url });
+				i += match[0].length;
+				continue;
+			}
+		}
+
+		const delim = readDelimiter(content, i);
+		if (delim) {
+			flush();
+			tokens.push(delim);
+			i += delim.raw.length;
+			continue;
+		}
+
+		buffer += char;
+		i += 1;
+	}
+
+	flush();
+	return tokens;
+}
+
+/** Read a `**`/`*`/`__`/`~~` marker at `index`, or null when it is ordinary text. */
+function readDelimiter(content: string, index: number): DelimiterToken | null {
+	const pair = content.slice(index, index + 2);
+	let key: string | null = null;
+	let size = 1;
+	if (pair === '**' || pair === '__' || pair === '~~') {
+		key = `${pair[0]}2`;
+		size = 2;
+	} else if (content[index] === '*') {
+		key = '*1';
+	}
+	if (!key) return null;
+
+	const raw = content.slice(index, index + size);
+	const before = index > 0 ? content[index - 1] : '';
+	const after = content[index + size];
+
+	// Flanking: a marker only opens after a non-word char and before a non-space, and
+	// only closes the other way round. This keeps `2*2*2` and `a_b_c` literal.
+	const canOpen = !isWordChar(before) && !isSpace(after);
+	const canClose = !isSpace(before) && !isWordChar(after);
+	if (!canOpen && !canClose) return null;
+
+	return { kind: 'delim', raw, key, style: markerStyle(key), canOpen, canClose };
+}
+
+/** Pair each delimiter with its opener/closer, dropping anything left unmatched. */
+function matchDelimiters(tokens: MarkerToken[]): Map<number, 'open' | 'close'> {
+	const roles = new Map<number, 'open' | 'close'>();
+	const stack: { key: string; index: number }[] = [];
+
+	tokens.forEach((token, index) => {
+		if (token.kind !== 'delim') return;
+
+		if (token.canClose) {
+			let found = stack.length - 1;
+			while (found >= 0 && stack[found].key !== token.key) found -= 1;
+			if (found >= 0) {
+				roles.set(stack[found].index, 'open');
+				roles.set(index, 'close');
+				// Anything opened inside is left unmatched, so it renders literally.
+				stack.length = found;
+				return;
+			}
+		}
+		if (token.canOpen) stack.push({ key: token.key, index });
+	});
+
+	return roles;
+}
+
+/** The style a delimiter key toggles. `*` is longest-match: `**` bold, `*` italic. */
+function markerStyle(key: string): InlineStyle {
+	switch (key) {
+		case '*2':
+			return { bold: true };
+		case '*1':
+			return { italic: true };
+		case '_2':
+			return { underline: true };
+		case '~2':
+			return { strike: true };
+		default:
+			return {};
+	}
+}
+
+function isWordChar(char: string | undefined): boolean {
+	return !!char && WORD_CHAR.test(char);
+}
+
+function isSpace(char: string | undefined): boolean {
+	return !char || /\s/.test(char);
+}
+
+/**
+ * Split a plain run into plain text, link, `#hashtag` and `@mention` parts, carrying the
+ * inline styles of the span it sits in. `tag`/`mention` are lower-cased for URL building;
+ * `text` keeps what the author typed.
+ */
+function parsePlainRuns(content: string, style: InlineStyle = {}): ContentPart[] {
 	const parts: ContentPart[] = [];
 	const regex = new RegExp(CONTENT_PATTERN, 'gu');
 	let lastIndex = 0;
@@ -272,26 +608,32 @@ function parsePlainRuns(content: string): ContentPart[] {
 		const start = match.index + (lead ? lead.length : 0);
 
 		if (start > lastIndex) {
-			parts.push({ text: content.slice(lastIndex, start) });
+			parts.push({ text: content.slice(lastIndex, start), ...style });
 		}
 		if (url) {
 			// Trailing punctuation stays in the surrounding text, not in the link.
 			const link = url.replace(LINK_TRAILING, '');
-			parts.push({ text: link, link: linkHref(link) });
+			parts.push({ text: link, link: linkHref(link), ...style });
 			lastIndex = match.index + link.length;
 			continue;
 		} else if (tag) {
-			parts.push({ text: full, tag: tag.toLowerCase() });
+			parts.push({ text: full, tag: tag.toLowerCase(), ...style });
 		} else if (mention) {
-			parts.push({ text: full.slice(lead.length), mention: mention.toLowerCase() });
+			parts.push({ text: full.slice(lead.length), mention: mention.toLowerCase(), ...style });
 		}
 		lastIndex = match.index + full.length;
 	}
 
 	if (lastIndex < content.length) {
-		parts.push({ text: content.slice(lastIndex) });
+		parts.push({ text: content.slice(lastIndex), ...style });
 	}
 	return parts;
+}
+
+/** Only these schemes may become a link href; anything else stays plain text. */
+function safeHref(url: string): string | null {
+	const trimmed = url.trim();
+	return /^(https?:|mailto:)/i.test(trimmed) ? trimmed : null;
 }
 
 /** `www.` links get an explicit scheme so they are real, clickable URLs. */
@@ -931,9 +1273,8 @@ export async function voteOnPoll(post: Page48Post, optionId: string): Promise<vo
 /** Share a post via the Web Share API, falling back to clipboard copy. */
 export async function sharePost(post: Page48Post): Promise<void> {
 	const url = getPostUrl(post.postId);
-	const text = post.content?.trim()
-		? post.content.trim().slice(0, 120)
-		: 'Lihat postingan ini di Page48';
+	const plain = toPlainText(post.content ?? '').trim();
+	const text = plain ? plain.slice(0, 120) : 'Lihat postingan ini di Page48';
 
 	if (typeof navigator !== 'undefined' && navigator.share) {
 		try {

@@ -193,6 +193,45 @@ ALLOWED_VIDEO_TYPES = {
 MAX_VIDEO_DIMENSION = 8192
 MAX_VIDEO_DURATION_SECONDS = 3600
 
+# Inline display markers an author may type in a post (`**bold**`, `*italic*`,
+# `__underline__`, `~~strike~~`, `` `code` ``, `||spoiler||`, `[label](url)`) plus `> `
+# quote lines. Previews strip them so a notification snippet or report never shows the
+# raw syntax. A marker only counts at a word boundary, like the frontend, so `2*2*2`
+# is left alone.
+_MARKER_LINK = re.compile(r"\[([^\]]*)\]\(([^)\s]*)\)")
+_MARKER_CODE = re.compile(r"`([^`]+)`")
+_MARKER_SPOILER = re.compile(r"\|\|(.+?)\|\|", re.DOTALL)
+_MARKER_BOLD = re.compile(r"(?<![\w*])\*\*(?=\S)(.+?)(?<=\S)\*\*(?![\w*])", re.DOTALL)
+_MARKER_UNDERLINE = re.compile(r"(?<![\w_])__(?=\S)(.+?)(?<=\S)__(?![\w_])", re.DOTALL)
+_MARKER_STRIKE = re.compile(r"(?<![\w~])~~(?=\S)(.+?)(?<=\S)~~(?![\w~])", re.DOTALL)
+_MARKER_ITALIC = re.compile(r"(?<![\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])", re.DOTALL)
+_MARKER_QUOTE = re.compile(r"(?m)^> ")
+_MARKER_ESCAPE = re.compile(r"\\([\\*_~`|\[\]()#@])")
+# A private-use sentinel per escapable character, so an escaped `\*` survives the marker
+# passes below and is restored verbatim afterwards (the escapes are laid down first).
+_ESCAPE_MAP = {char: chr(0xE000 + i) for i, char in enumerate("\\*_~`|[]()#@")}
+_UNESCAPE_MAP = {ord(sentinel): char for char, sentinel in _ESCAPE_MAP.items()}
+
+
+def _strip_markers(content: Optional[str]) -> str:
+    """Drop inline display markers from content, keeping the readable text."""
+    text = content or ""
+    if not text:
+        return ""
+    text = _MARKER_ESCAPE.sub(lambda match: _ESCAPE_MAP[match.group(1)], text)
+    for pattern in (
+        _MARKER_LINK,
+        _MARKER_CODE,
+        _MARKER_SPOILER,
+        _MARKER_BOLD,
+        _MARKER_UNDERLINE,
+        _MARKER_STRIKE,
+        _MARKER_ITALIC,
+    ):
+        text = pattern.sub(lambda match: match.group(1), text)
+    text = _MARKER_QUOTE.sub("", text)
+    return text.translate(_UNESCAPE_MAP)
+
 
 def _is_accepted_follow(row: Optional[dict]) -> bool:
     """A follow grants its privileges only once it is no longer pending."""
@@ -1957,7 +1996,7 @@ class Page48Service:
         post_map = {
             post["postId"]: NotificationPostPreview(
                 postId=post["postId"],
-                content=post.get("content", ""),
+                content=_strip_markers(post.get("content", "")),
                 createdAt=post["createdAt"],
                 isSpoiler=bool(post.get("isSpoiler")),
             )
@@ -2533,7 +2572,7 @@ class Page48Service:
             if target_type == "post":
                 post = post_map.get(target_id)
                 if post:
-                    target_content = post.get("content")
+                    target_content = _strip_markers(post.get("content"))
                     target_image_count = len(post.get("images") or [])
                     target_user_id = post.get("userId")
                     owner = user_map.get(target_user_id)

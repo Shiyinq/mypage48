@@ -29,8 +29,12 @@ class RecorderConfig(BaseSettings):
     google_client_secret: str = ""
     youtube_refresh_token: str = ""
     youtube_privacy_status: str = "unlisted"
+    telegram_enabled: bool = True
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
+    page48_enabled: bool = False
+    page48_api_key: str = ""
+    page48_base_url: str = ""
     remux_timeout: int = 600
     max_concurrent_uploads: int = 2
     enable_upload_queue: bool = True
@@ -48,3 +52,9 @@ class RecorderConfig(BaseSettings):
     @property
     def uploads_history_path(self) -> str:
         return os.path.join(self.logs_dir, "uploads.jsonl")
+
+    @property
+    def page48_api_base_url(self) -> str:
+        """Base URL for Page48 posting; falls back to the main API base URL."""
+        base = self.page48_base_url or self.api_base_url
+        return base.rstrip("/")

@@ -492,7 +492,7 @@ async def test_create_post_validation(client, create_user):
     ).status_code == 422
     assert (
         await client.post(
-            "/api/page48/posts", json={"content": "a" * 501}, headers=headers
+            "/api/page48/posts", json={"content": "a" * 2001}, headers=headers
         )
     ).status_code == 422
     assert (

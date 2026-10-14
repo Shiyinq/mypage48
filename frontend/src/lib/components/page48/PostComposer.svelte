@@ -24,7 +24,7 @@
 	import {
 		findActiveMention,
 		findPostEmbed,
-		parseContent,
+		parseEditor,
 		probeVideo,
 		PAGE48_IMAGE_MAX_BYTES,
 		PAGE48_MAX_MEDIA,
@@ -37,6 +37,7 @@
 		searchMentionCandidates,
 		takeQuotedPostLink,
 		type DraftMedia,
+		type EditorPart,
 		type MediaDraft,
 		type MentionCandidate,
 		type PostDraftInput
@@ -98,8 +99,8 @@
 
 	let resolvedPlaceholder = $derived(placeholder ?? t('page48.composer.placeholder'));
 
-	// Matches the backend limit (CreatePostRequest.content: max_length=500).
-	const MAX_CONTENT_LENGTH = 500;
+	// Matches the backend limit (CreatePostRequest.content: max_length=2000).
+	const MAX_CONTENT_LENGTH = 2000;
 
 	/** Suggestions shown at once, and how many follows to search as a fallback. */
 	const MENTION_LIMIT = 6;
@@ -223,10 +224,39 @@
 		};
 	}
 
-	// Mentions and hashtags are coloured while typing, matching the published post.
-	let contentParts = $derived(parseContent(content));
+	// Live formatting: hashtags, mentions, links and markers are styled as they are typed.
+	// `parseEditor` keeps the marker characters so this highlight layer stays the same length
+	// as the textarea (see `markerClass` — every style here is width-neutral).
+	let contentParts = $derived(parseEditor(content));
 	// Live preview of a YouTube or X link, so the author sees the embed before posting.
 	let postEmbed = $derived(findPostEmbed(contentParts));
+	// Consecutive quote parts share one bar, mirroring how the published post renders them.
+	let contentSegments = $derived.by(() => {
+		const groups: { quote: boolean; parts: EditorPart[] }[] = [];
+		for (const part of contentParts) {
+			const quote = !!part.quote;
+			const last = groups[groups.length - 1];
+			if (last && last.quote === quote) last.parts.push(part);
+			else groups.push({ quote, parts: [part] });
+		}
+		return groups;
+	});
+
+	/**
+	 * Classes for a live formatting run. They must not change glyph advance widths, or the
+	 * coloured layer would drift away from the transparent text in the textarea: bold is a
+	 * stroke (not a heavier weight), italic is a skew (not a slanted face) and code is a
+	 * background (not a monospace font).
+	 */
+	function markerClass(part: EditorPart): string {
+		const classes: string[] = [];
+		if (part.bold) classes.push('editor-bold');
+		if (part.italic) classes.push('editor-italic');
+		if (part.underline) classes.push('editor-underline');
+		if (part.strike) classes.push('editor-strike');
+		if (part.code) classes.push('editor-code');
+		return classes.join(' ');
+	}
 
 	/** Insert text at the caret (or over a range), keeping focus and caret in place. */
 	async function insertAtCaret(text: string, rangeStart?: number, rangeEnd?: number) {
@@ -939,6 +969,24 @@
 	</button>
 {/snippet}
 
+<!-- One run of the live formatting layer painted behind the textarea. -->
+{#snippet editorPart(part: EditorPart)}
+	{@const mk = markerClass(part)}
+	{#if part.marker}
+		<span class="editor-marker">{part.text}</span>
+	{:else if part.tag}
+		<span class="text-red-500 {mk}">{part.text}</span>
+	{:else if part.mention}
+		<span class="font-semibold text-red-500 {mk}">{part.text}</span>
+	{:else if part.link}
+		<span class="text-blue-500 {mk}">{part.text}</span>
+	{:else if part.spoiler}
+		<span class="spoiler-hidden {mk}">{part.text}</span>
+	{:else}
+		<span class={mk}>{part.text}</span>
+	{/if}
+{/snippet}
+
 <!-- A drop target for files, not a landmark; the textarea/submit stay the controls. -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
@@ -1132,17 +1180,13 @@
 						aria-hidden="true"
 						class={`pointer-events-none absolute inset-0 select-none overflow-hidden text-gray-900 dark:text-gray-100 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
 					>
-						{#each contentParts as part, i (i)}
-							{#if part.tag}
-								<span class="text-red-500">{part.text}</span>
-							{:else if part.mention}
-								<span class="font-semibold text-red-500">{part.text}</span>
-							{:else if part.link}
-								<span class="text-blue-500">{part.text}</span>
-							{:else if part.spoiler}
-								<span class="spoiler-hidden">||{part.text}||</span>
+						{#each contentSegments as segment, i (i)}
+							{#if segment.quote}
+								<span class="editor-quote">
+									{#each segment.parts as part, j (j)}{@render editorPart(part)}{/each}
+								</span>
 							{:else}
-								{part.text}
+								{#each segment.parts as part, j (j)}{@render editorPart(part)}{/each}
 							{/if}
 						{/each}
 					</div>
@@ -1435,5 +1479,40 @@
 		filter: blur(6px);
 		opacity: 0.8;
 		user-select: none;
+	}
+
+	/* Live formatting preview. Every rule here is width-neutral on purpose: the highlight
+	   layer sits behind the textarea, which renders the same characters in one uniform
+	   style, so any change to glyph advance widths would misalign the coloured text. */
+	.editor-marker {
+		opacity: 0.4;
+	}
+	.editor-bold {
+		-webkit-text-stroke: 0.6px currentColor;
+	}
+	.editor-italic {
+		display: inline-block;
+		transform: skewX(-9deg);
+	}
+	.editor-underline {
+		text-decoration: underline;
+	}
+	.editor-strike {
+		text-decoration: line-through;
+	}
+	.editor-code {
+		background: rgb(0 0 0 / 0.07);
+		border-radius: 3px;
+	}
+	:global(.dark) .editor-code {
+		background: rgb(255 255 255 / 0.12);
+	}
+	/* Quote bar for `> ` lines. Painted as a background (not a border or padding) so it adds
+	   no width and the layer stays aligned with the textarea. */
+	.editor-quote {
+		background-image: linear-gradient(to right, rgb(0 0 0 / 0.22) 0 3px, transparent 3px);
+	}
+	:global(.dark) .editor-quote {
+		background-image: linear-gradient(to right, rgb(255 255 255 / 0.32) 0 3px, transparent 3px);
 	}
 </style>

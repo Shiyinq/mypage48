@@ -5,10 +5,10 @@ import sys
 # Add project root to pythonpath
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+from recorder.src.notify.media import LIVE_DETAIL_BASE_URL, _process_and_split_image
 from recorder.src.notify.web_screenshot import capture_web_screenshot
 
 RECORDINGS_DIR = os.path.join(os.path.dirname(__file__), "recordings")
-LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/details"
 
 
 async def main():
@@ -19,8 +19,6 @@ async def main():
         "haii-260709221413",
         "hi-260711230704",
     ]
-
-    from recorder.src.notify.telegram_notifier import _process_and_split_image
 
     for live_id in live_ids:
         output_dir = os.path.join(RECORDINGS_DIR, f"test_{live_id}")

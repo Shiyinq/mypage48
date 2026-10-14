@@ -11,7 +11,7 @@ from curl_cffi.requests import AsyncSession
 
 from ..config import RecorderConfig
 from ..flaresolverr import fetch_with_retry
-from ..notify.telegram_notifier import _format_date_only_wib
+from ..notify.formatters import _format_date_only_wib
 from .html_screenshot import capture_html_screenshot
 
 
