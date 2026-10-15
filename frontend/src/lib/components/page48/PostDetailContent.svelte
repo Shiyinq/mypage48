@@ -71,8 +71,30 @@
 	function showThreadLine(i: number, postId: string): boolean {
 		return i < chain.length - 1 || (localReplies[postId]?.length ?? 0) > 0;
 	}
+
 	// The post the composer currently replies to (defaults to the focused post).
 	let replyTarget = $state<Page48Post | null>(null);
+
+	/**
+	 * Whether the reply composer (or its locked-reply notice) renders under `post`, pushing
+	 * whatever comes after it further down.
+	 */
+	function showsComposerFor(post: Page48Post | null): boolean {
+		if (!post || replyTarget?.postId !== post.postId) return false;
+		return !post.canReply || isAuthenticated.value;
+	}
+
+	/**
+	 * Whether a chain segment still reads as a continuation of the one above it. A composer
+	 * or a reply added in this session sits between the two and breaks the run, so the
+	 * segment needs its own top spacing instead of being flush against that block.
+	 */
+	function isChainContinuation(i: number): boolean {
+		const above = i > 0 ? chain[i - 1] : parentContext;
+		if (!above) return false;
+
+		return !showsComposerFor(above) && (localReplies[above.postId]?.length ?? 0) === 0;
+	}
 
 	/**
 	 * Users offered after an `@` in the reply composer: the post being viewed plus
@@ -521,7 +543,7 @@
 			<PostCard
 				post={item}
 				isThreadLine={showThreadLine(i, item.postId)}
-				isContinuation={i > 0 || !!parentContext}
+				isContinuation={isChainContinuation(i)}
 				detailLayout={item.postId === focused?.postId}
 				threadPosition={chainTotal > 1 ? { index: chainStart + i, total: chainTotal } : undefined}
 				showThreadLink={false}
