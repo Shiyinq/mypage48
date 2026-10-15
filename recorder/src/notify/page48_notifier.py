@@ -136,13 +136,17 @@ def _thread_parent(config: RecorderConfig, live_id: str) -> Optional[str]:
     return entry.get("postId") if isinstance(entry, dict) else None
 
 
-async def _load_x_handles(config: RecorderConfig) -> dict:
-    """Map lower-cased member name/nickname -> X account row, cached in memory."""
+async def _load_member_socials(config: RecorderConfig) -> dict:
+    """Map lower-cased member name/nickname -> member row, cached in memory.
+
+    Every active member is listed (X, else Instagram, else nothing), so the nickname
+    a live hashtag is built from matches what the Page48 sidebar shows.
+    """
     now = time.monotonic()
     if now < _socials_cache["next"]:
         return _socials_cache["by_key"]
 
-    url = f"{config.api_base_url.rstrip('/')}/members/socials/x"
+    url = f"{config.api_base_url.rstrip('/')}/members/socials"
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             resp = await client.get(url)
@@ -158,9 +162,7 @@ async def _load_x_handles(config: RecorderConfig) -> dict:
 
     by_key: dict = {}
     for row in rows if isinstance(rows, list) else []:
-        if not (row or {}).get("username"):
-            continue
-        for key in (row.get("name"), row.get("nickname")):
+        for key in ((row or {}).get("name"), (row or {}).get("nickname")):
             if key:
                 by_key[str(key).strip().lower()] = row
     _socials_cache["by_key"] = by_key
@@ -173,14 +175,14 @@ def _hashtag_word(value: str) -> str:
     return re.sub(r"[^\w]", "", value or "", flags=re.UNICODE)
 
 
-async def _x_row(
+async def _member_social_row(
     config: RecorderConfig, member_name: str, member_nickname: str
 ) -> Optional[dict]:
-    """The X account row for a member, matched by nickname then name."""
-    handles = await _load_x_handles(config)
+    """The members-API row for a member, matched by nickname then name."""
+    members = await _load_member_socials(config)
     for key in (member_nickname, member_name):
         if key:
-            row = handles.get(str(key).strip().lower())
+            row = members.get(str(key).strip().lower())
             if row:
                 return row
     return None
@@ -195,7 +197,7 @@ async def _member_hashtags(
     sidebar uses), so a post's tag matches the one the sidebar links to; it falls back
     to the live's own nickname when the member is not in that list.
     """
-    row = await _x_row(config, member_name, member_nickname)
+    row = await _member_social_row(config, member_name, member_nickname)
     if row:
         source = row.get("nickname") or row.get("name")
     else:

@@ -66,13 +66,19 @@ class MemberBase(BaseModel):
 
 
 class MemberXAccount(BaseModel):
-    """A member's X (Twitter) handle, for use as a Page48 hashtag."""
+    """An active member's preferred social handle, for Page48 tags and links.
+
+    Prefers X (Twitter) and falls back to Instagram. `username`/`url` are optional so
+    an active member with neither still appears in the list (just without a link).
+    """
 
     memberId: str
     name: str
     nickname: Optional[str] = None
-    username: str
-    url: str
+    username: Optional[str] = None
+    url: Optional[str] = None
+    # Which social the handle came from: "x" or "instagram".
+    platform: Optional[str] = None
 
 
 class MemberCreate(MemberBase):

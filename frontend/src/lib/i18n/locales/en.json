@@ -2031,6 +2031,7 @@
 			"youtubeVideo": "YouTube video",
 			"cancelReply": "Cancel reply",
 			"openX": "Open X @{username}",
+			"openInstagram": "Open Instagram @{username}",
 			"imageCount": "{count} images",
 			"prevImage": "Previous image",
 			"nextImage": "Next image",

@@ -13,7 +13,7 @@ from PIL import Image
 
 log = logging.getLogger("notify")
 
-LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/history/live"
+LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/details"
 
 
 def _process_and_split_image(image_path: str, max_height: int = 8000) -> list[str]:

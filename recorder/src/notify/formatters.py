@@ -12,6 +12,7 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 
 from ..models import LiveInfo
+from .media import LIVE_DETAIL_BASE_URL
 
 ID_MONTHS = [
     "",
@@ -176,7 +177,7 @@ def _format_recap_end_live_caption(
 
     live_id = live_id or data.get("live_id")
     if live_id:
-        history_url = f"https://mypage48.com/jkt48/live/history/live/{live_id}"
+        history_url = f"{LIVE_DETAIL_BASE_URL}/{live_id}"
         caption += f"\n• <a href='{history_url}'>Data Lengkap di MyPage48</a>"
 
     youtube_id = data.get("youtube_id")

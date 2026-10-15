@@ -2029,6 +2029,7 @@
 			"youtubeVideo": "YouTube 動画",
 			"cancelReply": "返信をキャンセル",
 			"openX": "X @{username} を開く",
+			"openInstagram": "Instagram @{username} を開く",
 			"imageCount": "画像 {count} 枚",
 			"prevImage": "前の画像",
 			"nextImage": "次の画像",

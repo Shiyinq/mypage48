@@ -40,12 +40,18 @@
 	/** The member's Page48 hashtag: nickname + JKT48 (e.g. `#AralieJKT48`). This is the
 	 *  same tag the live notifications carry, so the sidebar link finds those posts. */
 	function memberTag(account: MemberXAccount): string {
-		const base = (account.nickname || account.name || account.username).replace(
-			/[^\p{L}\p{N}_]/gu,
-			''
-		);
-		if (!base) return account.username;
+		const base = (account.nickname || account.name).replace(/[^\p{L}\p{N}_]/gu, '');
+		if (!base) return '';
 		return /jkt48$/i.test(base) ? base : `${base}JKT48`;
+	}
+
+	/** Label for the external-link button, which points at X or Instagram. */
+	function socialLabel(account: MemberXAccount): string {
+		const username = account.username ?? account.name;
+		if (account.platform === 'instagram') {
+			return t('page48.aria.openInstagram', { username });
+		}
+		return t('page48.aria.openX', { username });
 	}
 
 	function tagHref(tag: string): string {
@@ -120,18 +126,20 @@
 							</span>
 						{/if}
 					</a>
-					<a
-						href={account.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class={`text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors cursor-pointer ${
-							isCard ? 'px-3 py-2.5' : 'px-4 py-3'
-						}`}
-						aria-label={t('page48.aria.openX', { username: account.username })}
-						title={t('page48.aria.openX', { username: account.username })}
-					>
-						<ExternalLink size={isCard ? 14 : 16} />
-					</a>
+					{#if account.url}
+						<a
+							href={account.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class={`text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors cursor-pointer ${
+								isCard ? 'px-3 py-2.5' : 'px-4 py-3'
+							}`}
+							aria-label={socialLabel(account)}
+							title={socialLabel(account)}
+						>
+							<ExternalLink size={isCard ? 14 : 16} />
+						</a>
+					{/if}
 				</li>
 			{/each}
 		</ul>

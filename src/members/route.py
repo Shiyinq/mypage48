@@ -65,14 +65,14 @@ async def get_upcoming_birthdays(
     return await service.get_upcoming_birthdays()
 
 
-@router.get("/socials/x", response_model=List[MemberXAccount])
-async def get_member_x_accounts(
+@router.get("/socials", response_model=List[MemberXAccount])
+async def get_member_social_accounts(
     service: MemberService = Depends(get_member_service),
 ):
     """
-    Get active JKT48 members that have an X (Twitter) handle.
+    Get every active JKT48 member with their preferred social handle (X, else Instagram).
     """
-    return await service.get_x_accounts()
+    return await service.get_social_accounts()
 
 
 @router.get("/id/{member_id}", response_model=MemberDetailResponse)
