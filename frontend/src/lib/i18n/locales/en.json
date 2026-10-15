@@ -2296,7 +2296,7 @@
 		},
 		"activity": {
 			"title": "Post activity",
-			"view": "View activity",
+			"view": "Activity",
 			"backToPost": "Back to post",
 			"quotes": "Quotes",
 			"reposts": "Reposts",

@@ -2294,7 +2294,7 @@
 		},
 		"activity": {
 			"title": "投稿のアクティビティ",
-			"view": "アクティビティを表示",
+			"view": "アクティビティ",
 			"backToPost": "投稿に戻る",
 			"quotes": "引用",
 			"reposts": "リポスト",

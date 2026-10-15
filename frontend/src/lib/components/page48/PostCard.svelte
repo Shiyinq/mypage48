@@ -372,18 +372,22 @@
 	<!-- Right Column: Content -->
 	<div class="flex flex-col flex-1 min-w-0 pt-0.5">
 		<!-- Header (Name, Username, Time) -->
-		<div class="flex items-center justify-between gap-2 mb-0.5">
+		<div class="flex items-start justify-between gap-2 mb-0.5">
 			<UserHoverCard
 				username={post.username}
 				href={`/page48/u/${post.username}`}
-				class="relative z-[1] min-w-0 flex items-center gap-1.5 truncate group/name"
+				class="relative z-[1] min-w-0 max-w-full flex flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-1.5 group/name"
 			>
-				<span
-					class="font-semibold text-[15px] tracking-tight text-gray-900 dark:text-gray-100 group-hover/name:underline truncate"
-					>{post.userDisplayName}</span
+				<span class="flex min-w-0 max-w-full items-center gap-1.5">
+					<span
+						class="truncate font-semibold text-[15px] tracking-tight text-gray-900 dark:text-gray-100 group-hover/name:underline"
+						>{post.userDisplayName}</span
+					>
+					<AccountBadge type={post.page48AccountType} size={15} class="-ml-1 -mr-1" />
+				</span>
+				<span class="max-w-full truncate text-[14px] text-gray-500 dark:text-gray-400"
+					>@{post.username}</span
 				>
-				<AccountBadge type={post.page48AccountType} size={15} class="-ml-1 -mr-1" />
-				<span class="truncate text-[14px] text-gray-500 dark:text-gray-400">@{post.username}</span>
 			</UserHoverCard>
 			<div class="relative z-[1] flex items-center gap-2 shrink-0">
 				<!-- Private post: only its author sees it, so only they get the reminder,
@@ -404,7 +408,9 @@
 						{t('page48.spoiler.badge')}
 					</span>
 				{/if}
-				<span class="group/time relative text-[15px] text-gray-500 hover:underline">
+				<span
+					class={`group/time relative text-[15px] text-gray-500 hover:underline ${fullTimestamp ? 'hidden sm:inline' : ''}`}
+				>
 					{timeLabel}
 					{#if !fullTimestamp}
 						<span
@@ -534,6 +540,14 @@
 			>
 				{t('page48.thread.show', { count: post.threadCount })}
 			</a>
+		{/if}
+
+		<!-- On small screens the exact date moves out of the header (where it would squeeze
+		     the name and username) to just above the action bar. -->
+		{#if fullTimestamp}
+			<div class="relative z-[1] mt-2 text-[13px] text-gray-500 sm:hidden dark:text-gray-400">
+				{timeLabel}
+			</div>
 		{/if}
 
 		<!-- Action Bar: the row itself is decoration, so clicks fall through to the card;
