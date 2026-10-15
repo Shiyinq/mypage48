@@ -40,6 +40,14 @@
 	let hasOverflow = $state(false);
 	/** 1-based number of the last slide currently in view, for the badge. */
 	let visibleTo = $state(1);
+	/**
+	 * Whether the strip can still scroll each way. The arrows follow the scroll position
+	 * rather than the snap stops: with two slides the second one can never be lined up with
+	 * the left edge (only a fraction of the strip overflows), so a stop-based arrow would
+	 * never appear even though part of that photo is hidden.
+	 */
+	let canPrev = $state(false);
+	let canNext = $state(false);
 
 	/** Scroll offset that lines slide `i` up with the left edge (clamped). */
 	function stopOffset(slideIndex: number): number {
@@ -64,12 +72,23 @@
 		visibleTo = Math.min(last + 1, media.length);
 	}
 
+	/** Arrow visibility, measured from how far the strip can still travel. */
+	function updateEdges() {
+		const el = track;
+		if (!el) return;
+
+		const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+		canPrev = el.scrollLeft > 4;
+		canNext = el.scrollLeft < maxScroll - 4;
+	}
+
 	function measure() {
 		const el = track;
 		if (!el) return;
 
 		const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
 		hasOverflow = maxScroll > 4;
+		updateEdges();
 
 		let last = 0;
 		for (let i = 0; i < media.length; i += 1) {
@@ -135,6 +154,7 @@
 		}
 
 		updateVisibleTo();
+		updateEdges();
 		if (leading !== index) {
 			indexFromSwipe = true;
 			index = leading;
@@ -142,7 +162,20 @@
 	}
 
 	function goTo(next: number) {
-		index = Math.max(0, Math.min(next, maxIndex));
+		// Stepping past the last stop is fine: `stopOffset` clamps the scroll to the end,
+		// which is how the final slides get fully revealed.
+		const clamped = Math.max(0, Math.min(next, media.length - 1));
+		if (clamped === index) {
+			// The end stops share one scroll offset, so an arrow press can leave `index`
+			// untouched (and the effect below would not run): move the strip back instead.
+			const el = track;
+			const target = stopOffset(clamped);
+			if (el && Math.abs(el.scrollLeft - target) > 4) {
+				el.scrollTo({ left: target, behavior: 'smooth' });
+			}
+			return;
+		}
+		index = clamped;
 	}
 
 	function handleSlideClick(slideIndex: number, event: MouseEvent) {
@@ -153,11 +186,13 @@
 </script>
 
 <div class="relative isolate">
+	<!-- The slides always hug the left edge (like a lone photo), so the strip lines up with
+	     the post text instead of centring itself when everything already fits. -->
 	<div
 		bind:this={track}
 		onscroll={handleScroll}
 		style={`aspect-ratio: ${stripRatio};`}
-		class={`scrollbar-hide pointer-events-none relative flex max-h-[600px] snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain ${hasOverflow ? 'justify-start' : 'justify-center'}`}
+		class="scrollbar-hide pointer-events-none relative flex max-h-[600px] snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain"
 	>
 		{#each media as item, i (item.filename)}
 			{@const ratio = mediaRatio(item)}
@@ -235,7 +270,7 @@
 		</span>
 
 		<!-- Arrows: wide screens only, mobile swipes instead; revealed on card hover -->
-		{#if index > 0}
+		{#if canPrev}
 			<button
 				type="button"
 				class="absolute left-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white opacity-0 backdrop-blur-sm transition-opacity pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 sm:flex"
@@ -245,7 +280,7 @@
 				<ChevronLeft size={18} />
 			</button>
 		{/if}
-		{#if index < maxIndex}
+		{#if canNext}
 			<button
 				type="button"
 				class="absolute right-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white opacity-0 backdrop-blur-sm transition-opacity pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 sm:flex"

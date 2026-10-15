@@ -62,6 +62,15 @@
 	let localReplies = $state<Record<string, Page48Post[]>>({});
 	/** Flat view of `replyTree`, used for lookups and the emptiness check. */
 	let replies = $derived(flattenReplies(replyTree));
+
+	/**
+	 * Whether a chain card draws the vertical thread line: it continues into the next
+	 * segment, or has replies of its own rendered right below. The focused post is laid
+	 * out as a detail card (no avatar column), so no line is drawn there regardless.
+	 */
+	function showThreadLine(i: number, postId: string): boolean {
+		return i < chain.length - 1 || (localReplies[postId]?.length ?? 0) > 0;
+	}
 	// The post the composer currently replies to (defaults to the focused post).
 	let replyTarget = $state<Page48Post | null>(null);
 
@@ -511,8 +520,9 @@
 		{#each chain as item, i (item.postId)}
 			<PostCard
 				post={item}
-				isThreadLine={i < chain.length - 1 || (localReplies[item.postId]?.length ?? 0) > 0}
+				isThreadLine={showThreadLine(i, item.postId)}
 				isContinuation={i > 0 || !!parentContext}
+				detailLayout={item.postId === focused?.postId}
 				threadPosition={chainTotal > 1 ? { index: chainStart + i, total: chainTotal } : undefined}
 				showThreadLink={false}
 				showActivityLink={i === 0}

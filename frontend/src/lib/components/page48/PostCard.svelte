@@ -60,6 +60,12 @@
 		hideMedia?: boolean;
 		/** Show the exact time and date instead of the relative/short timestamp. */
 		fullTimestamp?: boolean;
+		/**
+		 * Lay the card out like a post detail page (X): the avatar and identity sit in a
+		 * header row and the post spans the full card, so its text and media line up with
+		 * the avatar's left edge instead of starting after the avatar column.
+		 */
+		detailLayout?: boolean;
 	}
 
 	let {
@@ -79,7 +85,8 @@
 		clampContent = true,
 		showActivityLink = false,
 		hideMedia = false,
-		fullTimestamp = false
+		fullTimestamp = false,
+		detailLayout = false
 	}: Props = $props();
 
 	// Long posts would stretch a feed row, so the text is clamped and a red "show more"
@@ -338,184 +345,208 @@
 	let extraTags = $derived((post.tags ?? []).filter((tag) => !inlineTags.has(tag)));
 </script>
 
+{#snippet avatar()}
+	<!-- Avatar -->
+	<UserHoverCard
+		username={post.username}
+		href={`/page48/u/${post.username}`}
+		class="relative block w-11 h-11 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 z-10 ring-2 ring-white dark:ring-zinc-950 shadow-sm transition-transform hover:scale-105"
+	>
+		<img
+			src={getAvatarUrl(post.userProfilePicture_small || post.userProfilePicture)}
+			alt={post.username}
+			class="w-full h-full object-cover"
+			onerror={(e) => {
+				(e.target as HTMLImageElement).src =
+					`https://ui-avatars.com/api/?name=${encodeURIComponent(post.userDisplayName)}&background=fca5a5&color=fff`;
+			}}
+		/>
+	</UserHoverCard>
+{/snippet}
+
+{#snippet header()}
+	<!-- Header (Name, Username, Time) -->
+	<div class="flex items-start justify-between gap-2 mb-0.5">
+		<!-- The detail card keeps the handle under the name at every width (like X's post
+		     detail); a list row puts them on one line from `sm` up. -->
+		<UserHoverCard
+			username={post.username}
+			href={`/page48/u/${post.username}`}
+			class={`relative z-[1] min-w-0 max-w-full flex flex-col items-start gap-0.5 group/name ${detailLayout ? '' : 'sm:flex-row sm:items-center sm:gap-1.5'}`}
+		>
+			<span class="flex min-w-0 max-w-full items-center gap-1.5">
+				<span
+					class="truncate font-semibold text-[15px] tracking-tight text-gray-900 dark:text-gray-100 group-hover/name:underline"
+					>{post.userDisplayName}</span
+				>
+				<AccountBadge type={post.page48AccountType} size={15} class="-ml-1 -mr-1" />
+			</span>
+			<span class="max-w-full truncate text-[14px] text-gray-500 dark:text-gray-400"
+				>@{post.username}</span
+			>
+		</UserHoverCard>
+		<div class="relative z-[1] flex items-center gap-2 shrink-0">
+			<!-- Private post: only its author sees it, so only they get the reminder,
+				     kept on the timestamp line. -->
+			{#if post.isPrivate && isOwner && !isContinuation}
+				<span
+					class="pointer-events-none flex shrink-0 items-center gap-1 rounded-md border border-gray-200 px-1.5 py-0.5 text-[12px] font-medium text-gray-500 dark:border-zinc-700 dark:text-gray-400"
+				>
+					<Lock size={12} />
+					{t('page48.private.badge')}
+				</span>
+			{/if}
+			{#if post.isSpoiler}
+				<span
+					class="pointer-events-none flex shrink-0 items-center gap-1 rounded-md border border-amber-200 px-1.5 py-0.5 text-[12px] font-medium text-amber-600 dark:border-amber-900/40 dark:text-amber-400"
+				>
+					<EyeOff size={12} />
+					{t('page48.spoiler.badge')}
+				</span>
+			{/if}
+			<span
+				class={`group/time relative text-[15px] text-gray-500 hover:underline ${fullTimestamp ? 'hidden sm:inline' : ''}`}
+			>
+				{timeLabel}
+				{#if !fullTimestamp}
+					<span
+						aria-hidden="true"
+						class="pointer-events-none absolute right-0 bottom-full z-20 mb-2 px-2 py-1 text-[11px] font-medium text-white whitespace-nowrap rounded-lg bg-gray-900 border border-white/10 opacity-0 shadow-xl transition-all group-hover/time:opacity-100 dark:bg-zinc-800"
+					>
+						{exactTime}
+					</span>
+				{/if}
+			</span>
+			{#if isAuthenticated.value}
+				<PostMenu
+					{isOwner}
+					isPinned={post.isPinned}
+					isPrivate={post.isPrivate}
+					isSpoiler={post.isSpoiler}
+					onEdit={() => (showEdit = true)}
+					onDelete={() => (showDelete = true)}
+					onReport={() => (showReport = true)}
+					onTogglePin={isOwner && !post.parentPostId ? handleTogglePin : undefined}
+					onTogglePrivate={isOwner && !post.parentPostId ? handleTogglePrivate : undefined}
+					onToggleSpoiler={isOwner ? handleToggleSpoiler : undefined}
+					onViewActivity={openActivity}
+				/>
+			{/if}
+		</div>
+	</div>
+{/snippet}
+
 <article
-	class={`relative isolate flex w-full gap-4 ${isContinuation ? 'pt-0' : 'pt-5'} pb-3 px-5 sm:px-6 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group cursor-pointer`}
+	class={`relative isolate w-full ${detailLayout ? 'flex flex-col' : 'flex gap-4'} ${isContinuation ? 'pt-0' : 'pt-5'} pb-3 px-5 sm:px-6 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group cursor-pointer`}
 >
 	<!-- Full-card click target: opens the post detail. Interactive children sit above it. -->
 	<a href={detailHref} class="absolute inset-0 z-0" aria-label={t('page48.aria.openPost')}></a>
 
-	<!-- Left Column: Avatar & Thread Line -->
-	<div class="flex flex-col items-center shrink-0">
-		<!-- Avatar -->
-		<UserHoverCard
-			username={post.username}
-			href={`/page48/u/${post.username}`}
-			class="relative block w-11 h-11 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 z-10 ring-2 ring-white dark:ring-zinc-950 shadow-sm transition-transform hover:scale-105"
-		>
-			<img
-				src={getAvatarUrl(post.userProfilePicture_small || post.userProfilePicture)}
-				alt={post.username}
-				class="w-full h-full object-cover"
-				onerror={(e) => {
-					(e.target as HTMLImageElement).src =
-						`https://ui-avatars.com/api/?name=${encodeURIComponent(post.userDisplayName)}&background=fca5a5&color=fff`;
-				}}
-			/>
-		</UserHoverCard>
+	{#if detailLayout}
+		<!-- Detail layout (like X): the identity sits in a header row and the post spans the
+		     full card, so its text and media line up with the avatar's left edge. There is
+		     no avatar column here, so no thread line is drawn either. -->
+		<div class="flex w-full items-start gap-3">
+			<div class="shrink-0">{@render avatar()}</div>
+			<div class="min-w-0 flex-1 pt-1">{@render header()}</div>
+		</div>
+		<div class="mt-1 flex w-full min-w-0 flex-col">{@render cardBody()}</div>
+	{:else}
+		<!-- Left Column: Avatar & Thread Line -->
+		<div class="flex flex-col items-center shrink-0">
+			{@render avatar()}
 
-		<!-- Thread Line (runs into the card edge so the segments meet) -->
-		{#if isThreadLine}
-			<div class="w-0.5 grow bg-gray-200/70 dark:bg-zinc-800/70 mt-2 -mb-3 min-h-[24px]"></div>
-		{/if}
-	</div>
-
-	<!-- Right Column: Content -->
-	<div class="flex flex-col flex-1 min-w-0 pt-0.5">
-		<!-- Header (Name, Username, Time) -->
-		<div class="flex items-start justify-between gap-2 mb-0.5">
-			<UserHoverCard
-				username={post.username}
-				href={`/page48/u/${post.username}`}
-				class="relative z-[1] min-w-0 max-w-full flex flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-1.5 group/name"
-			>
-				<span class="flex min-w-0 max-w-full items-center gap-1.5">
-					<span
-						class="truncate font-semibold text-[15px] tracking-tight text-gray-900 dark:text-gray-100 group-hover/name:underline"
-						>{post.userDisplayName}</span
-					>
-					<AccountBadge type={post.page48AccountType} size={15} class="-ml-1 -mr-1" />
-				</span>
-				<span class="max-w-full truncate text-[14px] text-gray-500 dark:text-gray-400"
-					>@{post.username}</span
-				>
-			</UserHoverCard>
-			<div class="relative z-[1] flex items-center gap-2 shrink-0">
-				<!-- Private post: only its author sees it, so only they get the reminder,
-				     kept on the timestamp line. -->
-				{#if post.isPrivate && isOwner && !isContinuation}
-					<span
-						class="pointer-events-none flex shrink-0 items-center gap-1 rounded-md border border-gray-200 px-1.5 py-0.5 text-[12px] font-medium text-gray-500 dark:border-zinc-700 dark:text-gray-400"
-					>
-						<Lock size={12} />
-						{t('page48.private.badge')}
-					</span>
-				{/if}
-				{#if post.isSpoiler}
-					<span
-						class="pointer-events-none flex shrink-0 items-center gap-1 rounded-md border border-amber-200 px-1.5 py-0.5 text-[12px] font-medium text-amber-600 dark:border-amber-900/40 dark:text-amber-400"
-					>
-						<EyeOff size={12} />
-						{t('page48.spoiler.badge')}
-					</span>
-				{/if}
-				<span
-					class={`group/time relative text-[15px] text-gray-500 hover:underline ${fullTimestamp ? 'hidden sm:inline' : ''}`}
-				>
-					{timeLabel}
-					{#if !fullTimestamp}
-						<span
-							aria-hidden="true"
-							class="pointer-events-none absolute right-0 bottom-full z-20 mb-2 px-2 py-1 text-[11px] font-medium text-white whitespace-nowrap rounded-lg bg-gray-900 border border-white/10 opacity-0 shadow-xl transition-all group-hover/time:opacity-100 dark:bg-zinc-800"
-						>
-							{exactTime}
-						</span>
-					{/if}
-				</span>
-				{#if isAuthenticated.value}
-					<PostMenu
-						{isOwner}
-						isPinned={post.isPinned}
-						isPrivate={post.isPrivate}
-						isSpoiler={post.isSpoiler}
-						onEdit={() => (showEdit = true)}
-						onDelete={() => (showDelete = true)}
-						onReport={() => (showReport = true)}
-						onTogglePin={isOwner && !post.parentPostId ? handleTogglePin : undefined}
-						onTogglePrivate={isOwner && !post.parentPostId ? handleTogglePrivate : undefined}
-						onToggleSpoiler={isOwner ? handleToggleSpoiler : undefined}
-						onViewActivity={openActivity}
-					/>
-				{/if}
-			</div>
+			<!-- Thread Line (runs into the card edge so the segments meet) -->
+			{#if isThreadLine}
+				<div class="w-0.5 grow bg-gray-200/70 dark:bg-zinc-800/70 mt-2 -mb-3 min-h-[24px]"></div>
+			{/if}
 		</div>
 
-		{#snippet postBody()}
-			<!-- Post Content (clickable hashtags and mentions; rest of the card opens
+		<!-- Right Column: Content -->
+		<div class="flex flex-col flex-1 min-w-0 pt-0.5">
+			{@render header()}
+			{@render cardBody()}
+		</div>
+	{/if}
+
+	{#snippet postBody()}
+		<!-- Post Content (clickable hashtags and mentions; rest of the card opens
 		     post detail) -->
-			{#if post.content}
-				<!-- The paragraph mirrors the card's link so text stays selectable but a
+		{#if post.content}
+			<!-- The paragraph mirrors the card's link so text stays selectable but a
 				     plain click still opens the post; the <a> overlay stays the a11y entry. -->
-				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<p
-					bind:this={contentEl}
-					style={showClamp ? `max-height: ${CONTENT_CLAMP_PX}px` : ''}
-					class={`pointer-events-auto relative z-[1] cursor-pointer text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'overflow-hidden' : ''}`}
-					onclick={handleContentClick}
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<p
+				bind:this={contentEl}
+				style={showClamp ? `max-height: ${CONTENT_CLAMP_PX}px` : ''}
+				class={`pointer-events-auto relative z-[1] cursor-pointer text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'overflow-hidden' : ''}`}
+				onclick={handleContentClick}
+			>
+				<RichText text={post.content} media={activeMedia} mentionHover spoilers />
+			</p>
+
+			{#if showContentToggle}
+				<button
+					type="button"
+					class="pointer-events-auto relative z-[1] self-start mt-1 text-[14px] font-semibold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
+					onclick={toggleContent}
 				>
-					<RichText text={post.content} media={activeMedia} mentionHover spoilers />
-				</p>
-
-				{#if showContentToggle}
-					<button
-						type="button"
-						class="pointer-events-auto relative z-[1] self-start mt-1 text-[14px] font-semibold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
-						onclick={toggleContent}
-					>
-						{contentExpanded ? t('page48.post.showLess') : t('page48.post.showMore')}
-					</button>
-				{/if}
+					{contentExpanded ? t('page48.post.showLess') : t('page48.post.showMore')}
+				</button>
 			{/if}
+		{/if}
 
-			<!-- Thread position: kept below the last line of the text, like Threads.
+		<!-- Thread position: kept below the last line of the text, like Threads.
 		     The chip is decoration, so it must not swallow clicks meant for the card. -->
-			{#if threadPosition}
-				<div class="pointer-events-none relative z-[1] mt-1.5 flex">
-					<span
-						class="rounded-md border border-gray-200 px-1.5 py-0.5 text-[12px] font-medium tabular-nums text-gray-500 dark:border-zinc-700 dark:text-gray-400"
+		{#if threadPosition}
+			<div class="pointer-events-none relative z-[1] mt-1.5 flex">
+				<span
+					class="rounded-md border border-gray-200 px-1.5 py-0.5 text-[12px] font-medium tabular-nums text-gray-500 dark:border-zinc-700 dark:text-gray-400"
+				>
+					{threadPosition.index + 1}/{threadPosition.total}
+				</span>
+			</div>
+		{/if}
+
+		<!-- Extra tags (only those not already shown inline) -->
+		{#if extraTags.length > 0}
+			<div class="pointer-events-none relative z-[1] flex flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
+				{#each extraTags as tag (tag)}
+					<a
+						href={tagUrl(tag, activeMedia)}
+						class="pointer-events-auto text-[14px] font-medium text-red-500 hover:underline cursor-pointer"
 					>
-						{threadPosition.index + 1}/{threadPosition.total}
-					</span>
-				</div>
-			{/if}
+						#{tag}
+					</a>
+				{/each}
+			</div>
+		{/if}
 
-			<!-- Extra tags (only those not already shown inline) -->
-			{#if extraTags.length > 0}
-				<div class="pointer-events-none relative z-[1] flex flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
-					{#each extraTags as tag (tag)}
-						<a
-							href={tagUrl(tag, activeMedia)}
-							class="pointer-events-auto text-[14px] font-medium text-red-500 hover:underline cursor-pointer"
-						>
-							#{tag}
-						</a>
-					{/each}
-				</div>
-			{/if}
+		<!-- Poll -->
+		<PostPoll {post} />
 
-			<!-- Poll -->
-			<PostPoll {post} />
+		<!-- Post media: photos (one inline, several as a carousel) and video -->
+		{#if !hideMedia}
+			<PostMedia media={post.media ?? []} bind:index={lightboxIndex} onOpen={openLightbox} />
+		{/if}
 
-			<!-- Post media: photos (one inline, several as a carousel) and video -->
-			{#if !hideMedia}
-				<PostMedia media={post.media ?? []} bind:index={lightboxIndex} onOpen={openLightbox} />
-			{/if}
+		<!-- Embeddable link (YouTube/X/Instagram/TikTok/Spotify): lite, click-to-load -->
+		{#if postEmbed}
+			<div class="pointer-events-none relative z-[1] mt-3">
+				<PostEmbedView embed={postEmbed} class="pointer-events-auto" />
+			</div>
+		{/if}
 
-			<!-- Embeddable link (YouTube/X/Instagram/TikTok/Spotify): lite, click-to-load -->
-			{#if postEmbed}
-				<div class="pointer-events-none relative z-[1] mt-3">
-					<PostEmbedView embed={postEmbed} class="pointer-events-auto" />
-				</div>
-			{/if}
+		<!-- Quoted post preview -->
+		{#if post.quotedPostId}
+			<div class="pointer-events-auto relative z-[1]">
+				<QuotedPostCard post={post.quotedPost ?? null} unavailable={!post.quotedPost} />
+			</div>
+		{/if}
+	{/snippet}
 
-			<!-- Quoted post preview -->
-			{#if post.quotedPostId}
-				<div class="pointer-events-auto relative z-[1]">
-					<QuotedPostCard post={post.quotedPost ?? null} unavailable={!post.quotedPost} />
-				</div>
-			{/if}
-		{/snippet}
-
+	{#snippet cardBody()}
 		<!-- One subtree, only the blur/overlay toggles, so revealing never remounts
 		     the media/embed inside (that caused the iframe to reload and flicker). -->
 		<div
@@ -632,7 +663,7 @@
 				</a>
 			{/if}
 		</div>
-	</div>
+	{/snippet}
 
 	{#if !hideMedia && hasMedia}
 		<div use:portal>

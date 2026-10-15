@@ -46,11 +46,12 @@
 {#if media.length === 1 && media[0].type === 'image'}
 	{@const ratio = mediaRatio(media[0])}
 	{@const box =
-		'relative mx-auto block w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 dark:border-white/5 dark:bg-zinc-800'}
+		'relative block w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 dark:border-white/5 dark:bg-zinc-800'}
 	{@const boxStyle = `aspect-ratio: ${ratio}; max-width: min(100%, ${Math.round(
 		IMAGE_MAX_HEIGHT * ratio
 	)}px);`}
-	<!-- Keep the photo's own ratio and cap the box by width, so it fills exactly. -->
+	<!-- Keep the photo's own ratio and cap the box by width, so it fills exactly. The box
+	     hugs the left edge, lining the photo up with the post text instead of centring it. -->
 	<div class="pointer-events-none relative z-[1] mt-3">
 		{#if onOpen}
 			<button
@@ -76,8 +77,9 @@
 			: 16 / 9}
 	<div class="pointer-events-none relative z-[1] mt-3">
 		<!-- Hug the player (same width VideoPlayer caps itself to) so the corner button
-		     sits inside a portrait video instead of beside it. -->
-		<div class="relative mx-auto w-full" style={`max-width: ${Math.round(510 * videoRatio)}px;`}>
+		     sits inside a portrait video instead of beside it. It sits at the left edge,
+		     like a lone photo, so it lines up with the text. -->
+		<div class="relative w-full" style={`max-width: ${Math.round(510 * videoRatio)}px;`}>
 			<VideoPlayer
 				src={video.url ?? ''}
 				width={video.width}
