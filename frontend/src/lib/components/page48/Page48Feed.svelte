@@ -10,7 +10,7 @@
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { fade } from 'svelte/transition';
 	import { t } from '$lib/i18n';
-	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
+	import { replyHref, sharePost, togglePostInteraction } from '$lib/utils/page48';
 
 	interface Props {
 		media?: 'text' | 'image' | 'video' | null;
@@ -164,7 +164,7 @@
 	}
 
 	function handleComment(post: Page48Post) {
-		goto(`/page48/post/${post.postId}`);
+		goto(replyHref(post.postId));
 	}
 
 	function handleShare(post: Page48Post) {

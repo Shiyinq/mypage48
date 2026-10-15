@@ -350,7 +350,7 @@
 	<UserHoverCard
 		username={post.username}
 		href={`/page48/u/${post.username}`}
-		class="relative block w-11 h-11 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 z-10 ring-2 ring-white dark:ring-zinc-950 shadow-sm transition-transform hover:scale-105"
+		class="relative block w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 z-10 ring-2 ring-white dark:ring-zinc-950 shadow-sm transition-transform hover:scale-105"
 	>
 		<img
 			src={getAvatarUrl(post.userProfilePicture_small || post.userProfilePicture)}
@@ -437,7 +437,7 @@
 {/snippet}
 
 <article
-	class={`relative isolate w-full ${detailLayout ? 'flex flex-col' : 'flex gap-4'} ${isContinuation ? 'pt-0' : 'pt-5'} pb-3 px-5 sm:px-6 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group cursor-pointer`}
+	class={`relative isolate w-full ${detailLayout ? 'flex flex-col' : 'flex gap-3 sm:gap-4'} ${isContinuation ? 'pt-0' : 'pt-5'} pb-3 px-4 sm:px-6 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group cursor-pointer`}
 >
 	<!-- Full-card click target: opens the post detail. Interactive children sit above it. -->
 	<a href={detailHref} class="absolute inset-0 z-0" aria-label={t('page48.aria.openPost')}></a>

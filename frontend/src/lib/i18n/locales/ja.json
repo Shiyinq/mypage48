@@ -2068,7 +2068,7 @@
 		},
 		"composer": {
 			"placeholder": "いまどうしてる？",
-			"replyPlaceholder": "@{username} に返信",
+			"replyPlaceholder": "返信をポスト",
 			"submit": "投稿",
 			"reply": "返信",
 			"addPhoto": "写真を追加",

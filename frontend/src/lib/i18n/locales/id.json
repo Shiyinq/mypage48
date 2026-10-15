@@ -2074,7 +2074,7 @@
 		},
 		"composer": {
 			"placeholder": "Apa yang baru?",
-			"replyPlaceholder": "Balas @{username}",
+			"replyPlaceholder": "Tulis balasan",
 			"submit": "Posting",
 			"reply": "Balas",
 			"addPhoto": "Tambahkan Foto",

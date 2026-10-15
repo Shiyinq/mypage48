@@ -22,7 +22,7 @@
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
-	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
+	import { replyHref, sharePost, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
@@ -295,7 +295,7 @@
 	}
 
 	function handleComment(post: Page48Post) {
-		goto(`/page48/post/${post.postId}`);
+		goto(replyHref(post.postId));
 	}
 
 	function handleShare(post: Page48Post) {

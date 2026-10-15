@@ -2070,7 +2070,7 @@
 		},
 		"composer": {
 			"placeholder": "What's new?",
-			"replyPlaceholder": "Reply to @{username}",
+			"replyPlaceholder": "Post your reply",
 			"submit": "Post",
 			"reply": "Reply",
 			"addPhoto": "Add Photo",
