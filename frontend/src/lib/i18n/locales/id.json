@@ -2035,6 +2035,7 @@
 			"youtubeVideo": "Video YouTube",
 			"cancelReply": "Batalkan balasan",
 			"openX": "Buka X @{username}",
+			"openInstagram": "Buka Instagram @{username}",
 			"imageCount": "{count} gambar",
 			"prevImage": "Gambar sebelumnya",
 			"nextImage": "Gambar berikutnya",
@@ -2073,7 +2074,7 @@
 		},
 		"composer": {
 			"placeholder": "Apa yang baru?",
-			"replyPlaceholder": "Balas @{username}",
+			"replyPlaceholder": "Tulis balasan",
 			"submit": "Posting",
 			"reply": "Balas",
 			"addPhoto": "Tambahkan Foto",
@@ -2299,7 +2300,7 @@
 		},
 		"activity": {
 			"title": "Aktivitas postingan",
-			"view": "Lihat aktivitas",
+			"view": "Aktivitas",
 			"backToPost": "Kembali ke postingan",
 			"quotes": "Kutipan",
 			"reposts": "Repost",

@@ -2029,6 +2029,7 @@
 			"youtubeVideo": "YouTube 動画",
 			"cancelReply": "返信をキャンセル",
 			"openX": "X @{username} を開く",
+			"openInstagram": "Instagram @{username} を開く",
 			"imageCount": "画像 {count} 枚",
 			"prevImage": "前の画像",
 			"nextImage": "次の画像",
@@ -2067,7 +2068,7 @@
 		},
 		"composer": {
 			"placeholder": "いまどうしてる？",
-			"replyPlaceholder": "@{username} に返信",
+			"replyPlaceholder": "返信をポスト",
 			"submit": "投稿",
 			"reply": "返信",
 			"addPhoto": "写真を追加",
@@ -2293,7 +2294,7 @@
 		},
 		"activity": {
 			"title": "投稿のアクティビティ",
-			"view": "アクティビティを表示",
+			"view": "アクティビティ",
 			"backToPost": "投稿に戻る",
 			"quotes": "引用",
 			"reposts": "リポスト",

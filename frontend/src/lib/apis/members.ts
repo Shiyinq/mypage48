@@ -55,8 +55,13 @@ export interface MemberXAccount {
 	memberId: string;
 	name: string;
 	nickname?: string | null;
-	username: string;
-	url: string;
+	/**
+	 * Preferred social handle: X if the member has one, otherwise Instagram. Null when
+	 * the member has neither, so the row still appears without an external link.
+	 */
+	username?: string | null;
+	url?: string | null;
+	platform?: 'x' | 'instagram' | null;
 }
 
 export const members = {
@@ -87,8 +92,8 @@ export const members = {
 		return client<string[]>('/members/generations');
 	},
 
-	getXAccounts: async () => {
-		return client<MemberXAccount[]>('/members/socials/x');
+	getSocialAccounts: async () => {
+		return client<MemberXAccount[]>('/members/socials');
 	},
 
 	// Admin-only CRUD operations

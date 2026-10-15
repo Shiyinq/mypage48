@@ -6,7 +6,7 @@
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import PostActivityRowsSkeleton from '$lib/components/page48/PostActivityRowsSkeleton.svelte';
 	import UserListItem from '$lib/components/page48/UserListItem.svelte';
-	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
+	import { replyHref, sharePost, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	type ActivityTab = 'quotes' | 'reposts' | 'likes';
@@ -132,7 +132,7 @@
 	}
 
 	function handleComment(post: Page48Post) {
-		void goto(`/page48/post/${post.postId}`);
+		void goto(replyHref(post.postId));
 	}
 
 	function handleShare(post: Page48Post) {

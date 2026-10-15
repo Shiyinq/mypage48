@@ -360,9 +360,8 @@
 			{#if (replyTarget ?? post).canReply}
 				<PostComposer
 					isReply
-					placeholder={t('page48.composer.replyPlaceholder', {
-						username: (replyTarget ?? post).username
-					})}
+					autofocus
+					placeholder={t('page48.composer.replyPlaceholder')}
 					onPost={handleReply}
 					{mentionCandidates}
 				/>

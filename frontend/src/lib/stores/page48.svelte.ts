@@ -95,7 +95,7 @@ function createCachedListStore<T>(key: string, fetcher: () => Promise<T[]>) {
 
 /** Member X/Twitter hashtags shown on the left sidebar. */
 export const memberXTagsStore = createCachedListStore<MemberXAccount>('member X accounts', () =>
-	membersApi.getXAccounts()
+	membersApi.getSocialAccounts()
 );
 
 /** Trending hashtags shown on the right sidebar. */
