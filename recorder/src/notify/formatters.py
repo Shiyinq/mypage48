@@ -156,7 +156,7 @@ def _format_recap_end_live_caption(
     total_idr = _gold_to_idr(total_gold, is_showroom)
     idr_str = f" (~ {_format_rp(total_idr)})" if total_gold > 0 else ""
 
-    caption = f"🎬 Recap Live {platform} {member_nickname}\n\n"
+    caption = f"🎬 <b>Recap Live {platform} {member_nickname}</b>\n\n"
     caption += f"❝<i>{title}</i>❞\n"
     if date_wib_range:
         caption += f"{date_wib_range}\n\n"
