@@ -63,8 +63,16 @@
 		onEdit?: (draft: PostDraftInput) => Promise<void>;
 		isReply?: boolean;
 		placeholder?: string;
-		/** Focus the textarea on mount (e.g. when the composer is opened in a modal). */
+		/**
+		 * Focus the textarea on mount (e.g. when the composer is opened in a modal).
+		 */
 		autofocus?: boolean;
+		/**
+		 * Bumped by the caller to move the cursor into the textarea. Unlike `autofocus` this
+		 * also works when the composer is already mounted (it lives under its post), so a reply
+		 * icon can hand it the cursor instead of the reader having to tap the box again.
+		 */
+		focusToken?: number;
 		/** Seeds the composer with a quote (e.g. opened from the Repost menu). */
 		quotedPost?: Page48Post | null;
 		onRemoveQuote?: () => void;
@@ -88,6 +96,7 @@
 		isReply = false,
 		placeholder,
 		autofocus = false,
+		focusToken = 0,
 		quotedPost = null,
 		onRemoveQuote,
 		mentionCandidates = [],
@@ -181,6 +190,17 @@
 			if (!textareaEl) return;
 			autoGrow(textareaEl);
 			if (autofocus) textareaEl.focus();
+		});
+	});
+
+	// Focus whenever the caller bumps its token: the inline composer is already mounted (it
+	// sits under the post being answered), so mounting alone is not enough to focus it.
+	$effect(() => {
+		if (!focusToken) return;
+		const el = textareaEl;
+		requestAnimationFrame(() => {
+			if (el) autoGrow(el);
+			el?.focus();
 		});
 	});
 
@@ -1016,7 +1036,7 @@
 						maxlength={MAX_CONTENT_LENGTH}
 						placeholder={resolvedPlaceholder}
 						rows="1"
-						class={`block min-w-0 flex-1 resize-none bg-transparent outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 ${CONTENT_TEXT_CLASS}`}
+						class={`block min-w-0 flex-1 resize-none bg-transparent outline-none placeholder:text-[15px] placeholder:text-gray-400 sm:placeholder:text-[18px] dark:placeholder:text-gray-500 ${CONTENT_TEXT_CLASS}`}
 					></textarea>
 					<!-- Character counter for this thread post -->
 					{#if item.content.length > 0}
@@ -1195,7 +1215,7 @@
 						bind:value={content}
 						placeholder={resolvedPlaceholder}
 						maxlength={MAX_CONTENT_LENGTH}
-						class={`relative block w-full resize-none bg-transparent text-transparent caret-gray-900 outline-none placeholder:text-gray-400 dark:caret-gray-100 dark:placeholder:text-gray-500 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
+						class={`relative block w-full resize-none bg-transparent text-transparent caret-gray-900 outline-none placeholder:text-[15px] placeholder:text-gray-400 sm:placeholder:text-[18px] dark:caret-gray-100 dark:placeholder:text-gray-500 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
 						rows="1"
 						oninput={(e) => {
 							autoGrow(e.target as HTMLTextAreaElement);

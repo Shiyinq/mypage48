@@ -113,8 +113,8 @@ class MemberService:
             raise MemberFetchError()
 
     @staticmethod
-    def _extract_x_username(value: Optional[str]) -> Optional[str]:
-        """Extract an X/Twitter handle from a URL, `@handle`, or bare handle."""
+    def _extract_handle(value: Optional[str], hosts: tuple) -> Optional[str]:
+        """Extract a social handle from a URL, `@handle`, or bare handle for `hosts`."""
         if not value:
             return None
 
@@ -125,7 +125,7 @@ class MemberService:
         if raw.startswith("@"):
             return raw[1:].strip() or None
 
-        if "twitter.com" in raw or "x.com" in raw:
+        if any(host in raw.lower() for host in hosts):
             try:
                 path = urlsplit(raw).path.strip("/")
             except Exception:
@@ -134,30 +134,53 @@ class MemberService:
             if not parts:
                 return None
             handle = parts[0]
-            # Skip non-profile paths like /i/flow or /intent
-            if handle.lower() in {"i", "home", "intent", "share", "search"}:
+            # Skip non-profile paths like /i/flow, /intent or /p/.
+            if handle.lower() in {
+                "i",
+                "home",
+                "intent",
+                "share",
+                "search",
+                "p",
+                "explore",
+            }:
                 return None
             return handle
 
         return raw or None
 
-    async def get_x_accounts(self) -> List[MemberXAccount]:
-        """Active members that have an X (Twitter) handle, sorted by name."""
+    async def get_social_accounts(self) -> List[MemberXAccount]:
+        """Every active member with their preferred social handle, sorted by name.
+
+        X is preferred and Instagram is the fallback; a member with neither still
+        appears (with no handle/link) so the Page48 member list is complete.
+        """
         members = await self.repository.find_all_active()
         accounts: List[MemberXAccount] = []
 
         for member in members:
             socials = member.get("socials") or {}
-            username = self._extract_x_username(socials.get("twitter"))
-            if not username:
-                continue
+            x_user = self._extract_handle(
+                socials.get("twitter"), ("twitter.com", "x.com")
+            )
+            ig_user = self._extract_handle(socials.get("instagram"), ("instagram.com",))
+            if x_user:
+                username, platform = x_user, "x"
+                url: Optional[str] = f"https://x.com/{x_user}"
+            elif ig_user:
+                username, platform = ig_user, "instagram"
+                url = f"https://instagram.com/{ig_user}"
+            else:
+                username, platform, url = None, None, None
+
             accounts.append(
                 MemberXAccount(
                     memberId=str(member.get("id", "")),
                     name=member.get("name", ""),
                     nickname=member.get("nickname"),
                     username=username,
-                    url=f"https://x.com/{username}",
+                    url=url,
+                    platform=platform,
                 )
             )
 

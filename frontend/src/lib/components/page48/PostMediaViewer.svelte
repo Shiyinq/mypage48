@@ -58,6 +58,38 @@
 		index = Math.max(0, Math.min(next, media.length - 1));
 	}
 
+	// Swipe to change photo on touch devices (the arrows are fiddly on a phone).
+	const SWIPE_THRESHOLD = 40;
+	let touchStartX = 0;
+	let touchStartY = 0;
+	/** Set when a swipe just navigated, so the click that follows does not close the viewer. */
+	let swiped = false;
+
+	function handleTouchStart(e: TouchEvent) {
+		touchStartX = e.changedTouches[0].clientX;
+		touchStartY = e.changedTouches[0].clientY;
+		swiped = false;
+	}
+
+	function handleTouchEnd(e: TouchEvent) {
+		if (media.length <= 1) return;
+		const dx = e.changedTouches[0].clientX - touchStartX;
+		const dy = e.changedTouches[0].clientY - touchStartY;
+		// Only a mostly-horizontal drag navigates, so a stray vertical move is ignored.
+		if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy)) return;
+		swiped = true;
+		goTo(dx < 0 ? index + 1 : index - 1);
+	}
+
+	/** Closing on backdrop click, unless the touch was a swipe. */
+	function handleBackdropClick() {
+		if (swiped) {
+			swiped = false;
+			return;
+		}
+		onClose();
+	}
+
 	/**
 	 * Media is served from the storage origin, where the browser refuses to hand the
 	 * bytes to `fetch` (no CORS headers). Route it through our same-origin proxy so
@@ -133,9 +165,14 @@
 		aria-label={t('page48.mediaViewer.title')}
 	>
 		<!-- Left: the photo being viewed -->
-		<div class="relative flex min-w-0 flex-1 items-center justify-center">
+		<div
+			class="swipe-area relative flex min-w-0 flex-1 items-center justify-center"
+			role="presentation"
+			ontouchstart={handleTouchStart}
+			ontouchend={handleTouchEnd}
+		>
 			<!-- Clicking the empty space around the photo closes the viewer. -->
-			<div class="absolute inset-0" onclick={onClose} role="presentation"></div>
+			<div class="absolute inset-0" onclick={handleBackdropClick} role="presentation"></div>
 
 			{#if current?.type === 'video'}
 				<div class="relative max-h-[94vh] w-full max-w-[min(94vw,520px)]">
@@ -259,5 +296,11 @@
 <style>
 	:global(body.modal-open) {
 		overflow: hidden;
+	}
+
+	/* Left/right swipes navigate; vertical panning stays with the browser so the gesture
+	   never fights the page, and pinch-zoom is still available. */
+	.swipe-area {
+		touch-action: pan-y pinch-zoom;
 	}
 </style>

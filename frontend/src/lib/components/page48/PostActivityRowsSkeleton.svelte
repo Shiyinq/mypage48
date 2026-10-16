@@ -12,8 +12,10 @@
 	{#each Array(count) as _, i (i)}
 		{#if kind === 'posts'}
 			<!-- Mirrors PostCard -->
-			<div class="flex gap-4 px-5 pb-3 pt-5 sm:px-6">
-				<div class="h-11 w-11 shrink-0 rounded-full bg-gray-200/80 dark:bg-zinc-800"></div>
+			<div class="flex gap-3 sm:gap-4 px-4 pb-3 pt-5 sm:px-6">
+				<div
+					class="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-full bg-gray-200/80 dark:bg-zinc-800"
+				></div>
 				<div class="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
 					<div class="flex items-center justify-between gap-2">
 						<div class="h-4 w-28 rounded bg-gray-200 dark:bg-zinc-800"></div>

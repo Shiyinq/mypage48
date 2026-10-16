@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
+	import { replaceState } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { X, FileQuestion, Lock } from 'lucide-svelte';
 	import {
 		page48Api,
@@ -62,8 +64,50 @@
 	let localReplies = $state<Record<string, Page48Post[]>>({});
 	/** Flat view of `replyTree`, used for lookups and the emptiness check. */
 	let replies = $derived(flattenReplies(replyTree));
+
+	/**
+	 * Whether a chain card draws the vertical thread line: it continues into the next
+	 * segment, or has replies of its own rendered right below. The focused post is laid
+	 * out as a detail card (no avatar column), so no line is drawn there regardless.
+	 */
+	function showThreadLine(i: number, postId: string): boolean {
+		return i < chain.length - 1 || (localReplies[postId]?.length ?? 0) > 0;
+	}
+
 	// The post the composer currently replies to (defaults to the focused post).
 	let replyTarget = $state<Page48Post | null>(null);
+
+	/**
+	 * Whether the reply composer (or its locked-reply notice) renders under `post`, pushing
+	 * whatever comes after it further down.
+	 */
+	function showsComposerFor(post: Page48Post | null): boolean {
+		if (!post || replyTarget?.postId !== post.postId) return false;
+		return !post.canReply || isAuthenticated.value;
+	}
+
+	/**
+	 * Whether a chain segment still reads as a continuation of the one above it. A composer
+	 * or a reply added in this session sits between the two and breaks the run, so the
+	 * segment needs its own top spacing instead of being flush against that block.
+	 */
+	function isChainContinuation(i: number): boolean {
+		const above = i > 0 ? chain[i - 1] : parentContext;
+		if (!above) return false;
+
+		return !showsComposerFor(above) && (localReplies[above.postId]?.length ?? 0) === 0;
+	}
+
+	/**
+	 * The post whose composer should take the cursor, bumped on every reply-icon click so the
+	 * same card can ask again. The composer usually sits under its post already, so focusing
+	 * it cannot rely on a mount.
+	 */
+	let focusReply = $state<{ postId: string; token: number } | null>(null);
+
+	function requestComposerFocus(post: Page48Post) {
+		focusReply = { postId: post.postId, token: (focusReply?.token ?? 0) + 1 };
+	}
 
 	/**
 	 * Users offered after an `@` in the reply composer: the post being viewed plus
@@ -95,11 +139,12 @@
 	// Nested replies stop indenting past this depth so the cards never get too narrow.
 	const MAX_INDENT_DEPTH = 3;
 	// The connector line for a nested reply, and the deeper indent used when the
-	// parent is a thread segment: it starts at the segment's avatar line (article
-	// px-5/px-6 + half of the 44px avatar) so the thread line reads as continuous.
+	// parent is a thread segment: it starts at the segment's avatar line (the article's
+	// padding plus half of the avatar, which is 40px on small screens and 44px from `sm`
+	// up) so the thread line reads as continuous.
 	const REPLY_LINE = 'border-l-2 border-gray-200/70 dark:border-zinc-800';
 	const NESTED_REPLY_INDENT = 'ml-5 sm:ml-6';
-	const SEGMENT_REPLY_INDENT = 'ml-[42px] sm:ml-[46px]';
+	const SEGMENT_REPLY_INDENT = 'ml-9 sm:ml-[46px]';
 
 	// Reload whenever the post changes: the host reuses this component across
 	// navigations, so mounting alone would leave stale content.
@@ -107,6 +152,16 @@
 		const id = postId;
 		if (!id) return;
 		load(id);
+	});
+
+	// Arriving from a reply icon (`?reply=1`, see replyHref) means the cursor belongs in this
+	// page's composer, so the reader can type straight away instead of tapping the empty box.
+	// The flag is dropped from the URL so a reload or a share does not keep stealing focus.
+	$effect(() => {
+		if ($page.url.searchParams.get('reply') !== '1' || !focused) return;
+
+		requestComposerFocus(focused);
+		replaceState(`/page48/post/${focused.postId}`, {});
 	});
 
 	async function load(id: string) {
@@ -237,10 +292,12 @@
 			return;
 		}
 		replyTarget = post;
+		requestComposerFocus(post);
 	}
 
 	function cancelReply() {
 		replyTarget = focused;
+		focusReply = null;
 	}
 
 	function handleShare(post: Page48Post) {
@@ -381,13 +438,18 @@
 			</div>
 		</div>
 	{:else if isAuthenticated.value && post.canReply && replyTarget?.postId === post.postId}
-		<div class="bg-white/60 dark:bg-zinc-950/60">
-			{#if post.postId !== focused?.postId}
-				<div class="flex items-center justify-between px-5 sm:px-6 pt-3">
-					<span class="text-[13px] text-gray-500 dark:text-gray-400">
-						{t('page48.post.replyingTo')}
-						<span class="font-semibold text-red-500">@{post.username}</span>
-					</span>
+		<div class="group/composer bg-white/60 dark:bg-zinc-950/60">
+			<!-- Who the reply goes to. Answering a comment shows it straight away, while the
+			     focused post only reveals it once the box is actually in use, so the line does not
+			     announce itself before anyone has clicked the composer. -->
+			<div
+				class={`flex items-center justify-between px-5 sm:px-6 pt-3 ${post.postId === focused?.postId ? 'hidden group-focus-within/composer:flex' : ''}`}
+			>
+				<span class="text-[13px] text-gray-500 dark:text-gray-400">
+					{t('page48.post.replyingTo')}
+					<span class="font-semibold text-red-500">@{post.username}</span>
+				</span>
+				{#if post.postId !== focused?.postId}
 					<button
 						class="p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer"
 						onclick={cancelReply}
@@ -395,11 +457,12 @@
 					>
 						<X size={16} />
 					</button>
-				</div>
-			{/if}
+				{/if}
+			</div>
 			<PostComposer
 				isReply
-				placeholder={t('page48.composer.replyPlaceholder', { username: post.username })}
+				placeholder={t('page48.composer.replyPlaceholder')}
+				focusToken={focusReply?.postId === post.postId ? focusReply.token : 0}
 				onPost={handleReply}
 				{mentionCandidates}
 			/>
@@ -430,8 +493,10 @@
 {/snippet}
 
 {#snippet postSkeleton(widths: string[])}
-	<div class="flex gap-4 px-5 sm:px-6 pt-5 pb-3 animate-pulse">
-		<div class="h-11 w-11 shrink-0 rounded-full bg-gray-200/80 dark:bg-zinc-800"></div>
+	<div class="flex gap-3 sm:gap-4 px-4 sm:px-6 pt-5 pb-3 animate-pulse">
+		<div
+			class="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-full bg-gray-200/80 dark:bg-zinc-800"
+		></div>
 		<div class="min-w-0 flex-1 pt-0.5">
 			<div class="flex items-center justify-between gap-2">
 				<div class="h-4 w-28 rounded bg-gray-200 dark:bg-zinc-800"></div>
@@ -511,8 +576,9 @@
 		{#each chain as item, i (item.postId)}
 			<PostCard
 				post={item}
-				isThreadLine={i < chain.length - 1 || (localReplies[item.postId]?.length ?? 0) > 0}
-				isContinuation={i > 0 || !!parentContext}
+				isThreadLine={showThreadLine(i, item.postId)}
+				isContinuation={isChainContinuation(i)}
+				detailLayout={item.postId === focused?.postId}
 				threadPosition={chainTotal > 1 ? { index: chainStart + i, total: chainTotal } : undefined}
 				showThreadLink={false}
 				showActivityLink={i === 0}

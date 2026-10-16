@@ -9,7 +9,7 @@
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { page48NavbarStore, page48Reads } from '$lib/stores/page48.svelte';
-	import { sharePost, togglePostInteraction, getActiveMedia } from '$lib/utils/page48';
+	import { sharePost, togglePostInteraction, getActiveMedia, replyHref } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { fade } from 'svelte/transition';
@@ -109,7 +109,7 @@
 	}
 
 	function handleComment(post: Page48Post) {
-		goto(`/page48/post/${post.postId}`);
+		goto(replyHref(post.postId));
 	}
 
 	function handleShare(post: Page48Post) {

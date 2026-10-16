@@ -189,6 +189,14 @@ export function tagUrl(tag: string, media?: Page48Media | null): string {
 	return media ? `${base}?media=${media}` : base;
 }
 
+/**
+ * Build a post-detail URL whose reply composer takes the cursor on arrival. Used by the
+ * reply icons of the lists, so answering takes one tap instead of two.
+ */
+export function replyHref(postId: string): string {
+	return `/page48/post/${postId}?reply=1`;
+}
+
 /** Build a Page48 profile URL. Usernames are stored lower case. */
 export function userUrl(username: string): string {
 	return `/page48/u/${encodeURIComponent(username.toLowerCase())}`;

@@ -20,7 +20,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { page48NavbarStore, page48Reads } from '$lib/stores/page48.svelte';
-	import { sharePost, tagUrl, togglePostInteraction } from '$lib/utils/page48';
+	import { replyHref, sharePost, tagUrl, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -167,7 +167,7 @@
 	}
 
 	function handleComment(post: Page48Post) {
-		void goto(`/page48/post/${post.postId}`);
+		void goto(replyHref(post.postId));
 	}
 
 	function handleShare(post: Page48Post) {
