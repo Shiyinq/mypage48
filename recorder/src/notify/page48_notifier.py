@@ -191,15 +191,16 @@ async def _member_social_row(
 async def _member_hashtags(
     config: RecorderConfig, member_name: str, member_nickname: str
 ) -> str:
-    """Page48-only trailing hashtag for a live post: `#NicknameJKT48`.
+    """Page48-only trailing hashtag for a member's post: `#NicknameJKT48`.
 
     Built from the member's nickname in the members API (the same source the Page48
     sidebar uses), so a post's tag matches the one the sidebar links to; it falls back
-    to the live's own nickname when the member is not in that list.
+    to the name the notification itself carries when the member is not in that list.
     """
     row = await _member_social_row(config, member_name, member_nickname)
+    source: str
     if row:
-        source = row.get("nickname") or row.get("name")
+        source = str(row.get("nickname") or row.get("name") or "")
     else:
         source = member_nickname or member_name
 
@@ -684,8 +685,14 @@ async def send_birthday_notification(member: dict, config: RecorderConfig) -> bo
     """Post a birthday notification to Page48."""
     if not _enabled(config):
         return False
+    hashtags = await _member_hashtags(
+        config, str(member.get("name") or ""), str(member.get("nickname") or "")
+    )
     return await _publish(
-        config, _format_birthday_caption(member), [member.get("img", "")]
+        config,
+        _format_birthday_caption(member),
+        [member.get("img", "")],
+        hashtags=hashtags,
     )
 
 
