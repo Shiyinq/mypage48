@@ -16,6 +16,10 @@ export const GET: RequestHandler = async () => {
 		'/jkt48/calendar',
 		'/jkt48/event-history',
 		'/jkt48/sorter',
+		'/page48',
+		'/page48/trending',
+		'/page48/photos',
+		'/page48/videos',
 		'/login',
 		'/register'
 	];
@@ -41,7 +45,10 @@ ${pages
 				'/jkt48/live/pc',
 				'/jkt48/members',
 				'/jkt48/calendar',
-				'/jkt48/event-history'
+				'/jkt48/event-history',
+				'/page48',
+				'/page48/photos',
+				'/page48/videos'
 			].includes(page)
 		) {
 			priority = '0.9';
