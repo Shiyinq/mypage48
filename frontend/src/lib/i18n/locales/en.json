@@ -2229,8 +2229,10 @@
 		},
 		"trending": {
 			"title": "Trending on Page48",
-			"subtitle": "Most used tags",
-			"empty": "No tags yet. Use #hashtags in your posts.",
+			"subtitle": "Most used tags this week",
+			"thisWeek": "This week",
+			"thisWeekSince": "This week · since {date}",
+			"empty": "No tags yet this week. Use #hashtags in your posts.",
 			"postCount": "{count} posts",
 			"loadError": "Failed to load trending"
 		},

@@ -300,6 +300,10 @@ class TrendingTag(BaseModel):
 
 class TrendingTagsResponse(BaseModel):
     tags: list[TrendingTag] = []
+    # Which window the counts cover: "week" (since Monday 00:00 WIB) or "all".
+    period: str = "week"
+    # Start of that window in UTC, so the UI can label it. None means all-time.
+    since: Optional[datetime] = None
 
 
 class ActiveUserItem(BaseModel):

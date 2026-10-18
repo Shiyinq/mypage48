@@ -4,6 +4,7 @@ import {
 	type Page48NotificationCounts,
 	type Page48NotificationTab,
 	type Page48UserProfile,
+	type TrendingPeriod,
 	type TrendingTag
 } from '$lib/api/page48';
 import { members as membersApi, type MemberXAccount } from '$lib/apis/members';
@@ -24,6 +25,25 @@ export const page48NavbarStore = $state<{
 });
 
 /**
+ * WIB is a fixed UTC+7 offset, matching the backend's weekly trending window.
+ */
+const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+/**
+ * Monday-based week key in WIB ("2026-10-12"). Week-scoped caches hang off this,
+ * so a tab left open across Sunday midnight does not keep serving last week's
+ * ranking.
+ */
+export function currentWeekKey(now: Date = new Date()): string {
+	const wib = new Date(now.getTime() + WIB_OFFSET_MS);
+	const daysSinceMonday = (wib.getUTCDay() + 6) % 7;
+	const monday = new Date(
+		Date.UTC(wib.getUTCFullYear(), wib.getUTCMonth(), wib.getUTCDate() - daysSinceMonday)
+	);
+	return monday.toISOString().slice(0, 10);
+}
+
+/**
  * Cached list store shared at module scope.
  *
  * The Page48 sidebar hashtags (member X accounts, trending tags) are mounted on
@@ -39,7 +59,7 @@ interface CachedListState<T> {
 	error: string | null;
 }
 
-function createCachedListStore<T>(key: string, fetcher: () => Promise<T[]>) {
+function createCachedListStore<T>(key: string, fetcher: () => Promise<T[]>, scope?: () => string) {
 	const state = $state<CachedListState<T>>({
 		data: [],
 		isLoading: false,
@@ -47,6 +67,8 @@ function createCachedListStore<T>(key: string, fetcher: () => Promise<T[]>) {
 		error: null
 	});
 	const dedup = createRequestDedup();
+	// The scope the cached data belongs to (e.g. the current week).
+	let loadedScope: string | null = null;
 
 	return {
 		get data() {
@@ -64,14 +86,16 @@ function createCachedListStore<T>(key: string, fetcher: () => Promise<T[]>) {
 
 		/** Return the cached list when already loaded, otherwise fetch (deduped). */
 		load: async (force = false) => {
-			if (state.isLoaded && !force) return;
+			const currentScope = scope ? scope() : '';
+			if (state.isLoaded && !force && currentScope === loadedScope) return;
 
-			return dedup.execute(key, async () => {
+			return dedup.execute(`${key}:${currentScope}`, async () => {
 				state.isLoading = true;
 				state.error = null;
 				try {
 					state.data = await fetcher();
 					state.isLoaded = true;
+					loadedScope = currentScope;
 				} catch (e) {
 					logger.error(`Failed to load ${key}`, e, { context: 'Page48Store' });
 					state.error = `Failed to load ${key}`;
@@ -88,6 +112,7 @@ function createCachedListStore<T>(key: string, fetcher: () => Promise<T[]>) {
 			state.isLoading = false;
 			state.isLoaded = false;
 			state.error = null;
+			loadedScope = null;
 			dedup.clear();
 		}
 	};
@@ -98,10 +123,11 @@ export const memberXTagsStore = createCachedListStore<MemberXAccount>('member X 
 	membersApi.getSocialAccounts()
 );
 
-/** Trending hashtags shown on the right sidebar. */
+/** Trending hashtags shown on the right sidebar (this week's ranking). */
 export const trendingTagsStore = createCachedListStore<TrendingTag>(
 	'trending tags',
-	async () => (await page48Api.getTrendingTags(8)).tags
+	async () => (await page48Api.getTrendingTags(8)).tags,
+	currentWeekKey
 );
 
 /** Most active users (last 7 days), shown under the trending tags. */
@@ -332,8 +358,10 @@ const page48Reads = (() => {
 				page48Api.getPostsByTag(tag, limit, cursor, media)
 			),
 
-		getTrendingTags: (limit = 10) =>
-			cached(`trending:${limit}`, () => page48Api.getTrendingTags(limit)),
+		getTrendingTags: (limit = 10, period: TrendingPeriod = 'week') =>
+			cached(`trending:${limit}:${period}:${currentWeekKey()}`, () =>
+				page48Api.getTrendingTags(limit, period)
+			),
 
 		getActiveUsers: (limit = 5, days = 7) =>
 			cached(`active-users:${limit}:${days}`, () => page48Api.getActiveUsers(limit, days)),

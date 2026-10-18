@@ -1,8 +1,33 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 # A post may hold up to this many media items, images and videos combined.
 MAX_MEDIA = 10
+
+# Trending hashtags are ranked inside a window, not over the whole history, so
+# the list actually resets. `all` stays available for admin/debug views.
+TRENDING_PERIODS = ("week", "all")
+# WIB is a fixed UTC+7 offset (Indonesia has no DST), so the window boundary
+# never needs a tz database — `zoneinfo` would drag `tzdata` into the image.
+WIB = timezone(timedelta(hours=7))
+
+
+def trending_period_start(
+    period: str = "week", now: Optional[datetime] = None
+) -> Optional[datetime]:
+    """Start of the trending window in UTC, or None for the all-time list.
+
+    `week` starts on Monday 00:00 WIB, so the ranking resets every Monday
+    morning and a tag cannot sit at the top forever.
+    """
+    if period == "all":
+        return None
+
+    current = (now or datetime.now(timezone.utc)).astimezone(WIB)
+    monday = current - timedelta(days=current.weekday())
+    start = monday.replace(hour=0, minute=0, second=0, microsecond=0)
+    return start.astimezone(timezone.utc)
+
 
 # Page48 ban durations an admin can pick; `permanent` never expires.
 BAN_DURATIONS = {
