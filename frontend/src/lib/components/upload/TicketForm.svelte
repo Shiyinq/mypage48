@@ -18,6 +18,7 @@
 	import TwoShotSection from './TwoShotSection.svelte';
 	import SetlistSelector from '$lib/components/SetlistSelector.svelte';
 	import { preventNonNumericInput, enforceMin } from '$lib/utils/input';
+	import type { TwoShotType } from '$lib/constants/twoShot';
 
 	interface Props {
 		formData: {
@@ -39,7 +40,7 @@
 			notes: string;
 			two_shot: {
 				member_name: string;
-				type: 'Roulette' | 'Birthday';
+				type: TwoShotType;
 				price: number;
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				[key: string]: any;

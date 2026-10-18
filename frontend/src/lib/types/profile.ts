@@ -32,6 +32,8 @@ export interface ProfileRecentActivity {
 export interface OshiTwoShotCounts {
 	roulette: number;
 	birthday: number;
+	graduate?: number;
+	chekicha?: number;
 }
 
 export interface ProfileFullResponse {

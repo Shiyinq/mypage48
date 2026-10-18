@@ -3,6 +3,7 @@
  */
 
 import type { PaginationMeta } from './common';
+import type { TwoShotType } from '$lib/constants/twoShot';
 
 export interface Ticket {
 	_id: string;
@@ -40,7 +41,7 @@ export interface Ticket {
 		imageUrl_small?: string;
 		blurHash?: string;
 		member_name: string;
-		type: 'Roulette' | 'Birthday';
+		type: TwoShotType;
 		price: number;
 		is_favorite?: boolean;
 	} | null;

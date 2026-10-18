@@ -5,12 +5,13 @@
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
 	import { dragDrop } from '$lib/actions/dragDrop';
 	import { OptimizedImage, ImageOverlayActions } from '$lib/components/common';
+	import { TWO_SHOT_TYPES, TWO_SHOT_DEFAULT_PRICE, type TwoShotType } from '$lib/constants/twoShot';
 
 	interface Props {
 		showTwoShot: boolean;
 		twoShotImage: string | null;
 		memberName: string;
-		type: 'Roulette' | 'Birthday';
+		type: TwoShotType;
 		price: number;
 		onSelectImage: () => void;
 		onEdit?: () => void;
@@ -130,12 +131,13 @@
 							name="two_shot_type"
 							bind:value={type}
 							onchange={(e) => {
-								price = e.currentTarget.value === 'Birthday' ? 250000 : 100000;
+								price = TWO_SHOT_DEFAULT_PRICE[e.currentTarget.value as TwoShotType];
 							}}
 							class="w-full pl-9 pr-8 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100 appearance-none cursor-pointer"
 						>
-							<option value="Roulette">Roulette</option>
-							<option value="Birthday">Birthday</option>
+							{#each TWO_SHOT_TYPES as twoShotTypeOption}
+								<option value={twoShotTypeOption}>{twoShotTypeOption}</option>
+							{/each}
 						</select>
 						<ChevronDown
 							class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
