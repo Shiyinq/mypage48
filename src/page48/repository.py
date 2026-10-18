@@ -461,14 +461,27 @@ class Page48Repository:
         return await cursor.to_list(length=limit)
 
     async def get_trending_tags(
-        self, limit: int = 10, visibility: Optional[dict] = None
+        self,
+        limit: int = 10,
+        visibility: Optional[dict] = None,
+        since: Optional[datetime] = None,
     ) -> List[dict]:
-        """Return the most used tags across all posts, most frequent first."""
+        """Most used tags inside a window, most frequent first.
+
+        `since` bounds the window (the ranking then resets when the window
+        rolls over); `None` counts every post ever written.
+        """
         match: dict = {"tags": {"$exists": True, "$ne": []}}
+        if since is not None:
+            match["createdAt"] = {"$gte": since}
         if visibility:
             match.update(visibility)
         pipeline = [
             {"$match": match},
+            # Newest first, so the scan ceiling below always covers the most
+            # recent posts in the window instead of an arbitrary slice of the
+            # collection (natural order drifts and is not tied to `createdAt`).
+            {"$sort": {"createdAt": -1}},
             # Bound the work before unwinding; counts stay exact at a realistic
             # scale and become a sample past the ceiling (like `search_tags`).
             {"$limit": AGGREGATION_POST_SCAN},

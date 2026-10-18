@@ -4,6 +4,7 @@
 	import type { TrendingTag } from '$lib/api/page48';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import { page48NavbarStore, page48Reads } from '$lib/stores/page48.svelte';
+	import { formatWindowStart } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
@@ -15,6 +16,14 @@
 	let tags = $state<TrendingTag[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	// The ranking covers a window; keep its start so the header can name it.
+	let since = $state<string | null>(null);
+
+	let windowLabel = $derived(
+		since
+			? t('page48.trending.thisWeekSince', { date: formatWindowStart(since) })
+			: t('page48.trending.subtitle')
+	);
 
 	onMount(() => {
 		page48NavbarStore.pageType = 'trending';
@@ -27,6 +36,7 @@
 			error = null;
 			const response = await page48Reads.getTrendingTags(50);
 			tags = response.tags;
+			since = response.since;
 		} catch (err: unknown) {
 			const e = err as { message?: string };
 			error = e?.message || t('page48.trending.loadError');
@@ -57,7 +67,7 @@
 				{t('page48.trending.title')}
 			</h1>
 		</div>
-		<p class="text-[13px] text-gray-500 dark:text-gray-400 mt-1">{t('page48.trending.subtitle')}</p>
+		<p class="text-[13px] text-gray-500 dark:text-gray-400 mt-1">{windowLabel}</p>
 	</div>
 
 	{#if loading}

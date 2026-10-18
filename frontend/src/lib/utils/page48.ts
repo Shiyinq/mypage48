@@ -1163,6 +1163,21 @@ export function formatPostTime(dateStr: string, full = false): string {
 }
 
 /**
+ * Day a ranking window started ("12 Okt"), used to label the trending list.
+ * Always rendered in WIB, because that is where the weekly reset happens.
+ */
+export function formatWindowStart(dateStr: string | null): string {
+	if (!dateStr) return '';
+	const date = parseUTCDate(dateStr);
+	if (Number.isNaN(date.getTime())) return '';
+	return new Intl.DateTimeFormat(getLocaleMap(locale.value), {
+		day: 'numeric',
+		month: 'short',
+		timeZone: 'Asia/Jakarta'
+	}).format(date);
+}
+
+/**
  * Toggle like/repost/bookmark for a post with an optimistic update.
  * Mutates `post` in place (works with Svelte 5 deep `$state` proxies) and
  * reconciles with the server response, reverting on failure.
