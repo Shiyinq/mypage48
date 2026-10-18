@@ -4,10 +4,10 @@ The frontend application for **MyPage48** - a personal dashboard for JKT48 fans 
 
 ## 🛠️ Tech Stack
 
-- **Framework**: SvelteKit 2.x
-- **Styling**: TailwindCSS with custom glassmorphism design
+- **Framework**: Svelte 5 & SvelteKit 2
+- **Styling**: TailwindCSS v4 with custom glassmorphism design
 - **Icons**: Lucide Svelte
-- **State Management**: Svelte Stores
+- **State Management**: Svelte 5 runes & stores
 - **i18n**: Custom implementation (EN, ID, JA)
 - **API Client**: Custom fetch wrapper with JWT auth
 
@@ -20,13 +20,15 @@ frontend/
 │   │   ├── apis/         # API client functions
 │   │   ├── components/   # Reusable UI components
 │   │   ├── i18n/         # Internationalization
-│   │   ├── services/     # External services (Gemini AI)
 │   │   ├── stores/       # Svelte stores
 │   │   ├── types/        # TypeScript definitions
 │   │   └── utils/        # Utility functions
 │   └── routes/
-│       ├── (app)/        # Main app layout group
+│       ├── (public)/     # Public marketing, legal, and docs pages
 │       ├── auth/         # OAuth callback routes
+│       ├── page48/       # Social feed, trending, notifications
+│       ├── live/         # Showroom & IDN Live multiview
+│       ├── sorter/       # Oshi sorter
 │       ├── history/      # Ticket history page
 │       ├── memories/     # Photo memories
 │       ├── profile/      # User profile & settings
@@ -35,14 +37,14 @@ frontend/
 │       ├── u/            # Public profile pages
 │       └── upload/       # Ticket upload
 ├── static/               # Static assets
-└── tests/                # E2E tests
+└── svelte.config.js      # SvelteKit configuration
 ```
 
 ## 🚀 Development
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 24+
 - Backend API running (see main README)
 
 ### Setup
@@ -71,28 +73,6 @@ npm run dev -- --open
 | `npm run check`   | Type-check the codebase   |
 | `npm run lint`    | Run ESLint                |
 | `npm run format`  | Format code with Prettier |
-
-## 🎨 Key Components
-
-- **Dashboard**: Stats overview with charts and seat map
-- **TheaterSeatMap**: Interactive visualization of seating history
-- **TicketCard**: Display theater ticket information
-- **MemberSelector**: Search and select JKT48 members
-- **OshiSelectionModal**: Set favorite member (oshi)
-
-## 🌐 Pages
-
-| Route           | Description                  |
-| --------------- | ---------------------------- |
-| `/`             | Dashboard with statistics    |
-| `/theater`      | Theater schedule & show info |
-| `/history`      | Ticket history               |
-| `/top-2shot`    | 2-shot collection ranking    |
-| `/memories`     | Photo memories gallery       |
-| `/profile`      | User profile                 |
-| `/settings`     | User settings                |
-| `/u/[username]` | Public profile (Wrapped)     |
-| `/upload`       | Upload theater tickets       |
 
 ## 📝 License
 

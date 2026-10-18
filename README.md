@@ -28,6 +28,7 @@
 - 📦 **Data Export** - Download your complete data including images in a ZIP archive
 - 📺 **JKT48 Live Stream** - Watch Showroom and IDN Live with a real-time multiview experience
 - 🔄 **Replay** - Watch recorded JKT48 live streams with synchronized chat and gifts
+- 🗣️ **Page48 Social** - JKT48 community feed with threads, quotes, polls, media uploads, bookmarks, hashtags, and notifications
 - 📉 **Oshi Sorter** - Rank your favorite JKT48 members with an interactive sorting tool
 - 🌏 **Multi-language Support** - Available in English, Indonesian, and Japanese
 - 🌙 **Dark Mode** - Beautiful dark-themed UI with glassmorphism design
@@ -43,13 +44,13 @@
 | Layer | Technology |
 | --- | --- |
 | **Backend** | FastAPI |
-| **Frontend** | Svelte & SvelteKit |
+| **Frontend** | Svelte 5 & SvelteKit 2 |
 | **Database** | MongoDB |
 | **Storage** | MinIO & Cloudflare R2 |
 | **Reverse Proxy**| Nginx |
 | **Analytics** | Umami |
 | **LLM** | Google Gemini |
-| **Styling** | Vanilla CSS & TailwindCSS |
+| **Styling** | TailwindCSS v4 & custom CSS |
 | **Auth** | JWT Authentication |
 
 ## 📁 Project Structure
@@ -103,6 +104,9 @@ The easiest way to get started is using the provided `Makefile`:
    - **API:** http://localhost:8000/docs
    - **MinIO:** http://localhost:9001
 
+   > **First run:** in a fresh database, run `make db-index` once so feed,
+   > search, and trending queries can use their indexes.
+
 #### Alternative: Manual Setup
 
 If you prefer not to use `make`, you can set up the project manually:
@@ -137,6 +141,21 @@ MyPage48 is now fully production-ready with a secure, automated infrastructure.
 
 ### Guide
 For a step-by-step production setup on a VPS, please follow the **[Deployment Guide](docs/DEPLOYMENT.md)**.
+
+## 🧪 Testing
+
+Backend tests need MongoDB and MinIO running locally. Point `.env` at your
+instance (Docker Compose exposes MongoDB on host port `27018`) and run:
+
+```bash
+.venv/bin/python -m pytest
+```
+
+Run the full quality gate (backend lint/format/tests plus frontend check/format/lint):
+
+```bash
+make check
+```
 
 ## 📝 License
 
