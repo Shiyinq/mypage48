@@ -441,8 +441,72 @@ async def test_trending_tags(client, create_user, make_post):
 
     res = await client.get("/api/page48/tags/trending")
     assert res.status_code == 200
-    tags = {t["tag"] for t in res.json()["tags"]}
+    body = res.json()
+    assert body["period"] == "week"
+    assert body["since"] is not None
+    tags = {t["tag"] for t in body["tags"]}
     assert "p48trending" in tags
+
+
+def _week_start_utc() -> datetime:
+    """Monday 00:00 WIB of the current week, expressed in UTC.
+
+    Computed here instead of importing the helper, so the test pins the rule
+    rather than agreeing with whatever the implementation happens to do.
+    """
+    now_wib = datetime.now(timezone.utc) + timedelta(hours=7)
+    monday_wib = (now_wib - timedelta(days=now_wib.weekday())).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    return monday_wib - timedelta(hours=7)
+
+
+@pytest.mark.asyncio
+async def test_trending_tags_drop_last_weeks_posts(client, db, create_user, make_post):
+    """The ranking resets weekly: an old post must not prop a tag up forever."""
+    _, _, headers = await create_user("p48_trend_week")
+    await make_post(headers, "fresh #p48thisweek")
+    stale = await make_post(headers, "stale #p48lastweek")
+
+    await db["page48_posts"].update_one(
+        {"postId": stale["postId"]},
+        {"$set": {"createdAt": datetime.now(timezone.utc) - timedelta(days=8)}},
+    )
+
+    week = (await client.get("/api/page48/tags/trending")).json()
+    week_tags = {t["tag"] for t in week["tags"]}
+    assert "p48thisweek" in week_tags
+    assert "p48lastweek" not in week_tags
+
+    # `period=all` is turned off at the API surface for now; the query still
+    # supports it internally (`since=None`) so it can be re-enabled later.
+    disabled = await client.get("/api/page48/tags/trending?period=all")
+    assert disabled.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_trending_tags_week_boundary(client, db, create_user, make_post):
+    """A post counts from Monday 00:00 WIB; a second earlier does not."""
+    _, _, headers = await create_user("p48_trend_edge")
+    on_monday = await make_post(headers, "monday #p48justafter")
+    before = await make_post(headers, "sunday #p48justbefore")
+
+    boundary = _week_start_utc()
+    await db["page48_posts"].update_one(
+        {"postId": on_monday["postId"]}, {"$set": {"createdAt": boundary}}
+    )
+    await db["page48_posts"].update_one(
+        {"postId": before["postId"]},
+        {"$set": {"createdAt": boundary - timedelta(seconds=1)}},
+    )
+
+    body = (await client.get("/api/page48/tags/trending")).json()
+    tags = {t["tag"] for t in body["tags"]}
+    assert "p48justafter" in tags
+    assert "p48justbefore" not in tags
+
+    since = datetime.fromisoformat(body["since"].replace("Z", "+00:00"))
+    assert since == boundary
 
 
 @pytest.mark.asyncio

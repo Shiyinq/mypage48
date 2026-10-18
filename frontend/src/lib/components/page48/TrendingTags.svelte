@@ -27,6 +27,10 @@
 		<h2 class="font-bold text-[15px] text-gray-900 dark:text-gray-100">
 			{t('page48.trending.title')}
 		</h2>
+		<!-- The ranking resets every Monday, so the card says which window it is. -->
+		<span class="ml-auto text-[11px] font-medium text-gray-400 dark:text-gray-500">
+			{t('page48.trending.thisWeek')}
+		</span>
 	</div>
 
 	{#if loading}

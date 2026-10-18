@@ -2233,8 +2233,10 @@
 		},
 		"trending": {
 			"title": "Trending di Page48",
-			"subtitle": "Tag paling banyak dipakai",
-			"empty": "Belum ada tag. Gunakan #hashtag di postinganmu.",
+			"subtitle": "Tag paling banyak dipakai minggu ini",
+			"thisWeek": "Minggu ini",
+			"thisWeekSince": "Minggu ini · sejak {date}",
+			"empty": "Belum ada tag minggu ini. Gunakan #hashtag di postinganmu.",
 			"postCount": "{count} post",
 			"loadError": "Gagal memuat trending"
 		},

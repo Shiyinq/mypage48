@@ -260,11 +260,19 @@ async def get_user_reposts(
 @router.get("/tags/trending", response_model=TrendingTagsResponse)
 async def get_trending_tags(
     limit: int = Query(10, ge=1, le=50),
+    period: str = Query(
+        "week",
+        # All-time ranking is disabled at the API surface for now; the service
+        # and repository still accept `all`/`since=None`, so it can be turned
+        # back on by widening this pattern again.
+        pattern="^week$",
+        description="Ranking window: this week",
+    ),
     current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
     service: Page48Service = Depends(get_page48_service),
 ):
     user_id = current_user.userId if current_user else None
-    return await service.get_trending_tags(limit, user_id)
+    return await service.get_trending_tags(limit, user_id, period)
 
 
 @router.get("/users/active", response_model=ActiveUsersResponse)

@@ -15,7 +15,9 @@ from src.page48.constants import (
     DEFAULT_REPLY_SETTING,
     MAX_MEDIA,
     REPLY_SETTINGS,
+    TRENDING_PERIODS,
     ban_is_active,
+    trending_period_start,
 )
 from src.page48.exceptions import (
     CannotBanAdminError,
@@ -1101,13 +1103,19 @@ class Page48Service:
                     await self._notify(quoted_author, actor_user_id, "quote", post_id)
 
     async def get_trending_tags(
-        self, limit: int = 10, viewer_id: Optional[str] = None
+        self, limit: int = 10, viewer_id: Optional[str] = None, period: str = "week"
     ) -> TrendingTagsResponse:
+        """Rank tags inside the current week, so the list resets every Monday."""
+        if period not in TRENDING_PERIODS:
+            period = "week"
+        since = trending_period_start(period)
         rows = await self.repository.get_trending_tags(
-            limit, await self._visibility(viewer_id)
+            limit, await self._visibility(viewer_id), since
         )
         return TrendingTagsResponse(
-            tags=[TrendingTag(tag=row["_id"], count=row["count"]) for row in rows]
+            tags=[TrendingTag(tag=row["_id"], count=row["count"]) for row in rows],
+            period=period,
+            since=since,
         )
 
     # Search

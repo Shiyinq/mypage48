@@ -347,6 +347,9 @@ export interface PostActivityResponse {
 	canViewLikes: boolean;
 }
 
+/** Ranking window for trending tags. Only the current week for now. */
+export type TrendingPeriod = 'week';
+
 export interface TrendingTag {
 	tag: string;
 	count: number;
@@ -354,6 +357,10 @@ export interface TrendingTag {
 
 export interface TrendingTagsResponse {
 	tags: TrendingTag[];
+	/** Which window the counts cover. */
+	period: TrendingPeriod;
+	/** Start of that window (UTC ISO); null for the all-time list. */
+	since: string | null;
 }
 
 export interface ActiveUser {
@@ -971,8 +978,11 @@ export const page48Api = {
 		return cachedListGet(url, () => client<PostPaginationResponse>(url));
 	},
 
-	getTrendingTags: async (limit: number = 10): Promise<TrendingTagsResponse> => {
-		return client<TrendingTagsResponse>(`/page48/tags/trending?limit=${limit}`);
+	getTrendingTags: async (
+		limit: number = 10,
+		period: TrendingPeriod = 'week'
+	): Promise<TrendingTagsResponse> => {
+		return client<TrendingTagsResponse>(`/page48/tags/trending?limit=${limit}&period=${period}`);
 	},
 
 	getActiveUsers: async (limit: number = 5, days: number = 7): Promise<ActiveUsersResponse> => {

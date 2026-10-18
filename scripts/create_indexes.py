@@ -114,6 +114,8 @@ async def create_indexes():
         await db["page48_posts"].create_index([("rootPostId", 1), ("createdAt", 1)])
         await db["page48_posts"].create_index([("parentPostId", 1), ("createdAt", 1)])
         await db["page48_posts"].create_index("tags")
+        # Trending: newest posts in the window first, then the tag unwind.
+        await db["page48_posts"].create_index([("createdAt", -1), ("tags", 1)])
         # Search: free words match token prefixes, and `@` matches mentions.
         await db["page48_posts"].create_index("searchTokens")
         await db["page48_posts"].create_index("mentions")
