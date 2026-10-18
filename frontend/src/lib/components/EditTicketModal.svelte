@@ -10,6 +10,7 @@
 	import type { Ticket } from '$lib/types';
 	import { LoaderCircle, CircleCheck, NotebookPen } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import type { TwoShotType } from '$lib/constants/twoShot';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { THEATER_ROWS } from '$lib/constants';
 	import { setlistsStore } from '$lib/stores/theater.svelte';
@@ -61,7 +62,7 @@
 		two_shot: {
 			imageUrl: '',
 			member_name: '',
-			type: 'Roulette' as 'Roulette' | 'Birthday',
+			type: 'Roulette' as TwoShotType,
 			price: 100000
 		}
 	});
@@ -85,7 +86,7 @@
 				: {
 						imageUrl: '',
 						member_name: '',
-						type: 'Roulette' as 'Roulette' | 'Birthday',
+						type: 'Roulette' as TwoShotType,
 						price: 100000
 					}
 		};

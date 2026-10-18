@@ -1,3 +1,9 @@
+from typing import Literal, get_args
+
+TwoShotType = Literal["Roulette", "Birthday", "Graduate", "Chekicha"]
+TWO_SHOT_TYPES = get_args(TwoShotType)
+
+
 class Info:
     TICKET_CREATED = "Ticket created successfully."
     TICKET_UPDATED = "Ticket updated successfully."

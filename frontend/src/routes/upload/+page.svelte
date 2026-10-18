@@ -24,6 +24,7 @@
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
 	import { getErrorMessage } from '$lib/utils/api';
+	import type { TwoShotType } from '$lib/constants/twoShot';
 
 	const { t } = useTranslation();
 
@@ -71,7 +72,7 @@
 		two_shot: {
 			imageUrl: '',
 			member_name: '',
-			type: 'Roulette' as 'Roulette' | 'Birthday',
+			type: 'Roulette' as TwoShotType,
 			price: 100000
 		}
 	});

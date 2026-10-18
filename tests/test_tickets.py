@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.asyncio
 async def test_create_ticket_success(client: AsyncClient, db, create_user):
     """Test creating a ticket."""
@@ -484,3 +485,61 @@ async def test_update_ticket_remove_photos(client: AsyncClient, db, create_user)
     assert "blurHash" not in data["two_shot"] or data["two_shot"]["blurHash"] is None
 
 
+@pytest.mark.parametrize(
+    "two_shot_type", ["Roulette", "Birthday", "Graduate", "Chekicha"]
+)
+@pytest.mark.asyncio
+async def test_create_ticket_with_two_shot_type(
+    client: AsyncClient, db, create_user, two_shot_type
+):
+    """Test creating a ticket with each supported 2-shot type."""
+    token, user_id, headers = await create_user(f"ts_{two_shot_type.lower()}")
+
+    payload = {
+        "ticket_id": f"T-TS-{two_shot_type.upper()}",
+        "event": {
+            "title": "2Shot Type Test",
+            "date": "2024-10-01",
+            "day": "Tuesday",
+            "time": "19:00",
+        },
+        "seat": {"section": "A", "number": "1"},
+        "price": 100000,
+        "two_shot": {
+            "member_name": "Feni",
+            "type": two_shot_type,
+            "price": 100000,
+        },
+    }
+
+    response = await client.post("/api/theater/tickets", json=payload, headers=headers)
+    assert response.status_code == 201
+    assert response.json()["two_shot"]["type"] == two_shot_type
+
+
+@pytest.mark.asyncio
+async def test_create_ticket_with_invalid_two_shot_type(
+    client: AsyncClient, db, create_user
+):
+    """Test that an unsupported 2-shot type is rejected."""
+    token, user_id, headers = await create_user("ts_invalid")
+
+    payload = {
+        "ticket_id": "T-TS-INVALID",
+        "event": {
+            "title": "Invalid 2Shot Type",
+            "date": "2024-10-02",
+            "day": "Wednesday",
+            "time": "19:00",
+        },
+        "seat": {"section": "A", "number": "1"},
+        "price": 100000,
+        "two_shot": {
+            "member_name": "Feni",
+            "type": "Unknown",
+            "price": 100000,
+        },
+    }
+
+    response = await client.post("/api/theater/tickets", json=payload, headers=headers)
+    assert response.status_code == 422

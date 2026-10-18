@@ -3,6 +3,7 @@ from typing import Annotated, List, Optional, Union
 
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 
+from src.tickets.constants import TwoShotType
 from src.utils import cleanse_image_markdown, validate_image_path
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
@@ -29,7 +30,7 @@ class TicketRules(BaseModel):
 
 class TicketTwoShotBase(BaseModel):
     member_name: str
-    type: str = "Roulette"  # 'Roulette' | 'Birthday'
+    type: str = "Roulette"  # 'Roulette' | 'Birthday' | 'Graduate' | 'Chekicha'
     price: float
     imageUrl: Optional[str] = None
     imageUrl_medium: Optional[str] = None
@@ -39,6 +40,8 @@ class TicketTwoShotBase(BaseModel):
 
 
 class TicketTwoShot(TicketTwoShotBase):
+    # Strict on write only; TicketTwoShotBase keeps responses lenient for old data.
+    type: TwoShotType = "Roulette"
     imageUrl: Optional[str] = Field(default=None, max_length=100)
     blurHash: Optional[str] = Field(default=None, max_length=100)
 

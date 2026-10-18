@@ -601,10 +601,10 @@ class UserService:
 
     async def _get_single_oshi_data(
         self, oshi_id: str, tickets
-    ) -> tuple[Optional[OshiResponse], int, int, int]:
+    ) -> tuple[Optional[OshiResponse], OshiTwoShotCounts, int]:
         """Fetch oshi data and calculate per-oshi stats for a single oshi ID.
 
-        Returns (oshi_response, roulette_count, birthday_count, oshi_meetings).
+        Returns (oshi_response, two_shot_counts, oshi_meetings).
         """
         try:
             member_detail = await self.member_service.get_member_by_id(str(oshi_id))
@@ -625,16 +625,19 @@ class UserService:
                 socials=member.socials.model_dump() if member.socials else None,
             )
 
-            roulette_count = 0
-            birthday_count = 0
+            two_shot_counts = OshiTwoShotCounts()
             oshi_meetings = 0
 
             for t in tickets:
                 if t.two_shot and t.two_shot.member_name == oshi_name:
                     if t.two_shot.type == "Roulette":
-                        roulette_count += 1
+                        two_shot_counts.roulette += 1
                     elif t.two_shot.type == "Birthday":
-                        birthday_count += 1
+                        two_shot_counts.birthday += 1
+                    elif t.two_shot.type == "Graduate":
+                        two_shot_counts.graduate += 1
+                    elif t.two_shot.type == "Chekicha":
+                        two_shot_counts.chekicha += 1
 
             oshi_events = await self.events_service.get_events_for_member(str(oshi_id))
             oshi_total_shows = len(oshi_events)
@@ -686,11 +689,11 @@ class UserService:
                 if ticket_key in oshi_event_keys:
                     oshi_meetings += 1
 
-            return oshi_response, roulette_count, birthday_count, oshi_meetings
+            return oshi_response, two_shot_counts, oshi_meetings
 
         except Exception as e:
             logger.warning(f"Failed to fetch oshi data for id {oshi_id}: {e}")
-            return None, 0, 0, 0
+            return None, OshiTwoShotCounts(), 0
 
     async def get_profile_full(
         self,
@@ -729,11 +732,9 @@ class UserService:
             for oshi_id in oshi_ids:
                 result = await self._get_single_oshi_data(oshi_id, tickets)
                 if result and result[0] is not None:
-                    oshi_resp, roulette, birthday, meetings = result
+                    oshi_resp, two_shot_counts, meetings = result
                     oshi_responses.append(oshi_resp)
-                    oshi_two_shots_list.append(
-                        OshiTwoShotCounts(roulette=roulette, birthday=birthday)
-                    )
+                    oshi_two_shots_list.append(two_shot_counts)
                     oshi_meetings_list.append(meetings)
 
             total_oshi_meetings = sum(oshi_meetings_list)
@@ -835,7 +836,7 @@ class UserService:
                 ),
                 oshiTwoShots=oshi_two_shots_list[0]
                 if oshi_two_shots_list
-                else OshiTwoShotCounts(roulette=0, birthday=0),
+                else OshiTwoShotCounts(),
                 oshiTwoShotsList=oshi_two_shots_list,
                 oshiMeetingsList=oshi_meetings_list,
                 recentActivity=recent_activity,

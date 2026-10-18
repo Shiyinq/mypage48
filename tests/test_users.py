@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.asyncio
 async def test_read_users_me_unauthorized(client: AsyncClient):
     response = await client.get("/api/users/profile")
@@ -186,7 +187,7 @@ async def test_get_public_profile(client: AsyncClient, db, create_ticket):
 async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_ticket):
     """Test calculation of Oshi Meetings (attendance at events where Oshi was present)."""
     from datetime import datetime
-    
+
     # 1. Create user
     token, user_id, headers = await create_user("meetinguser")
     
@@ -328,6 +329,54 @@ async def test_total_two_shots(client: AsyncClient, db, create_user, create_tick
 
     assert data["stats"]["totalShows"] == 5
     assert data["stats"]["totalTwoShots"] == 3
+
+
+@pytest.mark.asyncio
+async def test_oshi_two_shot_counts_by_type(
+    client: AsyncClient, db, create_user, create_ticket
+):
+    """Test per-oshi 2-shot counts for every supported type."""
+    token, user_id, headers = await create_user("oshitypecounts")
+
+    oshi_id = "123"
+    await db["users"].update_one({"userId": user_id}, {"$set": {"oshiIds": [oshi_id]}})
+    await db["members"].insert_one(
+        {
+            "id": oshi_id,
+            "name": "My Oshi",
+            "nickname": "Oshi",
+            "img": "http://example.com/img.jpg",
+            "generation": "1",
+            "jiko": "Oshi desu",
+            "socials": {},
+        }
+    )
+
+    two_shot_types = ["Roulette", "Birthday", "Graduate", "Chekicha"]
+    for index, two_shot_type in enumerate(two_shot_types):
+        await create_ticket(
+            user_id,
+            {
+                "title": f"Show {index}",
+                "date": f"2024-02-0{index + 1}",
+                "two_shot": {
+                    "member_name": "My Oshi",
+                    "type": two_shot_type,
+                    "price": 50000,
+                },
+            },
+        )
+
+    response = await client.get("/api/users/profile", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["oshiTwoShotsList"][0] == {
+        "roulette": 1,
+        "birthday": 1,
+        "graduate": 1,
+        "chekicha": 1,
+    }
 
 
 @pytest.mark.asyncio

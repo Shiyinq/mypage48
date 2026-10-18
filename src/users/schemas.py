@@ -237,8 +237,10 @@ class ProfileRecentActivity(BaseModel):
 class OshiTwoShotCounts(BaseModel):
     """2-shot counts with user's oshi."""
 
-    roulette: int
-    birthday: int
+    roulette: int = 0
+    birthday: int = 0
+    graduate: int = 0
+    chekicha: int = 0
 
 
 class ProfileFullResponse(BaseModel):
