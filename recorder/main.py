@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import logging
+import os
 import signal
 import subprocess
 import sys
@@ -74,6 +75,35 @@ def handle_cli(args):
     return True
 
 
+def _make_signal_handler(stop_event):
+    interrupts = 0
+
+    def handle_signal(signum):
+        nonlocal interrupts
+        if signum == signal.SIGINT:
+            interrupts += 1
+            if interrupts > 1:
+                print(
+                    "Forcing exit; active transfers/recordings may be interrupted "
+                    "and require recovery.",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                # Cancelling asyncio tasks cannot stop blocking executor threads.
+                os._exit(130)
+                return
+        if not stop_event.is_set() or signum == signal.SIGINT:
+            print(
+                "Shutdown requested; waiting for in-flight work to finish safely. "
+                "Press Ctrl+C again to force exit (may interrupt active work).",
+                file=sys.stderr,
+                flush=True,
+            )
+        stop_event.set()
+
+    return handle_signal
+
+
 async def main(args):
     config = RecorderConfig()
     log_rec, log_upl, log_th = setup_logging(config)
@@ -106,12 +136,10 @@ async def main(args):
         except Exception as e:
             log_th.warning(f"Failed to manage FlareSolverr docker container: {e}")
 
-    def handle_signal():
-        stop_event.set()
-
+    handle_signal = _make_signal_handler(stop_event)
     loop = asyncio.get_running_loop()
-    loop.add_signal_handler(signal.SIGINT, handle_signal)
-    loop.add_signal_handler(signal.SIGTERM, handle_signal)
+    loop.add_signal_handler(signal.SIGINT, handle_signal, signal.SIGINT)
+    loop.add_signal_handler(signal.SIGTERM, handle_signal, signal.SIGTERM)
 
     tasks = []
 

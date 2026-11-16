@@ -19,6 +19,8 @@ class GDriveService:
 
     async def run(self, stop_event):
         with process_lock(self.config.logs_dir, "gdrive"):
+            if stop_event.is_set():
+                return
             if not self.config.backup_to_gdrive:
                 log.info("GDrive processing disabled; service remains idle")
                 await stop_event.wait()
@@ -42,14 +44,21 @@ class GDriveService:
                 await stop_event.wait()
                 return
             try:
+                log.info("Initializing Google Drive client")
                 client = await asyncio.to_thread(DriveClient.from_config, self.config)
                 self._client = client
+                if stop_event.is_set():
+                    return
+                log.info("Checking private Google Drive archive folder")
                 await asyncio.to_thread(client.ensure_root)
+                if stop_event.is_set():
+                    return
             except DriveAuthorizationError:
                 # The client already logs the auth failure once. Stay alive so
                 # Restart=always cannot repeatedly hit the OAuth endpoint.
                 await stop_event.wait()
                 return
+            log.info("Google Drive ready; starting configured workers")
             backup = BackupWorker(self.config, client)
             replay = YouTubeWorker(self.config, client)
             backup.stop_event = stop_event

@@ -1,6 +1,7 @@
 """Offline controller lifecycle and ownership contracts."""
 
 import asyncio
+import threading
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
@@ -149,6 +150,38 @@ def test_worker_selection_and_graceful_stop(harness, youtube_enabled):
     asyncio.run(run())
     h.factory.assert_called_once_with(h.config)
     h.client.ensure_root.assert_called_once_with()
+
+
+@pytest.mark.parametrize("stage", ["client", "root"])
+def test_stop_during_startup_does_not_launch_workers(harness, stage):
+    h = harness
+    entered = threading.Event()
+    release = threading.Event()
+
+    def blocked_startup(*args):
+        entered.set()
+        assert release.wait(5)
+        return h.client
+
+    if stage == "client":
+        h.factory.side_effect = blocked_startup
+    else:
+        h.client.ensure_root.side_effect = blocked_startup
+
+    async def run():
+        stop = asyncio.Event()
+        controller = asyncio.create_task(service.GDriveService(h.config).run(stop))
+        try:
+            assert await asyncio.to_thread(entered.wait, 2)
+            stop.set()
+        finally:
+            release.set()
+            await asyncio.wait_for(controller, 3)
+        service.BackupWorker.assert_not_called()
+        service.YouTubeWorker.assert_not_called()
+        assert h.client.ensure_root.call_count == int(stage == "root")
+
+    asyncio.run(run())
 
 
 def test_upload_and_gdrive_locks_coexist_and_reject_duplicates(tmp_path):
