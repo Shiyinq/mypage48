@@ -133,6 +133,12 @@ flowchart TD
     end
 
     LA --> P
+    M1 --> H1
+    M2 --> D
+    M3 --> P
+    M4 --> T1
+    M4 --> T3
+    M4 --> T4
     M5 --> GDEnabled
 ```
 
