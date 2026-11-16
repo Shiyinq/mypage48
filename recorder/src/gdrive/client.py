@@ -253,12 +253,13 @@ class DriveClient:
             raise DriveSafetyError(
                 "Managed Drive root is not private and owned in My Drive"
             )
-        my_root = (
-            self.service.files()
-            .get(fileId="root", fields="id")
-            .execute(num_retries=3)["id"]
+        # drive.file can query app-created children of My Drive while denying
+        # files.get('root') for the root folder itself. Check membership instead
+        # of requesting broader access just to resolve the parent's ID.
+        top_level = self._list(
+            "'root' in parents and " + self._tag_query(APP_PROPERTIES)
         )
-        if root.get("parents") != [my_root]:
+        if not any(item.get("id") == root["id"] for item in top_level):
             raise DriveSafetyError("Managed Drive root must be directly in My Drive")
         token = None
         seen = set()

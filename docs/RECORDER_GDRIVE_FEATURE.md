@@ -103,6 +103,8 @@ Treat refresh tokens and client secrets as credentials. Do not commit them or in
 
 The application creates a folder named **`JKT48Live`** in the selected account's My Drive without sharing it. There is no `REC_GDRIVE_FOLDER_ID` configuration.
 
+Root validation uses a scoped file-list query for application-managed folders directly under My Drive; it does not read the My Drive root itself with `files.get('root')`, which can return 404 with `drive.file`. If an earlier setup attempt created `JKT48Live` but failed on that root lookup before printing a token, keep the folder and rerun the updated authorization script. It will reuse the tagged folder; broader Drive permission is not required.
+
 The folder is identified by application metadata, not its display name alone. On later runs the application finds and reuses its managed root. Unrelated folders with the same name are not automatically adopted. Ambiguous managed roots or unsafe sharing should require attention rather than arbitrary selection.
 
 Each recording is stored as a child archive folder containing its video, original metadata, available YouTube thumbnail, required notification assets, and application state files. This is a video-replay archive, not a promise to copy every temporary recording part.

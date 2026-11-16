@@ -88,12 +88,19 @@ def fake():
     def listing(**kwargs):
         request = MagicMock()
         values = state.roots if "value = 'root'" in kwargs["q"] else state.children
+        if "'root' in parents" in kwargs["q"]:
+            values = [item for item in values if item.get("parents") == ["my-drive"]]
         request.execute.return_value = {"files": copy.deepcopy(values)}
         return request
 
     files.get.side_effect = get
     files.list.side_effect = listing
-    files.create.return_value.execute.return_value = {"id": root["id"]}
+
+    def create_root():
+        state.roots.append(root)
+        return {"id": root["id"]}
+
+    files.create.return_value.execute.side_effect = create_root
     service.permissions.return_value.list.return_value.execute.return_value = {
         "permissions": [{"id": "owner", "role": "owner", "type": "user"}]
     }
@@ -121,6 +128,35 @@ def test_root_created_private_in_my_drive_and_refetched(fake):
     }
     assert fake.files.get.call_args_list[0].kwargs["fileId"] == fake.root["id"]
     fake.service.permissions.return_value.create.assert_not_called()
+
+
+@pytest.mark.parametrize("create", [False, True])
+def test_drive_file_root_404_does_not_block_managed_folder(fake, create):
+    from googleapiclient.errors import HttpError
+    from httplib2 import Response
+
+    if create:
+        fake.roots = []
+    original_get = fake.files.get.side_effect
+
+    def scoped_get(**kwargs):
+        if kwargs["fileId"] == "root":
+            raise HttpError(
+                Response({"status": "404"}), b'{"error":{"message":"File not found"}}'
+            )
+        return original_get(**kwargs)
+
+    fake.files.get.side_effect = scoped_get
+    assert fake.client.ensure_root()["id"] == fake.root["id"]
+    assert all(
+        call.kwargs["fileId"] != "root" for call in fake.files.get.call_args_list
+    )
+    assert any(
+        "'root' in parents" in call.kwargs["q"]
+        for call in fake.files.list.call_args_list
+    )
+    assert fake.client.authorization_failed is False
+    assert fake.files.create.call_count == int(create)
 
 
 def test_root_ambiguity_fails_without_creation(fake):

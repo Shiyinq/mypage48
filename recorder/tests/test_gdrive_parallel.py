@@ -305,7 +305,8 @@ def test_concurrent_root_discovery_creates_only_once(configured, monkeypatch):
 
     assert [root["id"] for root in roots] == ["managed-root"] * 5
     assert state.creates == 1
-    assert state.discoveries == 5
+    # Each caller discovers tagged roots and verifies scoped root membership.
+    assert state.discoveries == 10
     assert len(state.roots) == 1
     assert len(state.services) == len(state.credentials) == 6
 
