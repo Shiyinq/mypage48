@@ -299,6 +299,7 @@ This format is 100% compatible with the `ReplayChat.svelte` parser on the fronte
 | `REC_GOOGLE_CLIENT_SECRET` | `""` | Google OAuth client secret |
 | `REC_YOUTUBE_REFRESH_TOKEN` | `""` | YouTube refresh token |
 | `REC_YOUTUBE_PRIVACY_STATUS` | `unlisted` | YouTube video privacy (`public`, `unlisted`, `private`) |
+| `REC_YOUTUBE_UPLOAD_PRIORITY` | `""` | Comma-separated member nicknames in YouTube queue priority order; no nickname count limit |
 | `REC_TELEGRAM_ENABLED` | `True` | Turn Telegram notifications on/off. Also gates the heartbeat credentials, so when `false` the backend stops sending recorder down/up alerts too. |
 | `REC_TELEGRAM_BOT_TOKEN` | `""` | Telegram Bot Token for notifications |
 | `REC_TELEGRAM_CHAT_ID` | `""` | Telegram Chat/Channel ID for notifications |
@@ -320,6 +321,18 @@ After a recording ends (`status: "completed"` in metadata), a background **Watch
 1. **Phase 1 (R2 Upload)**: Generates a thumbnail, uploads replay data (`.jsonl`, `.srt`, screenshots) to the backend API/R2, sends a Recap Telegram notification, and marks `.r2_done`.
 2. **Phase 2 (YouTube Upload)**: If configured, waits for any defined delay (`REC_YOUTUBE_UPLOAD_DELAY_MINUTES`), then uploads the `.mp4` to YouTube (supports resumable uploads). Once successful, it updates the backend with the YouTube ID and sends a Replay Telegram notification.
 3. **Queue & Cleanup**: Processing can use an upload queue (`REC_ENABLE_UPLOAD_QUEUE`) to prioritize uploads by file size and is limited by `REC_MAX_CONCURRENT_UPLOADS`. On full success, the folder is deleted and tracked in `logs/uploads.jsonl`.
+
+### YouTube upload priority
+
+With `REC_ENABLE_UPLOAD_QUEUE=true`, optionally set:
+
+```dotenv
+REC_YOUTUBE_UPLOAD_PRIORITY=erine,oline,fritzy,
+```
+
+YouTube candidates are ordered by nickname priority first, then largest MP4 within each member's group: all Erine videos, all Oline videos, all Fritzy videos, then all remaining members together by largest MP4. Matching uses metadata `member_nickname`, ignores case and surrounding whitespace, and skips empty entries (including a trailing comma). Duplicate nicknames retain their first position; there is no limit on the number of nicknames.
+
+Members without ready videos are skipped without waiting. An empty setting preserves largest-MP4-first ordering. R2 ordering is unchanged. Priority applies when candidates are queued; it does not interrupt running uploads or reorder tasks already waiting for an upload slot. Restart the recorder after changing the configuration.
 
 ## FAQ
 

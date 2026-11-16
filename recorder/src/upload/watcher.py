@@ -160,7 +160,17 @@ class Watcher:
                     yt_candidates.append((mp4_size, live_id, folder_path, meta))
 
         r2_candidates.sort(key=lambda x: (-x[0], x[1]))
-        yt_candidates.sort(key=lambda x: (-x[0], x[1]))
+        priority_ranks = self.config.youtube_upload_priority_ranks
+        yt_candidates.sort(
+            key=lambda x: (
+                priority_ranks.get(
+                    (x[3].get("member_nickname") or "").strip().casefold(),
+                    len(priority_ranks),
+                ),
+                -x[0],
+                x[1],
+            )
+        )
 
         if r2_candidates or yt_candidates or self._processing:
             r2_active = self._max_concurrent - self._r2_semaphore._value

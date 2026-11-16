@@ -201,8 +201,9 @@ def _do_upload_blocking(
             raise
         is_quota = False
         try:
-            if hasattr(e, "content") and e.content:
-                body = json.loads(e.content)
+            content = getattr(e, "content", None)
+            if content:
+                body = json.loads(content)
                 for err in body.get("error", {}).get("errors", []):
                     if err.get("reason") in (
                         "quotaExceeded",
