@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import logging
 import signal
 import subprocess
 import sys
@@ -21,9 +22,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=["record", "upload", "theater", "all"],
+        choices=["record", "upload", "theater", "gdrive", "all"],
         default="all",
-        help="Run mode: record, upload, theater, or all (default)",
+        help="Run mode: record, upload, theater, gdrive, or all (default)",
     )
     parser.add_argument(
         "--status",
@@ -114,8 +115,9 @@ async def main(args):
 
     tasks = []
 
-    # Always run the heartbeat task
-    tasks.append(asyncio.create_task(run_heartbeat(config, args.mode, stop_event)))
+    # The backend heartbeat contract covers only the existing roles.
+    if args.mode != "gdrive":
+        tasks.append(asyncio.create_task(run_heartbeat(config, args.mode, stop_event)))
 
     if args.mode in ("all", "record"):
         log_rec.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)
@@ -128,6 +130,13 @@ async def main(args):
         log_upl.info("Output: %s", config.recordings_dir)
         watcher = Watcher(config)
         tasks.append(asyncio.create_task(watcher.run(stop_event)))
+
+    if args.mode in ("all", "gdrive"):
+        from .src.gdrive.service import GDriveService
+
+        logging.getLogger("gdrive").info("Mode: %s", args.mode)
+        gdrive_service = GDriveService(config)
+        tasks.append(asyncio.create_task(gdrive_service.run(stop_event)))
 
     if args.mode in ("all", "theater"):
         log_th.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)

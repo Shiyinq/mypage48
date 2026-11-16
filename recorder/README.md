@@ -334,6 +334,30 @@ YouTube candidates are ordered by nickname priority first, then largest MP4 with
 
 Members without ready videos are skipped without waiting. An empty setting preserves largest-MP4-first ordering. R2 ordering is unchanged. Priority applies when candidates are queued; it does not interrupt running uploads or reorder tasks already waiting for an upload slot. Restart the recorder after changing the configuration.
 
+## Google Drive buffer (optional)
+
+The optional Drive pipeline runs in the separate `mypage48-gdrive.service` installed by `setup-recorder.sh`. Drive-specific code lives in `src/gdrive/`; video uploads reuse the existing YouTube uploader.
+
+```dotenv
+REC_BACKUP_TO_GDRIVE=false
+REC_GDRIVE_TO_YOUTUBE=false
+REC_GDRIVE_REFRESH_TOKEN=
+REC_GDRIVE_DELETE_AFTER_YOUTUBE_UPLOAD=false
+REC_GDRIVE_KEEP_MEMBERS=erine,oline
+```
+
+Authorize the storage account with `python recorder/auth_gdrive.py` from the repository root. It uses the existing Google client ID/secret, allows selecting an account different from YouTube, and creates/reuses a private `JKT48Live` folder automatically. Enable Google Drive API in the OAuth project first. No folder ID is configured.
+
+- Master disabled: the GDrive service remains alive but idle; normal uploads are unchanged.
+- Master enabled, Drive-to-YouTube disabled: backup verified post-R2 videos to Drive, then remove local sources. Do not mark them YouTube-completed.
+- Both enabled: additionally select pending Drive archives by `REC_YOUTUBE_UPLOAD_PRIORITY` and descending MP4 size, download within concurrency/disk limits, and upload using the existing YouTube implementation.
+- Retained completed folders contain `.yt_done` and are never uploaded again. Retention decisions are non-retroactive: removing a nickname exception does not delete its previously retained folders.
+- Deletion is permanent when enabled and allowed; start with it disabled.
+
+Run locally with `python -m recorder.main --mode gdrive`. Restart the GDrive service after changing its settings; when changing the master routing switch, safely drain and restart both upload and GDrive services. The initial deployment must also restart the record service to load the recording/cleanup coordination code. Do not run `--mode all` alongside split services.
+
+See [the detailed feature guide](../docs/RECORDER_GDRIVE_FEATURE.md) for setup, recovery, service commands, and limitations, and [the implementation plan](../docs/RECORDER_GDRIVE_IMPLEMENTATION_PLAN.md) for architecture and acceptance criteria.
+
 ## FAQ
 
 **Q: No video output?**

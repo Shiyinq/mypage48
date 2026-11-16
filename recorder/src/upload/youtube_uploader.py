@@ -333,6 +333,7 @@ async def _upload_to_youtube(
     progress_callback=None,
     resume_uri: str | None = None,
     save_uri_callback=None,
+    on_video_uploaded=None,
 ) -> tuple[str | None, str | None]:
     if (
         not config.google_client_id
@@ -394,6 +395,15 @@ async def _upload_to_youtube(
         save_uri_callback,
         privacy_status,
     )
+
+    # Drive callers checkpoint the remote ID before optional follow-up API calls.
+    # Leave the legacy caller's ordering unchanged when no hook is supplied.
+    if youtube_id and on_video_uploaded:
+        meta["youtube_id"] = youtube_id
+        meta["youtube_title"] = title
+        with open(meta_path, "w") as f:
+            json.dump(meta, f, indent=2, ensure_ascii=False)
+        await on_video_uploaded(youtube_id, title)
 
     # Upload the custom thumbnail if generation was successful and video upload succeeded
     if youtube_id and thumbnail_path and os.path.exists(thumbnail_path):

@@ -2,6 +2,9 @@
 recordings/*
 !recordings/.gitkeep
 
+# Drive-to-YouTube staging (verified archives remain in Drive)
+gdrive-staging/
+
 # Logs
 logs/
 

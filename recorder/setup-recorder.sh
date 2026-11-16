@@ -78,6 +78,7 @@ Type=simple
 User=$SERVICE_USER
 WorkingDirectory=$HOME/mypage48
 ExecStart=$RECORDER_DIR/.venv/bin/python3 -m recorder.main --mode upload
+# TimeoutStopSec=30min
 Restart=always
 RestartSec=10
 StandardOutput=append:$RECORDER_DIR/logs/upload.log
@@ -107,10 +108,31 @@ StandardError=append:$RECORDER_DIR/logs/theater.log
 WantedBy=multi-user.target
 EOF
 
+sudo tee /etc/systemd/system/mypage48-gdrive.service > /dev/null << EOF
+[Unit]
+Description=MyPage48 Live Recorder — GDrive
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=$SERVICE_USER
+WorkingDirectory=$HOME/mypage48
+ExecStart=$RECORDER_DIR/.venv/bin/python3 -m recorder.main --mode gdrive
+# TimeoutStopSec=30min
+Restart=always
+RestartSec=10
+StandardOutput=append:$RECORDER_DIR/logs/gdrive.log
+StandardError=append:$RECORDER_DIR/logs/gdrive.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # Step 5: Enable & Start
 echo "[5/5] Enabling & starting services..."
 sudo systemctl daemon-reload
-sudo systemctl enable --now mypage48-record mypage48-upload mypage48-theater
+sudo systemctl enable --now mypage48-record mypage48-upload mypage48-theater mypage48-gdrive
 
 echo ""
 echo "✅ Done!"
@@ -119,6 +141,8 @@ echo "Check status:"
 echo "  sudo systemctl status mypage48-record"
 echo "  sudo systemctl status mypage48-upload"
 echo "  sudo systemctl status mypage48-theater"
+echo "  sudo systemctl status mypage48-gdrive"
 echo ""
 echo "Live logs:"
 echo "  sudo journalctl -u mypage48-theater -f"
+echo "  sudo journalctl -u mypage48-gdrive -f"

@@ -10,14 +10,15 @@ from datetime import datetime, timezone
 from ..config import RecorderConfig
 from ..models import RecordingSession
 from ..notify import notifier
+from ..process_lock import process_lock
 from . import r2_uploader
+from .policy import replay_notification_eligible, youtube_queue_key
 from .thumbnail_generator import generate_youtube_thumbnail
 from .youtube_uploader import (
     InvalidGrantError,
     QuotaExceededError,
     _format_title,
     _upload_to_youtube,
-    is_official_jkt48,
 )
 
 
@@ -45,6 +46,8 @@ class Watcher:
         self._r2_semaphore = asyncio.Semaphore(self._max_concurrent)
         self._yt_semaphore = asyncio.Semaphore(self._max_concurrent)
         self._youtube_disabled = False
+        self._tasks: set[asyncio.Task] = set()
+        self._stopping = False
 
     def _load_cooldown(self) -> None:
         if os.path.exists(self._cooldown_file):
@@ -62,6 +65,21 @@ class Watcher:
             pass
 
     async def run(self, stop_event: asyncio.Event):
+        with process_lock(self.config.logs_dir, "upload"):
+            try:
+                await self._run(stop_event)
+            finally:
+                self._stopping = True
+                if self._tasks:
+                    await asyncio.gather(*list(self._tasks), return_exceptions=True)
+
+    def _spawn(self, coroutine):
+        task = asyncio.create_task(coroutine)
+        if isinstance(task, asyncio.Task):
+            self._tasks.add(task)
+            task.add_done_callback(self._tasks.discard)
+
+    async def _run(self, stop_event: asyncio.Event):
         os.makedirs(self.config.logs_dir, exist_ok=True)
 
         while not stop_event.is_set():
@@ -156,20 +174,16 @@ class Watcher:
                 r2_candidates.append((mp4_size, live_id, folder_path, meta))
             else:
                 yt_done_path = os.path.join(folder_path, ".yt_done")
-                if not self._youtube_disabled and not os.path.exists(yt_done_path):
+                if (
+                    not self.config.backup_to_gdrive
+                    and not self._youtube_disabled
+                    and not os.path.exists(yt_done_path)
+                ):
                     yt_candidates.append((mp4_size, live_id, folder_path, meta))
 
         r2_candidates.sort(key=lambda x: (-x[0], x[1]))
-        priority_ranks = self.config.youtube_upload_priority_ranks
         yt_candidates.sort(
-            key=lambda x: (
-                priority_ranks.get(
-                    (x[3].get("member_nickname") or "").strip().casefold(),
-                    len(priority_ranks),
-                ),
-                -x[0],
-                x[1],
-            )
+            key=lambda x: youtube_queue_key(self.config, x[3], x[0], x[1])
         )
 
         if r2_candidates or yt_candidates or self._processing:
@@ -215,9 +229,7 @@ class Watcher:
                 "title": _format_title(meta),
                 "folder_path": folder_path,
             }
-            asyncio.create_task(
-                self._process_with_semaphore(folder_path, live_id, True)
-            )
+            self._spawn(self._process_with_semaphore(folder_path, live_id, True))
 
         for mp4_size, live_id, folder_path, meta in yt_candidates:
             self._processing[live_id] = {
@@ -226,14 +238,14 @@ class Watcher:
                 "title": _format_title(meta),
                 "folder_path": folder_path,
             }
-            asyncio.create_task(
-                self._process_with_semaphore(folder_path, live_id, False)
-            )
+            self._spawn(self._process_with_semaphore(folder_path, live_id, False))
 
     async def _scan_direct(self, raw_dir: str):
         for meta, live_id, folder_path in self._iter_pending(raw_dir):
             r2_done_path = os.path.join(folder_path, ".r2_done")
-            if os.path.exists(r2_done_path) and self._youtube_disabled:
+            if os.path.exists(r2_done_path) and (
+                self._youtube_disabled or self.config.backup_to_gdrive
+            ):
                 continue
 
             self._processing[live_id] = {
@@ -242,7 +254,7 @@ class Watcher:
                 "title": _format_title(meta),
                 "folder_path": folder_path,
             }
-            asyncio.create_task(self._process_folder(folder_path, live_id))
+            self._spawn(self._process_folder(folder_path, live_id))
 
     async def _process_with_semaphore(
         self, folder_path: str, live_id: str, is_r2: bool
@@ -253,7 +265,8 @@ class Watcher:
 
     async def _process_folder(self, folder_path: str, live_id: str):
         try:
-            await self._process_folder_inner(folder_path, live_id)
+            if not self._stopping:
+                await self._process_folder_inner(folder_path, live_id)
         finally:
             self._processing.pop(live_id, None)
 
@@ -355,7 +368,7 @@ class Watcher:
         # ---------------------------
         # Phase 2: YouTube Upload
         # ---------------------------
-        if self._youtube_disabled:
+        if self._youtube_disabled or self.config.backup_to_gdrive:
             return
 
         if not has_mp4:
@@ -449,13 +462,7 @@ class Watcher:
 
                 # Send Replay notification
                 # Skip if YouTube privacy is not public (unlisted/private)
-                live_type = str(meta.get("live_type") or "public").strip().lower()
-                yt_privacy = self.config.youtube_privacy_status.lower()
-                if (
-                    not is_official_jkt48(meta)
-                    and live_type == "public"
-                    and yt_privacy == "public"
-                ):
+                if replay_notification_eligible(self.config, meta):
                     await notifier.send_replay_live_notification(
                         live_id, title_log, ytid, self.config, folder_path
                     )

@@ -28,6 +28,11 @@ class RecorderConfig(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
     youtube_refresh_token: str = ""
+    backup_to_gdrive: bool = False
+    gdrive_to_youtube: bool = False
+    gdrive_refresh_token: str = ""
+    gdrive_delete_after_youtube_upload: bool = False
+    gdrive_keep_members: str = ""
     youtube_privacy_status: str = "unlisted"
     telegram_enabled: bool = True
     telegram_bot_token: str = ""
@@ -40,6 +45,14 @@ class RecorderConfig(BaseSettings):
     enable_upload_queue: bool = True
     youtube_upload_delay_minutes: int = 30
     youtube_upload_priority: str = ""
+
+    @property
+    def gdrive_keep_members_normalized(self) -> set[str]:
+        return {
+            nickname.strip().casefold()
+            for nickname in self.gdrive_keep_members.split(",")
+            if nickname.strip()
+        }
 
     @property
     def youtube_upload_priority_ranks(self) -> dict[str, int]:

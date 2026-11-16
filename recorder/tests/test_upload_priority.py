@@ -40,7 +40,6 @@ def test_priority_config(monkeypatch):
 )
 def test_youtube_queue_order(tmp_path, priority, nicknames, expected):
     config = RecorderConfig(
-
         youtube_upload_priority=priority,
         logs_dir=str(tmp_path),
     )

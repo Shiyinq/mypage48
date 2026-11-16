@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from ..config import RecorderConfig
 from ..models import LiveInfo, RecordingSession
 from ..notify import notifier
+from ..process_lock import async_recording_lock
 from . import chat_capture, srt_generator, stream_recorder
 from .live_detector import LiveDetector
 
@@ -283,6 +284,10 @@ class RecordingManager:
         return f"{size_bytes / (1024 * 1024):.1f}MB"
 
     async def _start_session(self, live: LiveInfo):
+        async with async_recording_lock(self.config.logs_dir, live.live_id):
+            await self._start_session_inner(live)
+
+    async def _start_session_inner(self, live: LiveInfo):
         stream_info, _ = await self.detector.get_streaming_url(
             live.platform, live.room_id, live.live_id
         )

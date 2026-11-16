@@ -10,6 +10,10 @@ async def run_heartbeat(config, mode: str, stop_event: asyncio.Event):
     """
     Background task to ping the Backend API heartbeat endpoint.
     """
+    if mode == "gdrive":
+        logger.info("Skipping GDrive heartbeat: backend role is not supported.")
+        return
+
     api_url = f"{config.api_base_url}/health/recorder"
 
     headers = {}
