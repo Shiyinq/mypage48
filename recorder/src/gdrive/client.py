@@ -7,6 +7,7 @@ archive ownership and enforce completion/retention policy before deletion.
 import hashlib
 import io
 import json
+import logging
 import mimetypes
 import os
 import tempfile
@@ -14,9 +15,24 @@ import threading
 from functools import wraps
 from pathlib import Path
 
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload, MediaIoBaseUpload
+
+log = logging.getLogger("gdrive")
+AUTH_PAUSE_MESSAGE = (
+    "Google Drive authorization invalid; all Drive processing paused until "
+    "credentials are replaced and the GDrive service is restarted"
+)
+PERMANENT_AUTH_ERRORS = {
+    "invalid_grant",
+    "invalid_client",
+    "unauthorized_client",
+    "invalid_scope",
+    "invalid_token",
+}
 
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 APP_PROPERTIES = {"app": "mypage48", "role": "root"}
@@ -31,11 +47,33 @@ class DriveSafetyError(RuntimeError):
     """Ambiguous identity, unsafe sharing, or failed integrity verification."""
 
 
+class DriveAuthorizationError(RuntimeError):
+    """All Drive calls are disabled until credentials are fixed and restarted."""
+
+
+def authorization_paused(client):
+    return getattr(client, "authorization_failed", False) is True
+
+
+def _permanent_authorization_error(exc):
+    if isinstance(exc, RefreshError) and not exc.retryable:
+        return any(code in str(exc) for code in PERMANENT_AUTH_ERRORS)
+    return isinstance(exc, HttpError) and exc.resp.status == 401
+
+
 def _serialized(method):
     @wraps(method)
     def wrapped(self, *args, **kwargs):
+        self.raise_if_authorization_failed()
         with self._operation_lock():
-            return method(self, *args, **kwargs)
+            self.raise_if_authorization_failed()
+            try:
+                return method(self, *args, **kwargs)
+            except Exception as exc:
+                if _permanent_authorization_error(exc):
+                    self._pause_authorization()
+                    raise DriveAuthorizationError(AUTH_PAUSE_MESSAGE) from exc
+                raise
 
     return wrapped
 
@@ -85,9 +123,26 @@ class DriveClient:
         self._local = threading.local()
         self._lock = threading.RLock()
         self._root_lock = threading.RLock()
+        self._authorization_failed = threading.Event()
+        self._authorization_lock = threading.Lock()
+
+    @property
+    def authorization_failed(self):
+        return self._authorization_failed.is_set()
+
+    def raise_if_authorization_failed(self):
+        if self.authorization_failed:
+            raise DriveAuthorizationError(AUTH_PAUSE_MESSAGE)
+
+    def _pause_authorization(self):
+        with self._authorization_lock:
+            if not self.authorization_failed:
+                self._authorization_failed.set()
+                log.critical(AUTH_PAUSE_MESSAGE)
 
     @property
     def service(self):
+        self.raise_if_authorization_failed()
         if self._service_factory is None:
             return self._service
         if not hasattr(self._local, "service"):
@@ -132,7 +187,13 @@ class DriveClient:
 
         client = cls(service_factory=service_factory)
         # Build in the caller's thread to surface setup errors before worker startup.
-        client._local.service = service_factory()
+        try:
+            client._local.service = service_factory()
+        except Exception as exc:
+            if _permanent_authorization_error(exc):
+                client._pause_authorization()
+                raise DriveAuthorizationError(AUTH_PAUSE_MESSAGE) from exc
+            raise
         return client
 
     def _list(self, query):
@@ -381,6 +442,7 @@ class DriveClient:
             )
         result = None
         while result is None:
+            self.raise_if_authorization_failed()
             _, result = request.next_chunk(num_retries=3)
         return self.get_file(result["id"])
 
@@ -454,6 +516,7 @@ class DriveClient:
         )
         done = False
         while not done:
+            self.raise_if_authorization_failed()
             _, done = download.next_chunk(num_retries=3)
             if stream.tell() > max_bytes:
                 raise DriveSafetyError("JSON file exceeds size limit")
@@ -497,6 +560,7 @@ class DriveClient:
                 )
                 done = False
                 while not done:
+                    self.raise_if_authorization_failed()
                     _, done = download.next_chunk(num_retries=3)
                 stream.flush()
                 os.fsync(stream.fileno())

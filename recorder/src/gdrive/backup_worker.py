@@ -22,7 +22,12 @@ from .archive import (
     normalize_member_nickname,
     validate_manifest,
 )
-from .client import DriveSafetyError, validate_filename
+from .client import (
+    DriveAuthorizationError,
+    DriveSafetyError,
+    authorization_paused,
+    validate_filename,
+)
 
 log = logging.getLogger(__name__)
 
@@ -98,7 +103,7 @@ class BackupWorker:
         self._missing_mp4_logged = {}
 
     async def scan_once(self) -> None:
-        if not self.config.backup_to_gdrive:
+        if not self.config.backup_to_gdrive or authorization_paused(self.client):
             return
         async with self._scan_lock:
             root = Path(self.config.recordings_dir)
@@ -110,7 +115,9 @@ class BackupWorker:
 
             async def consume():
                 for folder in folders:
-                    if self.stop_event is not None and self.stop_event.is_set():
+                    if authorization_paused(self.client) or (
+                        self.stop_event is not None and self.stop_event.is_set()
+                    ):
                         return
                     if (
                         folder.is_symlink()
@@ -131,6 +138,9 @@ class BackupWorker:
                     except asyncio.CancelledError:
                         await task
                         raise
+                    except DriveAuthorizationError:
+                        # The shared client logs once and blocks both pipelines.
+                        return
                     except Exception as exc:
                         base = min(900, retry[0] * 2 if retry is not None else 15)
                         delay = uniform(base, min(900, base * 1.2))
@@ -195,6 +205,8 @@ class BackupWorker:
                 )
 
         def recheck():
+            if authorization_paused(self.client):
+                raise DriveAuthorizationError("Drive authorization paused")
             if (
                 (folder / ".abort_upload").exists()
                 or not (folder / ".r2_done").is_file()

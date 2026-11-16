@@ -72,10 +72,24 @@ def test_invalid_drive_backup_limit_rejected_before_api(harness, limit):
 @pytest.mark.parametrize(
     "missing", ["google_client_id", "google_client_secret", "gdrive_refresh_token"]
 )
-def test_enabled_missing_credentials_errors_before_api(harness, missing):
+def test_enabled_missing_credentials_pauses_without_api(harness, missing, caplog):
     setattr(harness.config, missing, "")
-    with pytest.raises(ValueError, match="OAuth credentials are missing"):
-        asyncio.run(service.GDriveService(harness.config).run(asyncio.Event()))
+
+    async def run():
+        stop = asyncio.Event()
+        controller = asyncio.create_task(
+            service.GDriveService(harness.config).run(stop)
+        )
+        try:
+            await asyncio.sleep(0)
+            assert not controller.done()
+            harness.factory.assert_not_called()
+            assert "OAuth credentials are missing" in caplog.text
+        finally:
+            stop.set()
+            await asyncio.wait_for(controller, 2)
+
+    asyncio.run(run())
     harness.factory.assert_not_called()
     harness.client.ensure_root.assert_not_called()
 

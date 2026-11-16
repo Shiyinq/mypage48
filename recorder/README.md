@@ -411,7 +411,7 @@ REC_GDRIVE_DELETE_AFTER_YOUTUBE_UPLOAD=false
 REC_GDRIVE_KEEP_MEMBERS=erine,oline
 ```
 
-Authorize the storage account with `python recorder/auth_gdrive.py` from the repository root. It uses the existing Google client ID/secret, allows selecting an account different from YouTube, and creates/reuses a private `JKT48Live` folder automatically. Enable Google Drive API in the OAuth project first. No folder ID is configured.
+Authorize the storage account with `python recorder/auth_gdrive.py` from the repository root. It uses the existing Google client ID/secret, allows selecting an account different from YouTube, and creates/reuses a private `JKT48Live` folder automatically. First enable **Google Drive API** in the same OAuth project, then open **Google Auth Platform → Data Access → Add or remove scopes**, check `https://www.googleapis.com/auth/drive.file`, click **Update**, and **Save**. Keep both YouTube scopes selected. Filtering for a scope does not select its checkbox. The existing YouTube token does not need to be replaced; save the new token separately as `REC_GDRIVE_REFRESH_TOKEN`. No folder ID is configured. See [the step-by-step authentication guide](../docs/RECORDER_GDRIVE_FEATURE.md#google-cloud-setup).
 
 - Master disabled: the GDrive service remains alive but idle; normal uploads are unchanged.
 - Master enabled, Drive-to-YouTube disabled: backup verified post-R2 videos to Drive, then remove local sources. Do not mark them YouTube-completed.
@@ -421,6 +421,7 @@ Authorize the storage account with `python recorder/auth_gdrive.py` from the rep
 - Drive-to-YouTube ignores incomplete archives: `.drive_ready` must be valid, all files must match the manifest, and the original local source must already be removed.
 - Retained completed folders contain `.yt_done` and are never uploaded again. Retention decisions are non-retroactive: removing a nickname exception does not delete its previously retained folders.
 - Deletion is permanent when enabled and allowed; start with it disabled.
+- Invalid Drive OAuth credentials pause both Drive pipelines with one CRITICAL log. The service stays alive without repeated authentication requests; fix the credentials and restart `mypage48-gdrive` to resume. Network/transient errors still retry with backoff.
 
 Run locally with `python -m recorder.main --mode gdrive`. Restart the GDrive service after changing its settings; when changing the master routing switch, safely drain and restart both upload and GDrive services. The initial deployment must also restart the record service to load the recording/cleanup coordination code. Do not run `--mode all` alongside split services.
 

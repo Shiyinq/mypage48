@@ -6,7 +6,7 @@ import random
 
 from ..process_lock import process_lock
 from .backup_worker import BackupWorker
-from .client import DriveClient
+from .client import DriveAuthorizationError, DriveClient, authorization_paused
 from .youtube_worker import YouTubeWorker
 
 log = logging.getLogger("gdrive")
@@ -15,6 +15,7 @@ log = logging.getLogger("gdrive")
 class GDriveService:
     def __init__(self, config):
         self.config = config
+        self._client = None
 
     async def run(self, stop_event):
         with process_lock(self.config.logs_dir, "gdrive"):
@@ -33,11 +34,22 @@ class GDriveService:
                     self.config.gdrive_refresh_token,
                 )
             ):
-                raise ValueError(
-                    "Drive backup enabled but Drive OAuth credentials are missing"
+                log.critical(
+                    "Google Drive OAuth credentials are missing; all Drive processing "
+                    "paused until credentials are configured and the GDrive service "
+                    "is restarted"
                 )
-            client = await asyncio.to_thread(DriveClient.from_config, self.config)
-            await asyncio.to_thread(client.ensure_root)
+                await stop_event.wait()
+                return
+            try:
+                client = await asyncio.to_thread(DriveClient.from_config, self.config)
+                self._client = client
+                await asyncio.to_thread(client.ensure_root)
+            except DriveAuthorizationError:
+                # The client already logs the auth failure once. Stay alive so
+                # Restart=always cannot repeatedly hit the OAuth endpoint.
+                await stop_event.wait()
+                return
             backup = BackupWorker(self.config, client)
             replay = YouTubeWorker(self.config, client)
             backup.stop_event = stop_event
@@ -64,9 +76,15 @@ class GDriveService:
     async def _loop(self, label, scan, stop_event):
         failures = 0
         while not stop_event.is_set():
+            if authorization_paused(self._client):
+                await stop_event.wait()
+                return
             try:
                 await scan()
                 failures = 0
+            except DriveAuthorizationError:
+                await stop_event.wait()
+                return
             except Exception as exc:
                 failures += 1
                 log.error("GDrive %s scan failed (%s)", label, type(exc).__name__)

@@ -14,7 +14,7 @@ from ..notify import notifier
 from ..upload import r2_uploader, youtube_uploader
 from ..upload.policy import replay_notification_eligible, youtube_queue_key
 from .archive import MANIFEST_NAME, READY_NAME, validate_manifest
-from .client import DriveSafetyError
+from .client import DriveAuthorizationError, DriveSafetyError, authorization_paused
 from .state import read_json, write_json
 
 log = logging.getLogger("gdrive")
@@ -89,6 +89,7 @@ class YouTubeWorker:
     def _blocked(self):
         if (
             self._stopping
+            or authorization_paused(self.client)
             or self._youtube_disabled
             or (self.stop_event is not None and self.stop_event.is_set())
         ):
@@ -211,7 +212,9 @@ class YouTubeWorker:
             shutil.rmtree(folder)
 
     async def scan_once(self):
-        if not (self.config.backup_to_gdrive and self.config.gdrive_to_youtube):
+        if authorization_paused(self.client) or not (
+            self.config.backup_to_gdrive and self.config.gdrive_to_youtube
+        ):
             return
         if not self._recovered_staging:
             if self.staging.is_symlink():
@@ -231,6 +234,8 @@ class YouTubeWorker:
                 if manifest:
                     size = sum(f["size"] for f in manifest["files"])
                     candidates.append((folder, manifest, size))
+            except DriveAuthorizationError:
+                return
             except Exception as exc:
                 log.error(
                     "Drive archive %s needs attention (%s)",
@@ -275,6 +280,9 @@ class YouTubeWorker:
         key = manifest["archive_key"]
         try:
             await self._process_inner(folder, manifest)
+        except DriveAuthorizationError:
+            # Keep durable checkpoints and Drive source; do not retry authorization.
+            pass
         except youtube_uploader.QuotaExceededError:
             self.cooldown_path.parent.mkdir(parents=True, exist_ok=True)
             self.cooldown_path.write_text(str(time.time() + 86400))

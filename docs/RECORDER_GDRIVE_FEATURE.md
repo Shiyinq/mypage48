@@ -69,7 +69,23 @@ REC_GDRIVE_REFRESH_TOKEN=your_drive_refresh_token
 
 A Google One subscription on account B provides that account's Drive storage. Account A does not need access to account B's Drive because the recorder uses the corresponding token for each service.
 
-Setup command:
+### Google Cloud setup
+
+Complete these steps before running the authorization script:
+
+1. Select the same Google Cloud project that owns the existing YouTube OAuth client.
+2. Open **APIs & Services → Library**, search for **Google Drive API**, open that API, and click **Enable**. Confirm its status is **Enabled**. Do not choose Google Drive MCP, Drive Activity, Drive Labels, or Cloud Storage; they are not required. Leave YouTube Data API v3 enabled.
+3. Open **Google Auth Platform → Data Access → Add or remove scopes**.
+4. Find the exact scope `https://www.googleapis.com/auth/drive.file`. Its description refers to viewing, editing, creating, and deleting only the specific Drive files used with the app.
+5. **Check the checkbox on the scope's row.** Typing the URL in the filter only finds the row; it does not select it. If the row is available, leave **Manually add scopes** empty. If it is missing, refresh after enabling Drive API or enter the full URL under **Manually add scopes** and click **Add to table**, then select it as needed.
+6. Click **Update**, confirm the existing `youtube` and `youtube.upload` scopes are still selected on the Data Access page, then click **Save**. Do not remove the YouTube scopes or add the broader full-Drive scope (`.../auth/drive`). The `drive.file` scope is classified as non-sensitive.
+7. If the app's audience is in **Testing**, add the intended Drive account as a test user. Review Google's current refresh-token lifetime rules before using a Testing app for long-running workers.
+
+Enabling Drive API and adding `drive.file` do **not** require replacing the existing YouTube refresh token or creating another OAuth client. Keep `REC_GOOGLE_CLIENT_ID`, `REC_GOOGLE_CLIENT_SECRET`, and `REC_YOUTUBE_REFRESH_TOKEN` unchanged. Declaring a scope in the console does not grant that permission to an existing token: obtain a separate Drive token through the script below.
+
+### Authorize the Drive account
+
+From the repository root, using the recorder Python environment:
 
 ```sh
 python recorder/auth_gdrive.py
@@ -77,7 +93,9 @@ python recorder/auth_gdrive.py
 
 The script opens the browser, asks you to select the Drive account and grant consent, obtains offline authorization, creates/reuses the archive root, and prints the Drive refresh-token setting. It will use the same OAuth client credentials as YouTube without replacing the existing YouTube token.
 
-Enable Google Drive API in the Google Cloud project. The permission is `drive.file`, limiting access to files created by or explicitly authorized for the application. Follow current Google consent-screen requirements; applications in Testing can have short-lived refresh tokens for these scopes.
+Choose the account that owns the intended Google Drive/Google One storage; it may differ from the YouTube account. Save the returned value as `REC_GDRIVE_REFRESH_TOKEN` in `recorder/.env`, leaving `REC_YOUTUBE_REFRESH_TOKEN` unchanged. The script does not edit `.env` automatically. For the server virtualenv created by the setup script, the equivalent command is `recorder/.venv/bin/python recorder/auth_gdrive.py` from the repository root. On a headless server, authorization can instead run on a trusted local computer with the same OAuth client credentials and dependencies; transfer the resulting token securely to the server.
+
+The permission is `drive.file`, limiting access to files created by or explicitly authorized for the application. The script creates/reuses the private root automatically; no Drive folder ID or additional API key is required.
 
 Treat refresh tokens and client secrets as credentials. Do not commit them or include them in operational logs.
 
@@ -244,7 +262,9 @@ Changing privacy or retention settings does not re-upload completed videos. Dele
 | Failure | Intended behavior |
 |---|---|
 | Drive upload interrupted | Resume/reconcile partial archive; keep local source |
-| Drive full or token invalid | Pause backups, report failure, keep local files |
+| Drive storage full | Report failure, keep local files, and retry with backoff |
+| Drive OAuth credentials missing at startup | Log CRITICAL once; service stays alive and paused until credentials are configured and service restarted |
+| Drive token/client permanently rejected at startup or runtime | Log CRITICAL once; pause both Drive pipelines and remote cleanup until credentials are replaced and service restarted; do not keep retrying OAuth |
 | Remote checksum/size mismatch | Do not mark ready or delete source |
 | Final MP4 missing or empty, with only MKV/intermediate parts | Skip Drive backup, keep the entire local folder for recovery, and log the reason |
 | No video at all, such as a very short live | Skip Drive backup and keep the local folder and metadata; R2/recap may still complete |
@@ -257,6 +277,22 @@ Changing privacy or retention settings does not re-upload completed videos. Dele
 | Drive completion marker cannot be saved | Retain recovery state; do not permanently delete archive |
 | Permanent Drive deletion fails | Retry cleanup only; never re-upload completed archive |
 | Server restarts | Reconcile journal, manifests, ready markers, and completion receipts |
+
+### Invalid Drive authorization: manual recovery required
+
+Permanent OAuth rejections such as `invalid_grant`, `invalid_client`, `unauthorized_client`, `invalid_scope`, or `invalid_token`, as well as an HTTP 401 remaining after the Google client's authentication handling, latch a shared authorization pause across all Drive transports. This applies at startup and during operation. The first rejection logs:
+
+```text
+CRITICAL Google Drive authorization invalid; all Drive processing paused until credentials are replaced and the GDrive service is restarted
+```
+
+The service remains `active (running)` instead of exiting into systemd's restart loop. Neither backup nor Drive-to-YouTube admits new jobs, and further Drive API calls, chunk requests, and automated remote deletion are blocked. Missing credentials at startup produce a separate CRITICAL configuration message and the same idle-until-restart behavior. Requests already in flight may finish; a YouTube upload already in progress may finish and checkpoint its video ID locally, but subsequent Drive finalization waits for recovery. Original recordings and remote archives are not treated as successfully completed because authorization failed.
+
+To recover, obtain a valid Drive refresh token with `auth_gdrive.py` if necessary, correct `REC_GDRIVE_REFRESH_TOKEN` (or invalid shared client credentials) in `recorder/.env`, then run `sudo systemctl restart mypage48-gdrive`. Editing `.env` alone does not resume processing. The existing YouTube token does not need replacement unless it independently becomes invalid.
+
+Transient token-endpoint/network failures, rate limits, and non-authentication HTTP failures retain normal retry/backoff behavior rather than latching a permanent pause. A permission/storage/API-enablement 403 is not automatically treated as an invalid refresh token.
+
+### YouTube quota reminders
 
 The GDrive service logs a warning immediately when YouTube quota is exhausted, then an INFO reminder with the remaining cooldown at most once every **6 hours**. After restart, an existing active cooldown is reported once when observed; reminders then follow the same interval. A single INFO message reports cooldown expiry and queue checking, without claiming that an upload has already started. Backup-to-Drive work continues independently.
 
