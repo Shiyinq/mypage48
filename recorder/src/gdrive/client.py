@@ -359,6 +359,11 @@ class DriveClient:
         )
 
     @_serialized
+    def get_archive(self, archive_id, archive_key):
+        """Validate an existing archive by ID; readers must never create one."""
+        return self._validate_archive(archive_id, archive_key)
+
+    @_serialized
     def ensure_archive(self, archive_key, name):
         validate_filename(name)
         tags = self._archive_tags(archive_key)

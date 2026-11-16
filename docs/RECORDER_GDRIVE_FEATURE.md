@@ -223,6 +223,8 @@ A Drive-to-YouTube slot covers downloading, uploading, and finalizing one archiv
 
 The delay starts after successful completion. For example, a value of `30` waits 30 minutes before admitting the next job. With higher concurrency, already active jobs can overlap; use `1` when strictly sequential processing is required.
 
+After each successful Drive-to-YouTube completion, the worker reports the active wait once, for example `YouTube upload delay active (1h 0m remaining); new Drive-to-YouTube jobs waiting; Drive backups continue` for a 60-minute delay. Repeated queue scans do not repeat this message, and there is no six-hour reminder for the normal upload delay. A single message reports delay expiry and queue checking. After restart, a persisted active wait is reported once when observed. If quota cooldown is active, it takes precedence over the normal delay message; the six-hour periodic reminders remain specific to quota cooldown. A zero/expired delay produces no wait announcement.
+
 The backup worker uses its own independent `REC_GDRIVE_MAX_CONCURRENT_UPLOADS` limit (default `1`) to bound active backup jobs/transfers. Higher values allow real parallel Drive transfers up to available server executor, network, and API capacity. It does not use `REC_MAX_CONCURRENT_UPLOADS`; that setting independently bounds the Drive-to-YouTube job lifecycle. Setting both limits to `1` allows one backup and one Drive-to-YouTube job to transfer simultaneously when capacity permits; neither is a global one-transfer network limit. The existing R2 queue behavior is unchanged.
 
 `DriveClient.from_config` creates per-thread isolated Google API clients, transports, and credentials. One shared service provider safely dispatches to the calling thread's API service. Backups run in a dedicated thread pool sized by the backup limit; each synchronous job stays in one thread. Drive-to-YouTube download/metadata calls use the separate default executor and its thread-isolated transports, so filling every backup slot cannot starve replay of executor threads or hold it behind a global backup-video lock. Calls are serialized per transport, not globally. Only the short root discovery/create critical section is serialized across threads to prevent duplicate `JKT48Live` roots; it does not lock whole video transfers.
@@ -233,6 +235,78 @@ Drive backup requires a non-empty final `<live_id>.mp4`. Raw MKV parts alone, an
 
 This limits backlog storage on the server, but cannot guarantee the disk never fills. Active recordings, failed remux parts, unavailable/full Drive, or recording throughput exceeding backup throughput can still consume local disk. Monitor both local free space and Drive capacity.
 
+## Backup IDLE, START, and WAIT logs
+
+Backup worker status is reported through the `gdrive` logger, so it follows the dedicated GDrive log destination rather than the recorder logger. The timestamp at the start of each log line identifies when the transition or job start occurred.
+
+- **`Drive backup IDLE`**: no eligible local folders remain. Reported once when entering idle, not on every scan. A missing recordings directory also counts as idle. Existing folders still recording, awaiting `.r2_done`, or lacking a nonempty final MP4 are not ready backup work; retained missing-video folders keep their separate explanatory log.
+- **`Drive backup START`**: emitted for each actual backup job after local eligibility/source checks and before its first Drive call. Includes the live ID, local folder, and the most recently observed idle timestamp for this worker run. Several parallel jobs may each produce START. If the worker started with ready work and never observed idle, the message says `not observed since worker startup` rather than inventing a timestamp.
+- **`Drive backup WAIT`**: pending folders need retry/backoff or manual recovery. Reported when entering that state; these folders are not mislabeled as an empty queue. A retry produces START again only when a new attempt actually begins.
+
+Example sequence:
+
+```text
+INFO Drive backup IDLE: no eligible recording folders to upload; idle since 2026-11-16T16:00:00+00:00
+INFO Drive backup START: live_id=live123; folder=recordings/member_timestamp; last idle since 2026-11-16T16:00:00+00:00
+INFO Verified Drive backup <archive-key>; local source removed
+INFO Drive backup IDLE: no eligible recording folders to upload; idle since 2026-11-16T16:05:00+00:00
+```
+
+Idle timestamps in message text use UTC explicitly. IDLE is reported only after admitted parallel jobs drain and a fresh local check finds no ready/pending work. Disabled, authorization-paused, and stopping workers do not emit normal idle transitions. These messages describe **server-to-Drive backup only**; Drive-to-YouTube may still be working independently while backup is idle.
+
+These are transition/job-start logs, not periodic health checks. A historical IDLE line does not by itself prove the service is still alive; use `systemctl status mypage48-gdrive` to verify current process health. Logs preserve prior transitions, but in-memory last-idle tracking resets on service restart.
+
+## Local folders, state files, and cleanup
+
+These directories are local control/staging data, not the archive folders stored under `JKT48Live` in Google Drive. The defaults below are relative to the repository root. State directories follow `REC_LOGS_DIR`; staging is a sibling of the configured recordings directory.
+
+| Location | Purpose | Current cleanup behavior |
+|---|---|---|
+| `recorder/logs/gdrive-backups/<archive-key>.json` | Receipt proving a Drive backup was verified before local source cleanup | Retained after success; no automatic expiry or pruning |
+| `recorder/logs/gdrive-claims/recording-<hash>` | OS lock identity coordinating recording initialization/reconnect with final backup publication and source deletion | File remains after unlock/process exit; no automatic pruning |
+| `recorder/logs/gdrive-jobs/<archive-key>.json` | In-flight YouTube recovery checkpoint, including returned video ID, resumable URI when present, finalization progress, and a frozen receipt when available | Removed after completed-archive cleanup succeeds; retained on unfinished/failed jobs or pending cleanup |
+| `recorder/gdrive-staging/<archive-key>/` | Temporary assets downloaded from Drive for a YouTube job | Video removed after durable YouTube ID checkpointing; job staging removed on success/failure; stale managed staging cleared when replay scanning starts after restart |
+| `recorder/logs/.gdrive_youtube_delay` | One plain-text Unix timestamp for the next Drive-to-YouTube admission time | Persists across restarts; read/written only by the Drive-to-YouTube worker |
+| `recorder/logs/.youtube_cooldown` | One plain-text Unix timestamp for quota cooldown | Shared with the existing direct YouTube uploader; persists across restarts |
+| `recorder/logs/.upload.lock` and `.gdrive.lock` | Prevent duplicate local instances of each controller role | Files remain; OS locks are released when the owner exits |
+
+Both timing files contain only a numeric timestamp, not JSON. The normal delay file is independent from quota cooldown and does not pause backups. There is no migration or fallback reader for the former `.gdrive-youtube-timing.json`; that file is ignored. Existing completion receipts can still reconstruct a deadline through the normal recovery path.
+
+### Verified backup receipts: gdrive-backups
+
+A receipt records the archive key, live ID, Drive archive ID, verification time, manifest/file identities, sizes/checksums, and the original local source snapshot. It is saved outside the recording folder **before** deleting that source folder. If cleanup is interrupted and a source remains, the worker uses the receipt to verify that the source still matches the original baseline rather than deleting newly changed/reconnected data.
+
+A backup receipt means **backup verification**, not YouTube completion. The YouTube completion marker is `.yt_done` inside the Drive archive. A receipt can remain locally even after YouTube processing and remote archive deletion; there is currently no automatic retention period for this directory.
+
+### Recording claims: gdrive-claims
+
+A claim file is usually empty. Its name includes a SHA-256 hash of the live ID so cooperating processes use the same filesystem object. The recorder acquires this lock during session initialization; the backup worker acquires it for final checks, publication, and local cleanup. It does not lock the entire video transfer, and different live IDs have different locks.
+
+**The existence of a claim file does not mean its lock is active.** Lock ownership is maintained by the operating system, not a status value written into the file. Normal completion, process exit, and forced termination release the OS lock; the filename is intentionally left in place for reuse.
+
+**Do not unlink an active lock file.** A process can keep a lock on the old file while another process creates and locks a new file with the same name, defeating coordination. File age or zero-byte size alone cannot prove a claim is safe to delete.
+
+### Staging and pending YouTube jobs
+
+An archive-key directory in staging can contain only recording metadata while a video is not yet downloaded or has already been removed after uploading. Its contents alone do not establish whether the job is complete; inspect the GDrive/uploader logs and durable job checkpoint instead. Downloads initially use hidden temporary `.part` files and only promote verified content to its destination filename.
+
+Checkpoint JSON under `gdrive-jobs` is deliberately separate from disposable staging. It may contain a resumable session URI and should be treated as sensitive operational data, not shared in screenshots or committed to Git. Deleting it for an unfinished job can lose the known YouTube ID or ambiguity state and undermine duplicate-upload protection. Disabling Drive-to-YouTube processing does not automatically discard pending checkpoints.
+
+### Accumulation and manual maintenance
+
+`gdrive-backups` and `gdrive-claims` **will accumulate files** under the current implementation. They contain no video payloads and normally occupy much less space than recordings, but backup manifests/source snapshots use some disk space and large file counts consume filesystem metadata/inodes. Nothing currently removes them based on age or completion.
+
+No routine manual deletion is required to keep normal processing working. Monitor both bytes and inode usage, and do not assume every file under `logs/` is disposable text logging. These paths are ignored by Git but still exist on disk.
+
+If manual maintenance becomes necessary:
+
+1. Stop all relevant recorder/GDrive processes, including systemd services and manually launched `all`, `record`, or `gdrive` instances; stop the upload controller too before touching its role lock or shared state. Verify they have actually exited, not merely entered a stopping state. Coordinate all processes using the same directories.
+2. Keep receipts for any recording whose local source still exists or whose cleanup/recovery is incomplete. Do not delete receipts indiscriminately or use an age-only rule. Fully evacuated, reconciled source folders no longer need their receipts for local deletion retries, but removing those receipts discards audit/recovery information.
+3. Claim files can be removed only while no recorder/backup process can hold or reopen them; the application recreates needed claim files. Do not remove them in a live cron cleanup job.
+4. Preserve unfinished YouTube checkpoints and `.yt_done` receipts in Drive. Manual deletion of local staging is not a substitute for resolving an ambiguous upload result.
+
+Automatic garbage collection for old receipts/claim files is **not implemented**. Any future cleanup feature must preserve active locks and incomplete recovery state rather than simply deleting everything under these directories.
+
 ## Completion markers and retained archives
 
 The current local marker name is `.yt_done`. The new workflow also creates a file with that exact name **inside the Drive archive folder**.
@@ -240,6 +314,8 @@ The current local marker name is `.yt_done`. The new workflow also creates a fil
 Its content records the YouTube video ID, archive identity, completion time, and the retention decision (`keep` or `delete`) with its reason. The retention decision is evaluated when YouTube finalization completes. The worker excludes completed archives from future upload candidates, including after restarting the server or rebuilding its local queue.
 
 The `.drive_ready` marker is published only after the full archive has been uploaded and verified. Consumption requires a valid ready marker, verified required assets, and removal of the original local source. A published marker alone does not permit consumption while that source still exists. Incomplete backups cannot enter the YouTube queue, and partial uploads are never downloaded.
+
+Archive consumers validate folders by their listed Drive ID using a non-creating lookup. If an archive disappears after listing (for example, successful permanent cleanup), a 404 is logged as a stale listing and skipped. The consumer never calls the backup worker's find-or-create operation; it must not recreate an empty folder after deletion. A same-named folder is not proof that it is the original archive—compare Drive IDs and completion history before manual cleanup.
 
 The YouTube ID is checkpointed before follow-up operations. A failed backend update should resume finalization for the existing video rather than upload the video again. No external upload workflow can guarantee exactly-once behavior across every possible crash without reconciliation; ambiguous upload results must be surfaced rather than blindly retried.
 
@@ -270,6 +346,7 @@ Changing privacy or retention settings does not re-upload completed videos. Dele
 | Drive OAuth credentials missing at startup | Log CRITICAL once; service stays alive and paused until credentials are configured and service restarted |
 | Drive token/client permanently rejected at startup or runtime | Log CRITICAL once; pause both Drive pipelines and remote cleanup until credentials are replaced and service restarted; do not keep retrying OAuth |
 | Remote checksum/size mismatch | Do not mark ready or delete source |
+| Archive safety validation fails during replay scanning | Log folder ID/name and the specific `DriveSafetyError` reason; do not bypass validation. Asset mismatches identify the filename and whether the file ID/presence, size, or checksum differs |
 | Final MP4 missing or empty, with only MKV/intermediate parts | Skip Drive backup, keep the entire local folder for recovery, and log the reason |
 | No video at all, such as a very short live | Skip Drive backup and keep the local folder and metadata; R2/recap may still complete |
 | Recording reconnects during backup | Recheck status; do not delete an active source |

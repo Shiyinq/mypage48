@@ -168,7 +168,7 @@ def test_missing_final_video_is_kept_without_drive_calls(
     monkeypatch.setattr(
         drive, "ensure_root", lambda: pytest.fail("Unexpected Drive call")
     )
-    caplog.set_level("INFO", logger="recorder.src.gdrive.backup_worker")
+    caplog.set_level("INFO", logger="gdrive")
     worker = BackupWorker(config, drive)
 
     async def scan_twice():

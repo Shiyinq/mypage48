@@ -175,7 +175,8 @@ recorder/
 │   ├── recorder.log
 │   ├── uploader.log
 │   ├── gdrive.log
-│   ├── gdrive-backups/           # Verified backup receipts
+│   ├── gdrive-backups/           # Persistent verified backup receipts; no auto-pruning
+│   ├── gdrive-claims/            # Persistent OS lock files; presence does not mean locked
 │   ├── gdrive-jobs/              # YouTube checkpoints and retention decisions
 │   └── uploads.jsonl
 └── src/
@@ -418,6 +419,7 @@ Authorize the storage account with `python recorder/auth_gdrive.py` from the rep
 - Both enabled: additionally select pending Drive archives by `REC_YOUTUBE_UPLOAD_PRIORITY` and descending MP4 size, download within concurrency/disk limits, and upload using the existing YouTube implementation.
 - `REC_GDRIVE_MAX_CONCURRENT_UPLOADS` bounds real parallel backup jobs/transfers independently of `REC_MAX_CONCURRENT_UPLOADS`, which bounds Drive-to-YouTube jobs. Thread-isolated API transports and a dedicated backup pool let both pipelines transfer concurrently, subject to server, network, and API capacity.
 - Backup requires `.r2_done`, completed metadata, and a nonempty final MP4. MKV-only, missing-video, and empty-MP4 folders remain on the server with an explanatory log, without any Drive upload.
+- Backup activity logs show `IDLE` once when no eligible folders remain, `START` for each actual job with the last observed idle time, and `WAIT` when sources need retry/recovery. These are transitions, not per-scan heartbeat messages; Drive-to-YouTube remains independent.
 - Drive-to-YouTube ignores incomplete archives: `.drive_ready` must be valid, all files must match the manifest, and the original local source must already be removed.
 - Retained completed folders contain `.yt_done` and are never uploaded again. Retention decisions are non-retroactive: removing a nickname exception does not delete its previously retained folders.
 - Deletion is permanent when enabled and allowed; start with it disabled.
@@ -426,6 +428,15 @@ Authorize the storage account with `python recorder/auth_gdrive.py` from the rep
 Run locally with `python -m recorder.main --mode gdrive`. Restart the GDrive service after changing its settings; when changing the master routing switch, safely drain and restart both upload and GDrive services. The initial deployment must also restart the record service to load the recording/cleanup coordination code. Do not run `--mode all` alongside split services.
 
 See [the detailed feature guide](../docs/RECORDER_GDRIVE_FEATURE.md) for setup, recovery, service commands, and limitations, and [the implementation plan](../docs/RECORDER_GDRIVE_IMPLEMENTATION_PLAN.md) for architecture and acceptance criteria.
+
+### Local Drive state and temporary folders
+
+- `logs/gdrive-backups/` stores verified-backup receipts used to validate local cleanup/recovery. They remain after success; they are not YouTube completion markers.
+- `logs/gdrive-claims/` contains per-live recording/backup lock files. Files remain after the OS lock is released; their existence does not indicate an active job. Never delete lock files while recorder/backup processes are running.
+- `logs/gdrive-jobs/` stores pending YouTube checkpoints, including known video IDs and resumable sessions. Successful completed-archive cleanup removes the corresponding checkpoint; failures keep recovery state.
+- `gdrive-staging/` contains temporary downloads, not permanent backups. The worker verifies downloads and cleans staging after jobs; durable checkpoints live outside it.
+
+Receipts and claim files currently have **no automatic expiry/pruning**, so file counts can grow even though they contain no video payloads. Manual bulk deletion is not recommended; stop relevant processes and preserve incomplete recovery state before maintenance. See [local folders and safe cleanup](../docs/RECORDER_GDRIVE_FEATURE.md#local-folders-state-files-and-cleanup) for lifecycle and precautions.
 
 ## FAQ
 

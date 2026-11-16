@@ -4,12 +4,15 @@ import asyncio
 import copy
 import hashlib
 import json
+import logging
 import time
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
+from googleapiclient.errors import HttpError
+from httplib2 import Response
 
 from recorder.src.gdrive import youtube_worker
 from recorder.src.gdrive.archive import MANIFEST_NAME, READY_NAME
@@ -53,17 +56,14 @@ class MemoryDrive:
         self.calls.append(("list",))
         return copy.deepcopy(list(self.archives.values()))
 
-    def ensure_archive(self, key, name):
-        self.calls.append(("ensure", key, name))
-        validate_filename(name)
-        matches = [
-            archive
-            for archive in self.archives.values()
-            if archive.get("appProperties", {}).get("archive_key") == key
-        ]
-        if len(matches) != 1:
-            raise DriveSafetyError("Expected one existing archive")
-        archive = matches[0]
+    def get_archive(self, archive_id, key):
+        self.calls.append(("get", archive_id, key))
+        if archive_id not in self.archives:
+            raise HttpError(
+                Response({"status": "404"}), b'{"error":{"message":"File not found"}}'
+            )
+        archive = self.archives[archive_id]
+        validate_filename(archive["name"])
         if (
             archive["id"] == "root"
             or archive.get("mimeType") != "application/vnd.google-apps.folder"
@@ -73,6 +73,7 @@ class MemoryDrive:
             or archive.get("ownedByMe") is not True
             or archive["appProperties"].get("app") != "mypage48"
             or archive["appProperties"].get("role") != "archive"
+            or archive["appProperties"].get("archive_key") != key
         ):
             raise DriveSafetyError("Not a private managed archive")
         return copy.deepcopy(archive)
@@ -212,6 +213,47 @@ async def scan_and_drain(worker):
     assert worker._reserved == 0
 
 
+@pytest.mark.parametrize(
+    "field,value,reason",
+    [
+        ("size", "999", "size"),
+        ("md5Checksum", "0" * 32, "checksum"),
+    ],
+)
+def test_archive_safety_log_identifies_file_and_reason(
+    harness, caplog, field, value, reason
+):
+    h = harness
+    key = h.drive.add_archive()
+    video_id = f"{key}/live1.mp4"
+    h.drive.files[video_id][field] = value
+    asyncio.run(scan_and_drain(h.worker))
+    assert (
+        "needs attention (DriveSafetyError): Archive asset 'live1.mp4'" in caplog.text
+    )
+    assert f"({reason})" in caplog.text
+    assert key in caplog.text
+    h.uploader.assert_not_awaited()
+    assert key in h.drive.archives
+    assert not any(call[0] in {"download", "delete"} for call in h.drive.calls)
+
+
+def test_success_immediately_announces_configured_upload_delay(harness, caplog):
+    h = harness
+    h.config.youtube_upload_delay_minutes = 60
+    h.drive.add_archive()
+    caplog.set_level("INFO", logger="gdrive")
+    asyncio.run(scan_and_drain(h.worker))
+    messages = [record.message for record in caplog.records]
+    complete = messages.index("Drive-to-YouTube complete: live1")
+    delay_messages = [
+        message for message in messages if "YouTube upload delay active" in message
+    ]
+    assert len(delay_messages) == 1
+    assert "1h 0m remaining" in delay_messages[0]
+    assert messages.index(delay_messages[0]) > complete
+
+
 def receipt(key, **changes):
     return {
         "schema_version": 1,
@@ -323,6 +365,76 @@ def test_success_commits_receipt_before_delete_or_keep(harness, delete, keep, re
     assert not h.worker._job_path(key).exists()
 
 
+def test_stale_listing_after_cleanup_skips_deleted_archive_and_continues(
+    harness, monkeypatch, caplog
+):
+    h = harness
+    deleted = h.drive.add_archive()
+    stale = copy.deepcopy(h.drive.archives[deleted])
+    h.config.gdrive_delete_after_youtube_upload = True
+    asyncio.run(scan_and_drain(h.worker))
+    assert deleted not in h.drive.archives
+    h.uploader.assert_awaited_once()
+
+    healthy = h.drive.add_archive("healthy")
+    healthy_folder = copy.deepcopy(h.drive.archives[healthy])
+    monkeypatch.setattr(h.drive, "list_archives", lambda: [stale, healthy_folder])
+    ensure = Mock(side_effect=AssertionError("Reader must never ensure an archive"))
+    create = Mock(side_effect=AssertionError("Reader must never create a folder"))
+    monkeypatch.setattr(h.drive, "ensure_archive", ensure, raising=False)
+    monkeypatch.setattr(h.drive, "create", create, raising=False)
+    h.uploader.reset_mock()
+    h.drive.calls.clear()
+    caplog.clear()
+    caplog.set_level(logging.INFO, logger="gdrive")
+
+    asyncio.run(scan_and_drain(YouTubeWorker(h.config, h.drive)))
+
+    assert h.drive.calls[0] == ("get", deleted, deleted)
+    assert ("get", healthy, healthy) in h.drive.calls
+    assert not any(
+        call[0] in {"children", "download", "write", "delete"}
+        and call[1].startswith(deleted)
+        for call in h.drive.calls
+    )
+    ensure.assert_not_called()
+    create.assert_not_called()
+    h.uploader.assert_awaited_once()
+    assert h.uploader.call_args.args[0].live_id == "healthy"
+    assert not h.drive.archives
+    assert any(
+        record.levelno == logging.INFO
+        and "skipping stale listing" in record.getMessage()
+        and deleted in record.getMessage()
+        for record in caplog.records
+    )
+    assert not any(record.levelno >= logging.ERROR for record in caplog.records)
+    assert "DriveSafetyError" not in caplog.text
+
+
+def test_archive_lookup_403_is_an_error_not_a_stale_listing(
+    harness, monkeypatch, caplog
+):
+    h = harness
+    key = h.drive.add_archive()
+    error = HttpError(Response({"status": "403"}), b'{"error":{"message":"Forbidden"}}')
+    get_archive = Mock(side_effect=error)
+    monkeypatch.setattr(h.drive, "get_archive", get_archive)
+    h.drive.calls.clear()
+    caplog.set_level(logging.INFO, logger="gdrive")
+
+    asyncio.run(scan_and_drain(h.worker))
+
+    get_archive.assert_called_once_with(key, key)
+    assert "needs attention (HttpError)" in caplog.text
+
+    assert any(record.levelno >= logging.ERROR for record in caplog.records)
+    assert "skipping stale listing" not in caplog.text
+    assert h.drive.calls == [("list",)]
+    assert key in h.drive.archives
+    h.uploader.assert_not_awaited()
+
+
 def test_keep_is_nonretroactive_after_member_removed(harness):
     h = harness
     key = h.drive.add_archive()
@@ -391,12 +503,15 @@ def test_untrusted_archive_is_rejected_before_reading_children(
 def test_verified_archive_id_must_match_listing(harness, monkeypatch, caplog):
     h = harness
     key = h.drive.add_archive()
-    stale = copy.deepcopy(h.drive.archives[key])
-    stale["id"] = "different-folder"
-    monkeypatch.setattr(h.drive, "list_archives", lambda: [stale])
+    folder = copy.deepcopy(h.drive.archives[key])
+    verified = {**folder, "id": "different-folder"}
+    get_archive = Mock(return_value=verified)
+    monkeypatch.setattr(h.drive, "get_archive", get_archive)
     h.drive.calls.clear()
     asyncio.run(scan_and_drain(h.worker))
-    assert h.drive.calls == [("ensure", key, stale["name"])]
+    get_archive.assert_called_once_with(folder["id"], key)
+    assert h.drive.calls == [("list",)]
+    assert "Archive identity mismatch" in caplog.text
     assert "needs attention" in caplog.text
     h.uploader.assert_not_awaited()
     h.backend.assert_not_awaited()
@@ -689,7 +804,8 @@ def test_persisted_cooldown_blocks_new_downloads_until_expiry(
         h.worker.cooldown_path.parent.mkdir(parents=True)
         h.worker.cooldown_path.write_text(str(deadline))
     else:
-        write_json(h.worker.timing_path, {"next_upload_time": deadline})
+        h.worker.timing_path.parent.mkdir(parents=True)
+        h.worker.timing_path.write_text(str(deadline))
     h.drive.calls.clear()
 
     async def run():
@@ -726,7 +842,7 @@ def test_discovered_completion_recovers_history_and_fixed_deadline(
         for offset in [60, 600, 1200]:
             now[0] = completed + offset
             await scan_and_drain(YouTubeWorker(h.config, h.drive))
-            assert read_json(h.worker.timing_path)["next_upload_time"] == deadline
+            assert float(h.worker.timing_path.read_text()) == deadline
             history = [
                 json.loads(line)
                 for line in h.config.uploads_history_path.read_text().splitlines()

@@ -9,6 +9,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from googleapiclient.errors import HttpError
+
 from ..models import RecordingSession
 from ..notify import notifier
 from ..upload import r2_uploader, youtube_uploader
@@ -69,7 +71,7 @@ class YouTubeWorker:
         self.client = client
         self.state_dir = Path(config.logs_dir) / "gdrive-jobs"
         self.staging = Path(config.recordings_dir).parent / "gdrive-staging"
-        self.timing_path = Path(config.logs_dir) / ".gdrive-youtube-timing.json"
+        self.timing_path = Path(config.logs_dir) / ".gdrive_youtube_delay"
         self.cooldown_path = Path(config.logs_dir) / ".youtube_cooldown"
         self._reserved = 0
         self._active = {}
@@ -79,6 +81,8 @@ class YouTubeWorker:
         self._recovered_staging = False
         self._cooldown_observed = False
         self._last_cooldown_log = None
+        self._observed_upload_deadline = 0
+        self._upload_delay_announced = False
 
     def _job_path(self, key):
         return self.state_dir / f"{key}.json"
@@ -108,8 +112,9 @@ class YouTubeWorker:
             cooldown = 0
         now = time.time()
         self._report_cooldown(cooldown, now)
-        timing = read_json(self.timing_path)
-        return now < max(cooldown, timing.get("next_upload_time", 0))
+        deadline = self._read_upload_deadline()
+        self._report_upload_delay(deadline, now, cooldown)
+        return now < max(cooldown, deadline)
 
     def _report_cooldown(self, cooldown, now):
         if now < cooldown:
@@ -132,6 +137,29 @@ class YouTubeWorker:
             self._cooldown_observed = False
             self._last_cooldown_log = None
 
+    def _report_upload_delay(self, deadline, now, cooldown=0):
+        if now < deadline:
+            if deadline != self._observed_upload_deadline:
+                self._observed_upload_deadline = deadline
+                self._upload_delay_announced = False
+            # Quota cooldown takes precedence; do not report two competing waits.
+            if now < cooldown:
+                return
+            if not self._upload_delay_announced:
+                remaining_minutes = max(1, int((deadline - now + 59) // 60))
+                log.info(
+                    "YouTube upload delay active (%dh %dm remaining); "
+                    "new Drive-to-YouTube jobs waiting; Drive backups continue",
+                    remaining_minutes // 60,
+                    remaining_minutes % 60,
+                )
+                self._upload_delay_announced = True
+        elif self._observed_upload_deadline:
+            if self._upload_delay_announced and now >= cooldown:
+                log.info("YouTube upload delay ended; checking Drive-to-YouTube queue")
+            self._observed_upload_deadline = 0
+            self._upload_delay_announced = False
+
     async def _children(self, folder):
         children = await self._call(self.client.list_children, folder["id"])
         by_name = {}
@@ -146,7 +174,19 @@ class YouTubeWorker:
         key = folder.get("appProperties", {}).get("archive_key")
         if not isinstance(key, str) or not re.fullmatch(r"[0-9a-f]{64}", key):
             raise DriveSafetyError("Invalid archive identity")
-        verified = await self._call(self.client.ensure_archive, key, folder["name"])
+        try:
+            verified = await self._call(self.client.get_archive, folder["id"], key)
+        except HttpError as exc:
+            if exc.resp.status != 404:
+                raise
+            # A listing can outlive a completed archive's permanent deletion.
+            # Never recreate an archive from the consumer to resolve that race.
+            log.info(
+                "Drive archive %s (%s) no longer available; skipping stale listing",
+                folder["id"],
+                folder.get("name", "unknown"),
+            )
+            return None
         if verified["id"] != folder["id"]:
             raise DriveSafetyError("Archive identity mismatch")
         children = await self._children(folder)
@@ -176,12 +216,18 @@ class YouTubeWorker:
             return None
         for item in manifest["files"]:
             remote = children.get(item["name"], {})
-            if (
-                remote.get("id") != item["id"]
-                or int(remote.get("size", -1)) != item["size"]
-                or remote.get("md5Checksum", "").lower() != item["md5Checksum"].lower()
-            ):
-                raise DriveSafetyError("Archive assets differ from manifest")
+            mismatches = []
+            if remote.get("id") != item["id"]:
+                mismatches.append("file ID or missing file")
+            if int(remote.get("size", -1)) != item["size"]:
+                mismatches.append("size")
+            if remote.get("md5Checksum", "").lower() != item["md5Checksum"].lower():
+                mismatches.append("checksum")
+            if mismatches:
+                raise DriveSafetyError(
+                    f"Archive asset {item['name']!r} differs from manifest "
+                    f"({', '.join(mismatches)})"
+                )
         return manifest
 
     async def _cleanup(self, folder, receipt):
@@ -236,6 +282,13 @@ class YouTubeWorker:
                     candidates.append((folder, manifest, size))
             except DriveAuthorizationError:
                 return
+            except DriveSafetyError as exc:
+                log.error(
+                    "Drive archive %s (%s) needs attention (DriveSafetyError): %s",
+                    folder["id"],
+                    folder.get("name", "unknown"),
+                    exc,
+                )
             except Exception as exc:
                 log.error(
                     "Drive archive %s needs attention (%s)",
@@ -433,9 +486,17 @@ class YouTubeWorker:
         self._remove_staging(key)
         await self._cleanup(folder, receipt)
         log.info("Drive-to-YouTube complete: %s", manifest["live_id"])
+        # Announce the next admission wait immediately, not on a later scan.
+        self._blocked()
+
+    def _read_upload_deadline(self):
+        try:
+            return float(self.timing_path.read_text())
+        except FileNotFoundError:
+            return 0.0
 
     def _record_completion(self, receipt):
-        timing = read_json(self.timing_path)
+        current_deadline = self._read_upload_deadline()
         completed = datetime.fromisoformat(
             receipt["completed_at"].replace("Z", "+00:00")
         )
@@ -443,8 +504,8 @@ class YouTubeWorker:
             completed.timestamp()
             + max(0, self.config.youtube_upload_delay_minutes) * 60
         )
-        timing["next_upload_time"] = max(timing.get("next_upload_time", 0), deadline)
-        write_json(self.timing_path, timing)
+        self.timing_path.parent.mkdir(parents=True, exist_ok=True)
+        self.timing_path.write_text(str(max(current_deadline, deadline)))
         self._history(receipt)
 
     def _history(self, receipt):

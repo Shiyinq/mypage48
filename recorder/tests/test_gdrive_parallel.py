@@ -21,7 +21,6 @@ from recorder.src.gdrive.client import (
 )
 from recorder.src.gdrive.youtube_worker import YouTubeWorker
 
-
 TIMEOUT = 10
 
 
@@ -435,10 +434,10 @@ class ReadinessDrive:
         self.calls = []
         self.downloads = []
 
-    def ensure_archive(self, key, name):
+    def get_archive(self, archive_id, key):
+        assert archive_id == self.folder["id"]
         assert key == self.folder["appProperties"]["archive_key"]
-        assert name == self.folder["name"]
-        self.calls.append(("ensure", key))
+        self.calls.append(("get", archive_id, key))
         return copy.deepcopy(self.folder)
 
     def list_children(self, folder_id):
@@ -473,7 +472,10 @@ def test_youtube_load_skips_unpublished_archive(tmp_path, marker, include_manife
     )
 
     assert asyncio.run(worker._load(drive.folder)) is None
-    assert [call[0] for call in drive.calls] == ["ensure", "children"]
+    assert drive.calls == [
+        ("get", drive.folder["id"], drive.folder["appProperties"]["archive_key"]),
+        ("children", drive.folder["id"]),
+    ]
     assert not drive.downloads
     assert not worker.staging.exists()
     assert not worker._active

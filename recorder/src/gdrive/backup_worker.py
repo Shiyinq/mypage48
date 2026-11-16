@@ -8,6 +8,7 @@ import os
 import shutil
 import stat
 import tempfile
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
@@ -29,7 +30,7 @@ from .client import (
     validate_filename,
 )
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("gdrive")
 
 
 def _snapshot(folder):
@@ -101,23 +102,79 @@ class BackupWorker:
         self.stop_event = None
         self._retries = {}
         self._missing_mp4_logged = {}
+        self._status_lock = threading.Lock()
+        self._status = None
+        self._idle_since = None
+
+    def _report_idle(self):
+        with self._status_lock:
+            if self._status != "idle":
+                self._idle_since = datetime.now(timezone.utc).isoformat(
+                    timespec="seconds"
+                )
+                self._status = "idle"
+                log.info(
+                    "Drive backup IDLE: no eligible recording folders to upload; "
+                    "idle since %s",
+                    self._idle_since,
+                )
+
+    def _report_start(self, folder, live_id):
+        with self._status_lock:
+            self._status = "running"
+            log.info(
+                "Drive backup START: live_id=%s; folder=%s; last idle since %s",
+                live_id,
+                folder,
+                self._idle_since or "not observed since worker startup",
+            )
+
+    def _report_waiting(self):
+        with self._status_lock:
+            if self._status != "waiting":
+                self._status = "waiting"
+                log.info("Drive backup WAIT: pending folders need retry or recovery")
+
+    def _is_stopping(self):
+        return authorization_paused(self.client) or (
+            self.stop_event is not None and self.stop_event.is_set()
+        )
+
+    @staticmethod
+    def _has_pending_video(folder):
+        if (
+            folder.is_symlink()
+            or not folder.is_dir()
+            or not (folder / ".r2_done").is_file()
+            or (folder / ".yt_done").exists()
+            or (folder / ".abort_upload").exists()
+        ):
+            return False
+        try:
+            _, meta = _metadata(folder)
+            if meta.get("status") != "completed":
+                return False
+            video = folder / f"{validate_filename(meta.get('live_id'))}.mp4"
+            return video.is_file() and video.stat().st_size > 0
+        except (DriveSafetyError, OSError):
+            # A malformed source needing review is not an empty queue.
+            return True
 
     async def scan_once(self) -> None:
-        if not self.config.backup_to_gdrive or authorization_paused(self.client):
+        if not self.config.backup_to_gdrive or self._is_stopping():
             return
         async with self._scan_lock:
             root = Path(self.config.recordings_dir)
             if root.is_symlink():
                 raise DriveSafetyError("Recordings root is a symlink")
             if not root.exists():
+                self._report_idle()
                 return
             folders = iter(sorted(root.iterdir()))
 
             async def consume():
                 for folder in folders:
-                    if authorization_paused(self.client) or (
-                        self.stop_event is not None and self.stop_event.is_set()
-                    ):
+                    if self._is_stopping():
                         return
                     if (
                         folder.is_symlink()
@@ -164,6 +221,15 @@ class BackupWorker:
                 max_workers=count, thread_name_prefix="gdrive-backup"
             ) as executor:
                 await asyncio.gather(*(consume() for _ in range(count)))
+            if self._is_stopping():
+                return
+            pending = [
+                folder for folder in root.iterdir() if self._has_pending_video(folder)
+            ]
+            if not pending:
+                self._report_idle()
+            elif any(folder in self._retries for folder in pending):
+                self._report_waiting()
 
     def _backup(self, folder):
         before = _snapshot(folder)
@@ -226,6 +292,7 @@ class BackupWorker:
             path.name: (role, path.stat().st_size, _md5(path)) for path, role in assets
         }
         recheck()
+        self._report_start(folder, live_id)
         self.client.ensure_root()
         archive = self.client.ensure_archive(key, folder.name)
         archive_id = archive["id"]

@@ -159,6 +159,31 @@ def test_drive_file_root_404_does_not_block_managed_folder(fake, create):
     assert fake.files.create.call_count == int(create)
 
 
+def test_existing_archive_reader_validates_without_creation(fake):
+    assert fake.client.get_archive("archive", "recording-123")["id"] == "archive"
+    fake.files.create.assert_not_called()
+
+
+def test_missing_archive_reader_does_not_recreate_folder(fake):
+    from googleapiclient.errors import HttpError
+    from httplib2 import Response
+
+    original_get = fake.files.get.side_effect
+
+    def missing_archive(**kwargs):
+        if kwargs["fileId"] == "archive":
+            raise HttpError(
+                Response({"status": "404"}), b'{"error":{"message":"File not found"}}'
+            )
+        return original_get(**kwargs)
+
+    fake.files.get.side_effect = missing_archive
+    with pytest.raises(HttpError) as caught:
+        fake.client.get_archive("archive", "recording-123")
+    assert caught.value.resp.status == 404
+    fake.files.create.assert_not_called()
+
+
 def test_root_ambiguity_fails_without_creation(fake):
     fake.roots.append(dict(fake.root, id="duplicate"))
     with pytest.raises(DriveSafetyError, match="Multiple managed"):
