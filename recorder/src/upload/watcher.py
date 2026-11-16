@@ -340,6 +340,13 @@ class Watcher:
 
             # 5. Yield or finish
             if not has_mp4:
+                if self.config.backup_to_gdrive:
+                    self.log_upl.info(
+                        "No non-empty final MP4 for %s after R2; "
+                        "skipping Drive backup and keeping folder on server",
+                        title_log,
+                    )
+                    return
                 self._append_history(live_id, youtube_id or "")
                 expected_mp4 = meta.get("record", True)
 

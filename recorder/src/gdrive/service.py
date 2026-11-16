@@ -22,7 +22,9 @@ class GDriveService:
                 log.info("GDrive processing disabled; service remains idle")
                 await stop_event.wait()
                 return
-            if self.config.max_concurrent_uploads < 1:
+            if self.config.gdrive_max_concurrent_uploads < 1:
+                raise ValueError("REC_GDRIVE_MAX_CONCURRENT_UPLOADS must be at least 1")
+            if self.config.gdrive_to_youtube and self.config.max_concurrent_uploads < 1:
                 raise ValueError("REC_MAX_CONCURRENT_UPLOADS must be at least 1")
             if not all(
                 (

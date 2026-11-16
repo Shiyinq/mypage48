@@ -25,6 +25,8 @@ Auto-record live stream video + chat + gift from SHOWROOM and IDN Live, with aut
 
 ## System Flow
 
+The original recording, upload, theater, and heartbeat loops are shown below with the optional GDrive pipeline added. In production, `setup-recorder.sh` installs separate record, upload, theater, and GDrive services. `--mode all` runs these roles together; do not run it alongside the split services.
+
 ```mermaid
 flowchart TD
 
@@ -39,11 +41,11 @@ flowchart TD
         D[Poll GET /api/jkt48/live] --> E{Sync with active sessions}
         E -->|New live| F[Start ffmpeg HLS→MKV]
         F --> G[Start chat capture]
-        G --> G1["SHOWROOM: HTTP poll comments<br/>+ HTTP poll gifts<br/>IDN: WebSocket IRC"]
-        G1 --> G2[Start periodic screenshots<br/>30s + every 5 min]
+        G --> G1["SHOWROOM: HTTP poll comments and gifts; IDN: WebSocket IRC"]
+        G1 --> G2["Start periodic screenshots: 30s and every 5 min"]
         E -->|Ended live| H[Stop ffmpeg + chats]
         H --> I[Remux MKV→MP4]
-        I --> J[Generate SRT + JSON<br/>+ final screenshot 50% dur]
+        I --> J["Generate SRT and JSON; final screenshot at 50% duration"]
         J --> K[Delete temp files log/ffmpeg.log]
         K --> L[Recording folder with metadata status:completed]
         L --> LA[Send End Live Notif]
@@ -66,15 +68,54 @@ flowchart TD
         W -->|No| X[Retry Later]
         W -->|Yes| Y[Send Recap Notif & mark .r2_done]
         
-        Y --> Z{YouTube Enabled?}
+        Y --> Route{REC_BACKUP_TO_GDRIVE?}
+        Route -->|No| Z{YouTube Enabled?}
+        Route -->|Yes| GBScan
         Z -->|Yes| AA[Phase 2: YouTube Upload]
         AA --> AB{Success?}
         AB -->|No| X
-        AB -->|Yes| AC[PATCH Backend: youtube_id & youtube_title<br/>+ Send Replay Notif]
+        AB -->|Yes| AC["PATCH Backend: youtube_id and youtube_title; send replay notification"]
         
-        Z -->|No| AD[Log to uploads.jsonl & rm -rf folder]
-        AC --> AD
+        Z -->|No| WaitYT[Keep local folder until YouTube is configured]
+        AC --> AD[Log to uploads.jsonl and remove completed folder]
         X --> P
+    end
+
+    subgraph GDrive["GDrive Service: independent backup and YouTube workers"]
+        GDEnabled{REC_BACKUP_TO_GDRIVE?}
+        GDEnabled -->|No| GDIdle[Service stays alive but idle]
+        GDEnabled -->|Yes| GBScan[Scan completed folders with .r2_done]
+        GBScan --> GBVideo{Nonempty final MP4 exists?}
+        GBVideo -->|No| GBKeep[Keep all local files and log reason; do not upload]
+        GBVideo -->|Yes| GBParallel["Parallel backups: REC_GDRIVE_MAX_CONCURRENT_UPLOADS"]
+        GBParallel --> GBUpload[Upload MP4, original metadata and optional thumbnail]
+        GBUpload --> GBVerify{All remote files verified?}
+        GBVerify -->|No| GBRetry[Keep local source and retry with backoff]
+        GBRetry --> GBScan
+        GBVerify -->|Yes| GBReady[Write manifest and .drive_ready last]
+        GBReady --> GBReceipt[Persist backup receipt and recheck source]
+        GBReceipt --> GBRemove[Remove verified local recording folder]
+        GBRemove --> GDStorage[(Private JKT48Live archives)]
+
+        GDEnabled -->|Yes| GYEnabled{REC_GDRIVE_TO_YOUTUBE?}
+        GYEnabled -->|No| GYStore[Backup only; do not create .yt_done]
+        GYEnabled -->|Yes| GYScan[Select ready archives without .yt_done]
+        GDStorage -->|Read only when Drive-to-YouTube is enabled| GYScan
+        GYScan --> GYReady[Validate .drive_ready and assets; wait until local source is removed]
+        GYReady --> GYPriority[Nickname priority, then largest MP4 within each group]
+        GYPriority --> GYAdmit["Before download: cooldown, delay, disk space and REC_MAX_CONCURRENT_UPLOADS"]
+        GYAdmit --> GYDownload[Download verified assets to gdrive-staging]
+        GYDownload --> GYUpload[Call the existing shared YouTube uploader]
+        GYUpload --> GYResult{YouTube upload successful?}
+        GYResult -->|No| GYRetry[Preserve Drive source; clean staging and retry when eligible]
+        GYRetry --> GYScan
+        GYResult -->|Yes| GYCheckpoint[Persist YouTube ID; retry finalization without reupload]
+        GYCheckpoint --> GYFinalize[Update backend and send eligible replay notification]
+        GYFinalize --> GYDone[Write remote .yt_done with frozen retention decision]
+        GYDone --> GYClean[Clean local staging]
+        GYClean --> GYRetention{Recorded retention decision?}
+        GYRetention -->|Keep| GYKeep[Retain completed archive; later config changes do not delete it]
+        GYRetention -->|Delete| GYDelete[Permanently delete eligible Drive archive]
     end
 
     subgraph Heartbeat["Heartbeat Loop"]
@@ -88,10 +129,14 @@ flowchart TD
         A --> M2[Recording Loop]
         A --> M3[Upload Loop]
         A --> M4[Theater Loop]
+        A --> M5[GDrive Service]
     end
 
     LA --> P
+    M5 --> GDEnabled
 ```
+
+The GDrive backup and Drive-to-YouTube workers run concurrently with independent transfer clients and a dedicated backup thread pool. Incomplete Drive folders are not consumed: `.drive_ready` is committed only after verification, and the original local source must be gone before download. Theater health-checker execution is currently disabled in `main.py`; the existing checker is shown for architecture context. Loop intervals follow configuration; the 10-second labels describe the original overview.
 
 ## Directory Structure
 
@@ -100,6 +145,7 @@ recorder/
 ├── __init__.py
 ├── main.py                       # Entry point
 ├── auth_youtube.py               # YouTube OAuth flow (get refresh token)
+├── auth_gdrive.py                # Separate Drive account OAuth and private root setup
 ├── requirements.txt
 ├── .env                          # Local config (gitignored)
 ├── .env.example                  # Config template
@@ -118,9 +164,13 @@ recorder/
 │   │       ├── {nickname}_{ts}.jpg
 │   │       └── ...
 │   └── .gitkeep
+├── gdrive-staging/               # Verified temporary downloads for Drive-to-YouTube
 ├── logs/                         # Logs & upload history
 │   ├── recorder.log
 │   ├── uploader.log
+│   ├── gdrive.log
+│   ├── gdrive-backups/           # Verified backup receipts
+│   ├── gdrive-jobs/              # YouTube checkpoints and retention decisions
 │   └── uploads.jsonl
 └── src/
     ├── __init__.py
@@ -141,6 +191,14 @@ recorder/
     │   ├── youtube_uploader.py   # Resumable YT upload via API
     │   ├── thumbnail_generator.py# Generates thumbnails for recordings
     │   └── r2_uploader.py        # Replay data -> backend -> R2
+    ├── gdrive/
+    │   ├── __init__.py
+    │   ├── client.py             # Thread-isolated Drive transports
+    │   ├── archive.py            # Manifest and readiness validation
+    │   ├── backup_worker.py      # Parallel verified backups and local cleanup
+    │   ├── youtube_worker.py     # Priority downloads; calls shared YouTube uploader
+    │   ├── state.py              # Durable checkpoints
+    │   └── service.py            # Config gates and worker lifecycle
     ├── theater/
     │   ├── __init__.py
     │   ├── news_checker.py       # Check for new JKT48 news and announcements
@@ -179,7 +237,7 @@ You can pass several arguments to `recorder/main.py` for advanced control:
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `--mode {record,upload,theater,all}` | Run specific loop or `all` (default). `theater` runs all independent background checkers. | `python -m recorder.main --mode theater` |
+| `--mode {record,upload,theater,gdrive,all}` | Run a specific loop or `all` (default). `theater` runs the independent background checkers; `gdrive` runs config-gated backup and optional Drive-to-YouTube workers. | `python -m recorder.main --mode theater` |
 | `--status [folder]` | Check status of all recordings or a specific folder. | `python -m recorder.main --status` |
 | `--remux [folder]` | Force remux interrupted/stuck `.mkv` files to `.mp4`. | `python -m recorder.main --remux all` |
 | `--delete [folder]` | Delete all recording folders or a specific one. | `python -m recorder.main --delete oline_1782911092` |
@@ -342,6 +400,7 @@ The optional Drive pipeline runs in the separate `mypage48-gdrive.service` insta
 REC_BACKUP_TO_GDRIVE=false
 REC_GDRIVE_TO_YOUTUBE=false
 REC_GDRIVE_REFRESH_TOKEN=
+REC_GDRIVE_MAX_CONCURRENT_UPLOADS=1
 REC_GDRIVE_DELETE_AFTER_YOUTUBE_UPLOAD=false
 REC_GDRIVE_KEEP_MEMBERS=erine,oline
 ```
@@ -351,6 +410,9 @@ Authorize the storage account with `python recorder/auth_gdrive.py` from the rep
 - Master disabled: the GDrive service remains alive but idle; normal uploads are unchanged.
 - Master enabled, Drive-to-YouTube disabled: backup verified post-R2 videos to Drive, then remove local sources. Do not mark them YouTube-completed.
 - Both enabled: additionally select pending Drive archives by `REC_YOUTUBE_UPLOAD_PRIORITY` and descending MP4 size, download within concurrency/disk limits, and upload using the existing YouTube implementation.
+- `REC_GDRIVE_MAX_CONCURRENT_UPLOADS` bounds real parallel backup jobs/transfers independently of `REC_MAX_CONCURRENT_UPLOADS`, which bounds Drive-to-YouTube jobs. Thread-isolated API transports and a dedicated backup pool let both pipelines transfer concurrently, subject to server, network, and API capacity.
+- Backup requires `.r2_done`, completed metadata, and a nonempty final MP4. MKV-only, missing-video, and empty-MP4 folders remain on the server with an explanatory log, without any Drive upload.
+- Drive-to-YouTube ignores incomplete archives: `.drive_ready` must be valid, all files must match the manifest, and the original local source must already be removed.
 - Retained completed folders contain `.yt_done` and are never uploaded again. Retention decisions are non-retroactive: removing a nickname exception does not delete its previously retained folders.
 - Deletion is permanent when enabled and allowed; start with it disabled.
 

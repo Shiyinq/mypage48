@@ -104,6 +104,39 @@ def test_scans_gate_only_youtube_and_keep_r2_route(
     asyncio.run(run())
 
 
+@pytest.mark.parametrize("has_parts", [False, True])
+@pytest.mark.parametrize("record_expected", [False, True])
+def test_drive_handoff_keeps_missing_video_after_r2(
+    recording, monkeypatch, has_parts, record_expected, caplog
+):
+    r = recording
+    r.meta["record"] = record_expected
+    r.path.write_text(json.dumps(r.meta))
+    (r.folder / "live1.mp4").unlink()
+    if has_parts:
+        (r.folder / "live1.part0.mkv").write_bytes(b"raw recovery")
+    watcher = Watcher(r.config)
+    watcher._processing["live1"] = {}
+    monkeypatch.setattr(watcher, "_build_session", lambda *_: (r.meta, r.session))
+    upload = AsyncMock(return_value=True)
+    monkeypatch.setattr(watcher_module.r2_uploader, "upload", upload)
+    monkeypatch.setattr(
+        watcher_module.notifier, "send_recap_end_live_notification", AsyncMock()
+    )
+    history = Mock()
+    monkeypatch.setattr(watcher, "_append_history", history)
+    caplog.set_level("INFO", logger="uploader")
+    asyncio.run(watcher._process_folder_inner(str(r.folder), "live1"))
+    upload.assert_awaited_once()
+    assert (r.folder / ".r2_done").exists()
+    assert r.path.exists()
+    assert not (r.folder / ".yt_done").exists()
+    history.assert_not_called()
+    assert "keeping folder on server" in caplog.text
+    if has_parts:
+        assert (r.folder / "live1.part0.mkv").read_bytes() == b"raw recovery"
+
+
 @pytest.mark.parametrize("r2_done", [False, True])
 @pytest.mark.parametrize("subfeature", [False, True])
 def test_master_suppresses_phase2_but_preserves_r2(

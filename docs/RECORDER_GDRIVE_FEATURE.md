@@ -30,13 +30,13 @@ With `REC_BACKUP_TO_GDRIVE=true`, the upload service hands post-R2 videos to a *
 ```mermaid
 flowchart TD
     A[Recording completed] --> B[R2 replay upload and recap]
-    B --> C[Backup worker uploads archive to Drive]
+    B --> C[Parallel Drive backups bounded by REC_GDRIVE_MAX_CONCURRENT_UPLOADS]
     C --> D[Verify files and commit ready marker]
     D --> E[Delete original local recording folder]
     E --> F[Drive backlog]
     F --> G[Check YouTube cooldown, delay, and disk space]
     G --> H[Choose next archive by priority and size]
-    H --> I[Download into local staging]
+    H --> I[Download into local staging using transport independent of backups]
     I --> J[Upload to YouTube]
     J --> K[Persist video ID and finalize backend and notifications]
     K --> L[Write .yt_done in Drive archive]
@@ -98,6 +98,9 @@ New settings:
 ```dotenv
 REC_BACKUP_TO_GDRIVE=true
 REC_GDRIVE_REFRESH_TOKEN=your_drive_refresh_token
+
+# Independent parallel backup-job/transfer limit, not the YouTube limit
+REC_GDRIVE_MAX_CONCURRENT_UPLOADS=1
 
 # Optional second stage; defaults to false (backup only)
 REC_GDRIVE_TO_YOUTUBE=false
@@ -198,9 +201,13 @@ A Drive-to-YouTube slot covers downloading, uploading, and finalizing one archiv
 
 The delay starts after successful completion. For example, a value of `30` waits 30 minutes before admitting the next job. With higher concurrency, already active jobs can overlap; use `1` when strictly sequential processing is required.
 
-The backup worker has its own bounded transfer pool, using the same concurrency setting as its independent limit. Calls through the shared Drive API client are serialized for thread safety; the setting is an upper bound, not a promise of parallel Drive transfers. Thus concurrency `1` can allow one backup and one Drive-to-YouTube job simultaneously; it is not a global one-transfer network limit.
+The backup worker uses its own independent `REC_GDRIVE_MAX_CONCURRENT_UPLOADS` limit (default `1`) to bound active backup jobs/transfers. Higher values allow real parallel Drive transfers up to available server executor, network, and API capacity. It does not use `REC_MAX_CONCURRENT_UPLOADS`; that setting independently bounds the Drive-to-YouTube job lifecycle. Setting both limits to `1` allows one backup and one Drive-to-YouTube job to transfer simultaneously when capacity permits; neither is a global one-transfer network limit. The existing R2 queue behavior is unchanged.
+
+`DriveClient.from_config` creates per-thread isolated Google API clients, transports, and credentials. One shared service provider safely dispatches to the calling thread's API service. Backups run in a dedicated thread pool sized by the backup limit; each synchronous job stays in one thread. Drive-to-YouTube download/metadata calls use the separate default executor and its thread-isolated transports, so filling every backup slot cannot starve replay of executor threads or hold it behind a global backup-video lock. Calls are serialized per transport, not globally. Only the short root discovery/create critical section is serialized across threads to prevent duplicate `JKT48Live` roots; it does not lock whole video transfers.
 
 Before downloading, the worker checks and reserves disk space for the video plus a safety margin. If insufficient, it pauses instead of filling the disk. Staged video is removed as soon as its YouTube ID is durably checkpointed. Failed jobs also remove their staged media instead of accumulating copies outside the concurrency limit; retries re-download verified bytes, reusing a valid resumable URI when available. On restart, managed stale staging directories are cleared before scheduling. Small durable control records remain available for crash recovery.
+
+Drive backup requires a non-empty final `<live_id>.mp4`. Raw MKV parts alone, an empty MP4, or a folder without any video never trigger a Drive archive upload or local folder deletion. The upload service still completes R2/recap and leaves `.r2_done`; the backup worker logs why the folder is being kept. Repeated scans do not repeat the same missing-video message until the reason changes or the service restarts. Recover or remove these retained folders manually as appropriate.
 
 This limits backlog storage on the server, but cannot guarantee the disk never fills. Active recordings, failed remux parts, unavailable/full Drive, or recording throughput exceeding backup throughput can still consume local disk. Monitor both local free space and Drive capacity.
 
@@ -210,7 +217,7 @@ The current local marker name is `.yt_done`. The new workflow also creates a fil
 
 Its content records the YouTube video ID, archive identity, completion time, and the retention decision (`keep` or `delete`) with its reason. The retention decision is evaluated when YouTube finalization completes. The worker excludes completed archives from future upload candidates, including after restarting the server or rebuilding its local queue.
 
-An archive is only ready for consumption after its `.drive_ready` marker has been committed and its required files verified. Incomplete backups cannot enter the YouTube queue.
+The `.drive_ready` marker is published only after the full archive has been uploaded and verified. Consumption requires a valid ready marker, verified required assets, and removal of the original local source. A published marker alone does not permit consumption while that source still exists. Incomplete backups cannot enter the YouTube queue, and partial uploads are never downloaded.
 
 The YouTube ID is checkpointed before follow-up operations. A failed backend update should resume finalization for the existing video rather than upload the video again. No external upload workflow can guarantee exactly-once behavior across every possible crash without reconciliation; ambiguous upload results must be surfaced rather than blindly retried.
 
@@ -239,6 +246,8 @@ Changing privacy or retention settings does not re-upload completed videos. Dele
 | Drive upload interrupted | Resume/reconcile partial archive; keep local source |
 | Drive full or token invalid | Pause backups, report failure, keep local files |
 | Remote checksum/size mismatch | Do not mark ready or delete source |
+| Final MP4 missing or empty, with only MKV/intermediate parts | Skip Drive backup, keep the entire local folder for recovery, and log the reason |
+| No video at all, such as a very short live | Skip Drive backup and keep the local folder and metadata; R2/recap may still complete |
 | Recording reconnects during backup | Recheck status; do not delete an active source |
 | YouTube credentials absent/invalid | Pause YouTube work; healthy Drive backups can continue |
 | YouTube quota/upload limit | Keep Drive source, respect the existing 24-hour cooldown, do not download more videos |

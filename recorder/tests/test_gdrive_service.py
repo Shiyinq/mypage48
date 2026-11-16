@@ -19,6 +19,7 @@ def harness(tmp_path, monkeypatch):
         backup_to_gdrive=True,
         gdrive_to_youtube=True,
         max_concurrent_uploads=1,
+        gdrive_max_concurrent_uploads=1,
         google_client_id="client",
         google_client_secret="secret",
         gdrive_refresh_token="token",
@@ -60,6 +61,14 @@ def test_disabled_master_stays_alive_without_credentials_or_drive(harness):
     h.client.ensure_root.assert_not_called()
 
 
+@pytest.mark.parametrize("limit", [0, -1])
+def test_invalid_drive_backup_limit_rejected_before_api(harness, limit):
+    harness.config.gdrive_max_concurrent_uploads = limit
+    with pytest.raises(ValueError, match="REC_GDRIVE_MAX_CONCURRENT_UPLOADS"):
+        asyncio.run(service.GDriveService(harness.config).run(asyncio.Event()))
+    harness.factory.assert_not_called()
+
+
 @pytest.mark.parametrize(
     "missing", ["google_client_id", "google_client_secret", "gdrive_refresh_token"]
 )
@@ -75,6 +84,9 @@ def test_enabled_missing_credentials_errors_before_api(harness, missing):
 def test_worker_selection_and_graceful_stop(harness, youtube_enabled):
     h = harness
     h.config.gdrive_to_youtube = youtube_enabled
+    if not youtube_enabled:
+        # Backup-only operation must not depend on the YouTube limit.
+        h.config.max_concurrent_uploads = 0
 
     async def run():
         stop = asyncio.Event()

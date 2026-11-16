@@ -8,6 +8,7 @@ import os
 import shutil
 import stat
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from random import uniform
@@ -94,6 +95,7 @@ class BackupWorker:
         self._scan_lock = asyncio.Lock()
         self.stop_event = None
         self._retries = {}
+        self._missing_mp4_logged = {}
 
     async def scan_once(self) -> None:
         if not self.config.backup_to_gdrive:
@@ -121,7 +123,9 @@ class BackupWorker:
                     if retry is not None and monotonic() < retry[1]:
                         continue
                     # Cancellation cannot leave a background thread deleting sources.
-                    task = asyncio.create_task(asyncio.to_thread(self._backup, folder))
+                    task = asyncio.get_running_loop().run_in_executor(
+                        executor, self._backup, folder
+                    )
                     try:
                         await asyncio.shield(task)
                     except asyncio.CancelledError:
@@ -143,8 +147,13 @@ class BackupWorker:
                     else:
                         self._retries.pop(folder, None)
 
-            count = max(1, int(self.config.max_concurrent_uploads))
-            await asyncio.gather(*(consume() for _ in range(count)))
+            count = max(1, int(self.config.gdrive_max_concurrent_uploads))
+            # Backup transfers must not occupy the executor used by Drive replay
+            # downloads/control calls, even on a small single-core server.
+            with ThreadPoolExecutor(
+                max_workers=count, thread_name_prefix="gdrive-backup"
+            ) as executor:
+                await asyncio.gather(*(consume() for _ in range(count)))
 
     def _backup(self, folder):
         before = _snapshot(folder)
@@ -152,7 +161,22 @@ class BackupWorker:
         live_id = validate_filename(meta.get("live_id"))
         video = folder / f"{live_id}.mp4"
         if not video.is_file() or video.stat().st_size == 0:
-            raise DriveSafetyError("No final MP4; preserving raw recovery files")
+            has_parts = any(folder.glob("*.mkv")) or any(folder.glob("*part*.mp4"))
+            reason = (
+                "raw parts found"
+                if has_parts
+                else "video missing or empty (possibly a short live)"
+            )
+            if self._missing_mp4_logged.get(folder) != reason:
+                log.info(
+                    "No non-empty final MP4 for %s; %s; "
+                    "skipping Drive backup and keeping folder on server",
+                    live_id,
+                    reason,
+                )
+                self._missing_mp4_logged[folder] = reason
+            return
+        self._missing_mp4_logged.pop(folder, None)
         key = archive_key_for(folder, meta)
         nickname = normalize_member_nickname(meta.get("member_nickname"))
         receipt_path = Path(self.config.logs_dir) / "gdrive-backups" / f"{key}.json"

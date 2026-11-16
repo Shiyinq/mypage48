@@ -97,7 +97,8 @@ def setup(tmp_path):
         gdrive_to_youtube=False,
         recordings_dir=root,
         logs_dir=tmp_path / "logs",
-        max_concurrent_uploads=2,
+        gdrive_max_concurrent_uploads=2,
+        max_concurrent_uploads=1,
     )
     drive = FakeDrive()
     return folder, meta, config, drive
@@ -105,6 +106,25 @@ def setup(tmp_path):
 
 def run(config, drive):
     asyncio.run(BackupWorker(config, drive).scan_once())
+
+
+@pytest.mark.parametrize("entrypoint", ["scan", "backup"])
+def test_mp4_without_r2_completion_never_contacts_drive(setup, monkeypatch, entrypoint):
+    folder, meta, config, drive = setup
+    (folder / ".r2_done").unlink()
+    monkeypatch.setattr(
+        drive, "ensure_root", lambda: pytest.fail("Unexpected Drive call")
+    )
+    worker = BackupWorker(config, drive)
+    if entrypoint == "scan":
+        asyncio.run(worker.scan_once())
+    else:
+        with pytest.raises(DriveSafetyError, match="no longer completed"):
+            worker._backup(folder)
+    assert (folder / "live123.mp4").read_bytes() == b"final video"
+    assert (folder / "live123.json").exists()
+    assert not drive.archives and not drive.files
+    assert not (folder / ".yt_done").exists()
 
 
 def test_backup_and_receipt(setup):
@@ -130,6 +150,43 @@ def test_backup_and_receipt(setup):
         "archive_key": key,
         "schema_version": 1,
     }
+
+
+@pytest.mark.parametrize("has_parts", [False, True])
+@pytest.mark.parametrize("empty_mp4", [False, True])
+def test_missing_final_video_is_kept_without_drive_calls(
+    setup, monkeypatch, caplog, has_parts, empty_mp4
+):
+    folder, meta, config, drive = setup
+    video = folder / "live123.mp4"
+    if empty_mp4:
+        video.write_bytes(b"")
+    else:
+        video.unlink()
+    if not has_parts:
+        (folder / "raw.part.mkv").unlink()
+    monkeypatch.setattr(
+        drive, "ensure_root", lambda: pytest.fail("Unexpected Drive call")
+    )
+    caplog.set_level("INFO", logger="recorder.src.gdrive.backup_worker")
+    worker = BackupWorker(config, drive)
+
+    async def scan_twice():
+        await worker.scan_once()
+        await worker.scan_once()
+
+    asyncio.run(scan_twice())
+    assert folder.exists()
+    assert (folder / "live123.json").exists()
+    assert (folder / ".r2_done").exists()
+    assert not drive.archives and not drive.files
+    messages = [
+        r.message for r in caplog.records if "No non-empty final MP4" in r.message
+    ]
+    assert len(messages) == 1
+    assert "keeping folder on server" in messages[0]
+    assert ("raw parts found" in messages[0]) == has_parts
+    assert not worker._retries
 
 
 @pytest.mark.parametrize(
@@ -566,7 +623,7 @@ def test_shutdown_finishes_active_backups_without_new_admission(setup, concurren
     import shutil
 
     folder, _, config, drive = setup
-    config.max_concurrent_uploads = concurrency
+    config.gdrive_max_concurrent_uploads = concurrency
     for number in range(3):
         shutil.copytree(folder, folder.parent / f"pending_{number}")
     active_started = threading.Event()

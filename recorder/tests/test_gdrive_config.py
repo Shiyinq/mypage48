@@ -13,6 +13,7 @@ def isolate_config(monkeypatch):
     for name in (
         "BACKUP_TO_GDRIVE",
         "GDRIVE_TO_YOUTUBE",
+        "GDRIVE_MAX_CONCURRENT_UPLOADS",
         "GDRIVE_REFRESH_TOKEN",
         "GDRIVE_DELETE_AFTER_YOUTUBE_UPLOAD",
         "GDRIVE_KEEP_MEMBERS",
@@ -24,6 +25,7 @@ def test_gdrive_defaults():
     config = RecorderConfig()
     assert config.backup_to_gdrive is False
     assert config.gdrive_to_youtube is False
+    assert config.gdrive_max_concurrent_uploads == 1
     assert config.gdrive_refresh_token == ""
     assert config.gdrive_delete_after_youtube_upload is False
     assert config.gdrive_keep_members == ""
@@ -33,12 +35,16 @@ def test_gdrive_defaults():
 def test_gdrive_environment(monkeypatch):
     monkeypatch.setenv("REC_BACKUP_TO_GDRIVE", "true")
     monkeypatch.setenv("REC_GDRIVE_TO_YOUTUBE", "true")
+    monkeypatch.setenv("REC_GDRIVE_MAX_CONCURRENT_UPLOADS", "3")
+    monkeypatch.setenv("REC_MAX_CONCURRENT_UPLOADS", "1")
     monkeypatch.setenv("REC_GDRIVE_REFRESH_TOKEN", "test-token")
     monkeypatch.setenv("REC_GDRIVE_DELETE_AFTER_YOUTUBE_UPLOAD", "true")
     monkeypatch.setenv("REC_GDRIVE_KEEP_MEMBERS", " Erine,OLINE,,erine, Straße, ")
     config = RecorderConfig()
     assert config.backup_to_gdrive is True
     assert config.gdrive_to_youtube is True
+    assert config.gdrive_max_concurrent_uploads == 3
+    assert config.max_concurrent_uploads == 1
     assert config.gdrive_refresh_token == "test-token"
     assert config.gdrive_delete_after_youtube_upload is True
     assert config.gdrive_keep_members_normalized == {"erine", "oline", "strasse"}

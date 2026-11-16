@@ -1,4 +1,4 @@
-"""Synchronous, serialized Drive transport; call from async workers via to_thread.
+"""Synchronous Drive transport with isolated per-thread API clients.
 
 Tags are a discovery mechanism, not a distributed lock. Callers must serialize
 archive ownership and enforce completion/retention policy before deletion.
@@ -34,7 +34,7 @@ class DriveSafetyError(RuntimeError):
 def _serialized(method):
     @wraps(method)
     def wrapped(self, *args, **kwargs):
-        with self._lock:
+        with self._operation_lock():
             return method(self, *args, **kwargs)
 
     return wrapped
@@ -72,12 +72,35 @@ class DriveClient:
     """One account's Drive client. No network work happens on import.
 
     Pass RecorderConfig to from_config, or inject an API service for tests/OAuth.
+    Production API clients, transports and credentials are isolated per executor
+    thread. Injected single API services are serialized for tests/OAuth setup.
     All returned file objects include id, name, tags, size and available hashes.
     """
 
-    def __init__(self, service):
-        self.service = service
+    def __init__(self, service=None, *, service_factory=None):
+        if (service is None) == (service_factory is None):
+            raise ValueError("Provide exactly one service or service factory")
+        self._service = service
+        self._service_factory = service_factory
+        self._local = threading.local()
         self._lock = threading.RLock()
+        self._root_lock = threading.RLock()
+
+    @property
+    def service(self):
+        if self._service_factory is None:
+            return self._service
+        if not hasattr(self._local, "service"):
+            self._local.service = self._service_factory()
+        return self._local.service
+
+    def _operation_lock(self):
+        if self._service_factory is None:
+            # An injected API object must not be shared concurrently across threads.
+            return self._lock
+        if not hasattr(self._local, "lock"):
+            self._local.lock = threading.RLock()
+        return self._local.lock
 
     @classmethod
     def from_config(cls, config):
@@ -93,15 +116,24 @@ class DriveClient:
             raise ValueError(
                 "Drive requires shared Google credentials and its own refresh token"
             )
-        credentials = Credentials(
-            token=None,
-            client_id=values[0],
-            client_secret=values[1],
-            refresh_token=values[2],
-            token_uri="https://oauth2.googleapis.com/token",
-            scopes=SCOPES,
-        )
-        return cls(build("drive", "v3", credentials=credentials, cache_discovery=False))
+
+        def service_factory():
+            # Neither httplib2 transport nor refreshable credentials are shared
+            # between executor threads. A long upload cannot block other transfers.
+            credentials = Credentials(
+                token=None,
+                client_id=values[0],
+                client_secret=values[1],
+                refresh_token=values[2],
+                token_uri="https://oauth2.googleapis.com/token",
+                scopes=SCOPES,
+            )
+            return build("drive", "v3", credentials=credentials, cache_discovery=False)
+
+        client = cls(service_factory=service_factory)
+        # Build in the caller's thread to surface setup errors before worker startup.
+        client._local.service = service_factory()
+        return client
 
     def _list(self, query):
         result = []
@@ -200,6 +232,11 @@ class DriveClient:
 
     @_serialized
     def ensure_root(self):
+        # Only discovery/create is global, never video upload or download.
+        with self._root_lock:
+            return self._ensure_root()
+
+    def _ensure_root(self):
         roots = self._list(self._tag_query(APP_PROPERTIES))
         if len(roots) > 1:
             raise DriveSafetyError("Multiple managed Drive roots; resolve manually")

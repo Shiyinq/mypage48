@@ -30,6 +30,7 @@ class RecorderConfig(BaseSettings):
     youtube_refresh_token: str = ""
     backup_to_gdrive: bool = False
     gdrive_to_youtube: bool = False
+    gdrive_max_concurrent_uploads: int = 1
     gdrive_refresh_token: str = ""
     gdrive_delete_after_youtube_upload: bool = False
     gdrive_keep_members: str = ""
