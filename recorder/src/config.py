@@ -39,6 +39,16 @@ class RecorderConfig(BaseSettings):
     max_concurrent_uploads: int = 2
     enable_upload_queue: bool = True
     youtube_upload_delay_minutes: int = 30
+    youtube_upload_priority: str = ""
+
+    @property
+    def youtube_upload_priority_ranks(self) -> dict[str, int]:
+        ranks = {}
+        for nickname in self.youtube_upload_priority.split(","):
+            nickname = nickname.strip().casefold()
+            if nickname and nickname not in ranks:
+                ranks[nickname] = len(ranks)
+        return ranks
 
     model_config = {
         "env_file": (
