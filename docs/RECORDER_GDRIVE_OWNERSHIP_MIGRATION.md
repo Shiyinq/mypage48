@@ -10,6 +10,16 @@ The initial implementation accepts consumer `gmail.com`/`googlemail.com` account
 
 **Do not run the modifying phases on production archives before testing the process on a small disposable folder owned by the source account.** Ownership changes are real and the tool has no automatic rollback. Proposals send notification emails and grant the recipient writer access; the transfer process is not private to the original owner. A failed phase can leave some proposals or transfers already applied.
 
+## Permanent archive compatibility
+
+The inventory includes `JKT48Live/permanent/` and its descendants as well as pending archives. Exact private `appProperties` are captured for **every item** and compared during preflight, individual transfers and final verification. These properties include managed identity tags and the completion record that replaces `.yt_done` for permanent MP4-only archives. The utility never rewrites those properties or recreates deleted sidecars.
+
+A permanent archive must already have a valid **finalized** marker, the expected managed ancestry/name, and exactly the retained MP4 IDs, filenames, sizes, checksums and asset tags recorded in its marker. Pending, partial or malformed permanent markers, missing MP4s and unexpected remaining sidecars stop migration before ownership changes. Let the normal worker finish permanent finalization first, then stop all writers before planning. This utility does not complete or repair interrupted archive cleanup.
+
+Use the **same OAuth application as the recorder**, for both accounts and all phases: `appProperties` are private to the application. Broad Drive access from another application is not a substitute. The tool checks the properties visible to its OAuth application, not invisible properties belonging to another application; it cannot independently prove that the configured application is the recorder's original one.
+
+Checkpoints now use **plan version 2** with explicit property snapshots. Older/version-1 or incomplete checkpoints are refused, not silently upgraded. If no ownership changes have begun, retain the old checkpoint for reference and create a fresh plan with a different `--checkpoint` path. If transfers have already begun, preserve all state and reconcile the partial migration before proceeding: do not delete the checkpoint or attempt to bypass checks with a new baseline.
+
 ## Preparation
 
 1. Stop every process that can add or change these Drive archives, including backup producers as well as the GDrive-to-YouTube worker. Stopping only `mypage48-gdrive` does not necessarily stop backup producers.
@@ -57,7 +67,7 @@ Run from the repository root. Replace `ROOT_ID`, `source@gmail.com` and `target@
   --target-email target@gmail.com
 ```
 
-This performs read-only remote enumeration, follows pagination, and stores an immutable inventory of IDs, names, parent edges, sizes and available checksums. It creates no Drive folders or permissions. An existing matching plan is validated, not silently replaced.
+This performs read-only remote enumeration, follows pagination, and stores an immutable inventory of IDs, names, parent edges, sizes, available checksums and exact private `appProperties`. It creates no Drive folders or permissions. An existing matching plan is validated, not silently replaced.
 
 The default checkpoint is `recorder/logs/ownership-migration/checkpoint.json`. It contains private filenames/account identifiers, but no OAuth tokens. The directory is owner-only and checkpoint files are atomic and owner-readable/writable (`0700`/`0600`). The default path is ignored by Git. Keep the checkpoint for recovery; never publish or commit it. A custom `--checkpoint` must remain under `recorder/logs`.
 

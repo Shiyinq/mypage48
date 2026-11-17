@@ -241,6 +241,7 @@ def test_archive_safety_log_identifies_file_and_reason(
 def test_success_immediately_announces_configured_upload_delay(harness, caplog):
     h = harness
     h.config.youtube_upload_delay_minutes = 60
+    h.config.gdrive_delete_after_youtube_upload = True
     h.drive.add_archive()
     caplog.set_level("INFO", logger="gdrive")
     asyncio.run(scan_and_drain(h.worker))
@@ -898,3 +899,239 @@ def test_incomplete_receipt_fails_closed_before_completion_or_deletion(
     h.uploader.assert_not_awaited()
     h.backend.assert_not_awaited()
     h.notification.assert_not_awaited()
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+@pytest.mark.parametrize("reason", ["member_exception", "deletion_disabled"])
+@pytest.mark.parametrize("current_delete", [False, True])
+def test_kept_completion_builds_permanent_record(
+    harness, legacy, reason, current_delete
+):
+    h = harness
+    h.config.gdrive_keep_members_normalized = (
+        {"erine"} if reason == "member_exception" else set()
+    )
+    h.config.gdrive_delete_after_youtube_upload = False
+    key = h.drive.add_archive()
+    meta_id = f"{key}/live1.json"
+    meta = h.drive.get_json(meta_id)
+    meta["start_at"] = "2026-08-13T13:15:00Z"
+    item = h.drive.upsert_json(key, "live1.json", meta)
+    manifest = h.drive.get_json(f"{key}/{MANIFEST_NAME}")
+    manifest["files"][1].update(size=int(item["size"]), md5Checksum=item["md5Checksum"])
+    h.drive.upsert_json(key, MANIFEST_NAME, manifest)
+    finalize = Mock()
+    h.drive.finalize_permanent = finalize
+    if legacy:
+        receipt = {
+            "schema_version": 1,
+            "archive_key": key,
+            "live_id": "live1",
+            "member_nickname": "Erine",
+            "youtube_id": "yt-live1",
+            "completed_at": "2026-08-13T14:00:00+00:00",
+            "retention": "keep",
+            "retention_reason": reason,
+        }
+        h.drive.upsert_json(key, DONE_NAME, receipt)
+        h.config.gdrive_delete_after_youtube_upload = current_delete
+        # Frozen keep survives removal and housekeeping needs no upload credentials.
+        h.config.gdrive_keep_members_normalized = set()
+        h.config.youtube_refresh_token = ""
+        h.worker.cooldown_path.parent.mkdir(parents=True, exist_ok=True)
+        h.worker.cooldown_path.write_text(str(time.time() + 86400))
+    asyncio.run(scan_and_drain(h.worker))
+    finalize.assert_called_once()
+    args = finalize.call_args.args
+    assert args[:2] == (key, key)
+    assert args[2]["name"] == "erine 13 Agustus 2026 20:15 WIB"
+    assert args[2]["receipt"]["retention_reason"] == reason
+    assert h.uploader.await_count == int(not legacy)
+
+
+def test_permanent_malformed_never_enters_upload_queue(harness):
+    h = harness
+    h.drive.list_permanent_archives = Mock(
+        return_value=[
+            {"id": "permanent-child", "appProperties": {"archive_key": "a" * 64}}
+        ]
+    )
+    h.drive.finalize_permanent = Mock(side_effect=DriveSafetyError("bad marker"))
+    asyncio.run(scan_and_drain(h.worker))
+    h.uploader.assert_not_awaited()
+    assert not any(call[0] == "download" for call in h.drive.calls)
+
+
+@pytest.mark.parametrize("tamper", ["start_at", "nickname", "thumbnail"])
+@pytest.mark.parametrize("keep_reason", ["member_exception", "deletion_disabled"])
+def test_completed_kept_tampered_nonvideo_refused_before_marker(
+    harness, tamper, keep_reason
+):
+    h = harness
+    key = h.drive.add_archive()
+    manifest = h.drive.get_json(f"{key}/{MANIFEST_NAME}")
+    meta = h.drive.get_json(f"{key}/live1.json")
+    meta["start_at"] = "2026-08-13T13:15:00Z"
+    item = h.drive.upsert_json(key, "live1.json", meta)
+    manifest["files"][1].update(size=int(item["size"]), md5Checksum=item["md5Checksum"])
+    if tamper == "thumbnail":
+        thumbnail = h.drive.put(key, "live1_yt_thumb.jpg", b"original")
+        manifest["files"].append(
+            {
+                "id": thumbnail["id"],
+                "name": thumbnail["name"],
+                "role": "thumbnail",
+                "size": int(thumbnail["size"]),
+                "md5Checksum": thumbnail["md5Checksum"],
+            }
+        )
+        h.drive.put(key, "live1_yt_thumb.jpg", b"modified")
+    elif tamper == "start_at":
+        # Same ID/name (and tags in the real transport), valid metadata with a
+        # different date. Its current Drive checksum is not the manifest baseline.
+        meta["start_at"] = "2026-08-14T13:15:00Z"
+        h.drive.upsert_json(key, "live1.json", meta)
+    else:
+        meta["member_nickname"] = "Other"
+        item = h.drive.upsert_json(key, "live1.json", meta)
+        # Even matching integrity cannot override manifest member identity.
+        manifest["files"][1].update(
+            size=int(item["size"]), md5Checksum=item["md5Checksum"]
+        )
+    h.drive.upsert_json(key, MANIFEST_NAME, manifest)
+    receipt = {
+        "schema_version": 1,
+        "archive_key": key,
+        "live_id": "live1",
+        "member_nickname": "Erine",
+        "youtube_id": "yt-live1",
+        "completed_at": "2026-08-13T14:00:00+00:00",
+        "retention": "keep",
+        "retention_reason": "member_exception",
+    }
+    receipt["retention_reason"] = keep_reason
+    h.drive.upsert_json(key, DONE_NAME, receipt)
+    h.drive.finalize_permanent = Mock()
+    h.drive.calls.clear()
+    asyncio.run(scan_and_drain(h.worker))
+    h.drive.finalize_permanent.assert_not_called()
+    h.uploader.assert_not_awaited()
+    assert not any(call[0] in {"write", "delete", "download"} for call in h.drive.calls)
+    assert key in h.drive.archives
+    assert f"{key}/{DONE_NAME}" in h.drive.files
+
+
+@pytest.mark.parametrize("finalized", [False, True])
+def test_permanent_recovery_clears_stale_journal(harness, finalized):
+    h = harness
+    key = "a" * 64
+    receipt = {
+        "schema_version": 1,
+        "archive_key": key,
+        "live_id": "live1",
+        "member_nickname": "Erine",
+        "youtube_id": "yt-live1",
+        "completed_at": "2026-08-13T14:00:00+00:00",
+        "retention": "keep",
+        "retention_reason": "member_exception",
+    }
+    tags = {"app": "mypage48", "role": "archive", "archive_key": key}
+    if finalized:
+        from recorder.src.gdrive.permanent import encode_marker
+
+        tags = encode_marker(
+            tags,
+            {
+                "version": 1,
+                "state": "finalized",
+                "name": "erine 13 Agustus 2026 20:15 WIB",
+                "receipt": receipt,
+                "assets": [
+                    {
+                        "id": "video",
+                        "name": "live1.mp4",
+                        "size": 5,
+                        "md5Checksum": "b" * 32,
+                    }
+                ],
+            },
+        )
+    h.drive.list_permanent_archives = Mock(
+        return_value=[{"id": "permanent-child", "appProperties": tags}]
+    )
+    h.drive.finalize_permanent = Mock(return_value=receipt)
+    completion = Mock(wraps=h.worker._record_completion)
+    h.worker._record_completion = completion
+    journal = h.worker._job_path(key)
+    journal.parent.mkdir(parents=True)
+    journal.write_text(json.dumps({"receipt": receipt}))
+    asyncio.run(scan_and_drain(h.worker))
+    assert not journal.exists()
+    assert completion.call_count == int(not finalized)
+    h.uploader.assert_not_awaited()
+
+
+@pytest.mark.parametrize("failure", ["container", "malformed_child"])
+def test_permanent_failure_does_not_block_unrelated_pending(harness, caplog, failure):
+    h = harness
+    h.config.gdrive_delete_after_youtube_upload = True
+    pending_key = h.drive.add_archive()
+    if failure == "container":
+        h.drive.list_permanent_archives = Mock(
+            side_effect=DriveSafetyError("Ambiguous permanent container")
+        )
+    else:
+        h.drive.list_permanent_archives = Mock(
+            return_value=[
+                {
+                    "id": "bad-permanent-child",
+                    "appProperties": {"archive_key": "b" * 64},
+                }
+            ]
+        )
+        h.drive.finalize_permanent = Mock(side_effect=DriveSafetyError("Bad marker"))
+    asyncio.run(scan_and_drain(h.worker))
+    h.uploader.assert_awaited_once()
+    assert pending_key not in h.drive.archives
+    assert any("Permanent Drive" in record.message for record in caplog.records)
+
+
+def test_permanent_authorization_failure_stops_pending(harness):
+    h = harness
+    h.drive.add_archive()
+    h.drive.list_permanent_archives = Mock(
+        side_effect=youtube_worker.DriveAuthorizationError("Authorization paused")
+    )
+    asyncio.run(scan_and_drain(h.worker))
+    h.uploader.assert_not_awaited()
+    assert not any(call[0] == "list" for call in h.drive.calls)
+
+
+@pytest.mark.parametrize("reason", ["member_exception", "deletion_disabled"])
+def test_pending_delete_upgraded_to_current_keep_and_migrated(harness, reason):
+    h = harness
+    h.config.gdrive_delete_after_youtube_upload = reason == "member_exception"
+    h.config.gdrive_keep_members_normalized = (
+        {"erine"} if reason == "member_exception" else set()
+    )
+    key = h.drive.add_archive()
+    meta = h.drive.get_json(f"{key}/live1.json")
+    meta["start_at"] = "2026-08-13T13:15:00Z"
+    item = h.drive.upsert_json(key, "live1.json", meta)
+    manifest = h.drive.get_json(f"{key}/{MANIFEST_NAME}")
+    manifest["files"][1].update(size=int(item["size"]), md5Checksum=item["md5Checksum"])
+    h.drive.upsert_json(key, MANIFEST_NAME, manifest)
+    h.drive.upsert_json(
+        key,
+        DONE_NAME,
+        receipt(key, retention="delete", retention_reason="deletion_enabled"),
+    )
+    h.drive.finalize_permanent = Mock()
+    asyncio.run(scan_and_drain(h.worker))
+    h.uploader.assert_not_awaited()
+    h.drive.finalize_permanent.assert_called_once()
+    upgraded = h.drive.finalize_permanent.call_args.args[2]["receipt"]
+    assert upgraded["retention"] == "keep"
+    assert upgraded["retention_reason"] == reason
+    assert h.drive.get_json(f"{key}/{DONE_NAME}") == upgraded
+    assert not any(call[0] == "delete" for call in h.drive.calls)

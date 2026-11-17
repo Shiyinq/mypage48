@@ -765,3 +765,36 @@ def test_upload_failure_retains_source(setup):
     run(config, drive)
     assert folder.exists()
     assert not any(f["name"] == ".drive_ready" for f in drive.files.values())
+
+
+def test_existing_permanent_container_does_not_interfere_with_backup(setup):
+    folder, meta, config, drive = setup
+    container = {
+        "id": "permanent",
+        "name": "permanent",
+        "parents": ["root"],
+        "mimeType": "application/vnd.google-apps.folder",
+        "appProperties": {"app": "mypage48", "role": "permanent"},
+        "shared": False,
+        "ownedByMe": True,
+    }
+    drive.files["permanent"] = copy.deepcopy(container)
+    retained = {
+        "id": "retained",
+        "name": "erine 13 Agustus 2026 20:15 WIB",
+        "parents": ["permanent"],
+        "mimeType": "application/vnd.google-apps.folder",
+        "appProperties": {
+            "app": "mypage48",
+            "role": "archive",
+            "archive_key": "a" * 64,
+        },
+    }
+    drive.files["retained"] = copy.deepcopy(retained)
+    key = archive_key_for(folder, meta)
+    run(config, drive)
+    assert not folder.exists()
+    assert drive.files["permanent"] == container
+    assert drive.files["retained"] == retained
+    assert key in drive.archives
+    assert drive.get_json(f"arbitrary ID {key} .drive_ready")["archive_key"] == key

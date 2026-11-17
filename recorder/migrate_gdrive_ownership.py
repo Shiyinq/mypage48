@@ -15,6 +15,7 @@ import json
 import os
 import re
 import stat
+import sys
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
@@ -25,9 +26,12 @@ SCOPES = ["https://www.googleapis.com/auth/drive"]
 BASE = Path(__file__).resolve().parent
 FIELDS = (
     "id,name,mimeType,parents,size,md5Checksum,sha1Checksum,sha256Checksum,"
-    "trashed,driveId,owners(emailAddress,permissionId)"
+    "appProperties,trashed,driveId,owners(emailAddress,permissionId)"
 )
-KEYS = "id name mimeType parents size md5Checksum sha1Checksum sha256Checksum".split()
+KEYS = (
+    "id name mimeType parents size md5Checksum sha1Checksum sha256Checksum "
+    "appProperties"
+).split()
 
 
 class SafetyError(RuntimeError):
@@ -69,6 +73,105 @@ def identity(service, email):
     return user["permissionId"]
 
 
+def validate_properties(properties):
+    require(isinstance(properties, dict), "Invalid private property snapshot")
+    require(len(properties) <= 30, "Too many private properties")
+    for key, value in properties.items():
+        require(
+            isinstance(key, str) and isinstance(value, str),
+            "Private properties must map strings to strings",
+        )
+        try:
+            valid = bool(key) and len(key.encode()) + len(value.encode()) <= 124
+        except UnicodeError:
+            valid = False
+        require(valid, "Invalid private property size")
+
+
+def permanent_marker(properties):
+    # Direct script execution puts recorder/, not its package parent, on sys.path.
+    # Limit the import-path adjustment to loading the existing validator.
+    root = str(BASE.parent)
+    added = root not in sys.path
+    if added:
+        sys.path.insert(0, root)
+    try:
+        from recorder.src.gdrive.permanent import decode_marker
+
+        return decode_marker(properties)
+    except Exception:
+        raise SafetyError("Invalid permanent archive marker") from None
+    finally:
+        if added:
+            sys.path.remove(root)
+
+
+def validate_permanent_tree(items, root):
+    def tagged(item, **tags):
+        return all(item["appProperties"].get(k) == v for k, v in tags.items())
+
+    containers = set()
+    for file_id, item in items.items():
+        props = item["appProperties"]
+        if tagged(item, app="mypage48", role="permanent"):
+            require(
+                item["mimeType"] == FOLDER
+                and item["name"] == "permanent"
+                and item["parents"] == [root]
+                and tagged(items[root], app="mypage48", role="root"),
+                "Invalid permanent container identity",
+            )
+            containers.add(file_id)
+        if not any(k.startswith("keep_") for k in props):
+            continue
+        marker = permanent_marker(props)
+        require(marker["state"] == "finalized", "Permanent finalization incomplete")
+        require(
+            item["mimeType"] == FOLDER
+            and tagged(item, app="mypage48", role="archive")
+            and re.fullmatch(r"[0-9a-f]{64}", props.get("archive_key", ""))
+            and item["name"] == marker["name"],
+            "Invalid permanent archive identity",
+        )
+        parent = items.get(item["parents"][0]) if len(item["parents"]) == 1 else None
+        require(
+            parent is not None
+            and tagged(parent, app="mypage48", role="permanent")
+            and parent["parents"] == [root],
+            "Invalid finalized archive location",
+        )
+        assets = {
+            a["id"]: a for a in marker["assets"] if a["name"].lower().endswith(".mp4")
+        }
+        children = {k: v for k, v in items.items() if v["parents"] == [file_id]}
+        require(set(children) == set(assets), "Permanent archive asset set mismatch")
+        for child_id, child in children.items():
+            asset = assets[child_id]
+            require(
+                child["name"] == asset["name"]
+                and child["mimeType"] != FOLDER
+                and not child["mimeType"].startswith("application/vnd.google-apps.")
+                and child["size"] == str(asset["size"])
+                and isinstance(child["md5Checksum"], str)
+                and child["md5Checksum"].lower() == asset["md5Checksum"].lower()
+                and tagged(
+                    child,
+                    app="mypage48",
+                    role="asset",
+                    archive_key=props["archive_key"],
+                    file_key=asset["name"],
+                ),
+                "Permanent asset identity or integrity mismatch",
+            )
+    require(len(containers) <= 1, "Ambiguous permanent containers")
+    for item in items.values():
+        if any(parent in containers for parent in item["parents"]):
+            require(
+                any(k.startswith("keep_") for k in item["appProperties"]),
+                "Permanent archive missing finalization marker",
+            )
+
+
 def metadata(service, file_id, source, target):
     item = call(service.files().get(fileId=file_id, fields=FIELDS))
     require(item.get("id") == file_id, "File identity mismatch")
@@ -82,7 +185,11 @@ def metadata(service, file_id, source, target):
     require(bool(owners[0].get("permissionId")), "Missing owner permission identity")
     require(isinstance(item.get("parents"), list), "Missing parents")
     require(isinstance(item.get("name"), str), "Missing name")
-    return {k: item.get(k) for k in KEYS}, owner, owners[0]["permissionId"]
+    properties = item.get("appProperties", {})
+    validate_properties(properties)
+    snapshot = {k: item.get(k) for k in KEYS}
+    snapshot["appProperties"] = properties
+    return snapshot, owner, owners[0]["permissionId"]
 
 
 def inventory(service, root, source, target):
@@ -111,6 +218,7 @@ def inventory(service, root, source, target):
             )
             stack.extend((child["id"], file_id, False) for child in children)
     require(result[root]["mimeType"] == FOLDER, "Root must be a folder")
+    validate_permanent_tree(result, root)
     return result, order
 
 
@@ -162,7 +270,16 @@ def load(path, expected):
         plan = state["plan"]
         require(state["seal"] == digest(plan), "Checkpoint inventory corrupted")
         require(all(plan[k] == v for k, v in expected.items()), "Checkpoint mismatch")
-        require(plan["version"] == 1, "Unsupported checkpoint")
+        fresh = (
+            "Checkpoint lacks a trusted private-property baseline; stop writers and "
+            "use a fresh plan at a new checkpoint path after reconciling ownership; "
+            "existing checkpoint not overwritten"
+        )
+        require(plan["version"] == 2, fresh)
+        for item in plan["items"].values():
+            require("appProperties" in item, fresh)
+            validate_properties(item["appProperties"])
+        validate_permanent_tree(plan["items"], plan["root"])
         require(set(plan["order"]) == set(plan["items"]), "Invalid checkpoint order")
         require(len(plan["order"]) == len(plan["items"]), "Duplicate checkpoint IDs")
         require(plan["order"][-1] == plan["root"], "Invalid root order")
@@ -234,7 +351,7 @@ def run(service, phase, path, root, source, target, execute=False):
                     owner == source and owner_id == actor,
                     "Initial plan requires source ownership",
                 )
-            plan = dict(version=1, items=items, order=order, **expected)
+            plan = dict(version=2, items=items, order=order, **expected)
             state = dict(plan=plan, seal=digest(plan), progress={})
             save(path, state)
         plan = state["plan"]
@@ -302,6 +419,8 @@ def run(service, phase, path, root, source, target, execute=False):
                 ) from None
             state["progress"][file_id] = dict(phase=phase, status="confirmed")
             save(path, state)
+        current, _ = inventory(service, root, source, target)
+        require(current == plan["items"], "Complete tree changed during transfer")
         return summary
 
 

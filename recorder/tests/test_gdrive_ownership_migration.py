@@ -73,6 +73,7 @@ class Fake:
 
         class Files:
             def get(self, fileId, **kwargs):
+                assert "appProperties" in kwargs["fields"].split(",")
                 return Request(lambda: copy.deepcopy(fake.nodes[fileId]))
 
             def list(self, q, pageToken=None, **kwargs):
@@ -141,6 +142,178 @@ def setup(tmp_path):
         return m.run(fake, phase, path, "root", SOURCE, TARGET, execute)
 
     return fake, path, run
+
+
+@pytest.fixture
+def permanent(setup):
+    from recorder.src.gdrive.permanent import encode_marker
+
+    fake, path, run = setup
+    key = "a" * 64
+    tags = dict(app="mypage48", role="archive", archive_key=key)
+    record = {
+        "version": 1,
+        "state": "finalized",
+        "name": "erine 13 Agustus 2026 20:15 WIB",
+        "receipt": {
+            "schema_version": 1,
+            "archive_key": key,
+            "live_id": "live",
+            "member_nickname": "Erine",
+            "youtube_id": "yt",
+            "completed_at": "2026-08-13T14:00:00+00:00",
+            "retention": "keep",
+            "retention_reason": "member_exception",
+        },
+        "assets": [
+            {"id": "file", "name": "live.mp4", "size": 4, "md5Checksum": "b" * 32},
+            {"id": "deleted", "name": ".yt_done"},
+        ],
+    }
+    fake.nodes["root"]["appProperties"] = dict(app="mypage48", role="root")
+    fake.nodes["container"] = dict(
+        fake.nodes["folder"],
+        id="container",
+        name="permanent",
+        appProperties=dict(app="mypage48", role="permanent"),
+    )
+    fake.perms["container"] = copy.deepcopy(fake.perms["folder"])
+    fake.nodes["folder"].update(
+        parents=["container"],
+        name=record["name"],
+        appProperties=encode_marker(tags, record),
+    )
+    fake.nodes["file"].update(
+        name="live.mp4",
+        md5Checksum="b" * 32,
+        appProperties=dict(tags, role="asset", file_key="live.mp4"),
+    )
+    return fake, path, run, record
+
+
+def test_permanent_roundtrip(permanent):
+    fake, path, run, _ = permanent
+    before = copy.deepcopy(fake.nodes)
+    run()
+    plan = json.loads(path.read_text())["plan"]
+    assert plan["version"] == 2
+    for key, node in before.items():
+        assert plan["items"][key]["appProperties"] == node["appProperties"]
+    run("propose", True)
+    fake.email = TARGET
+    run("accept", True)
+    run("verify")
+    assert all(
+        n["appProperties"] == before[k]["appProperties"] for k, n in fake.nodes.items()
+    )
+
+
+@pytest.mark.parametrize("node", ["root", "container", "folder", "file"])
+@pytest.mark.parametrize("phase", ["propose", "accept", "verify"])
+def test_property_changes_block(permanent, node, phase):
+    fake, _, run, _ = permanent
+    run()
+    if phase != "propose":
+        run("propose", True)
+        fake.email = TARGET
+        if phase == "verify":
+            run("accept", True)
+    count = len(fake.writes)
+    fake.nodes[node]["appProperties"]["private"] = "SECRET_PROPERTY"
+    with pytest.raises(m.SafetyError) as error:
+        run(phase, True)
+    assert "SECRET_PROPERTY" not in str(error.value)
+    assert len(fake.writes) == count
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "pending",
+        "partial",
+        "malformed",
+        "no-marker",
+        "name",
+        "root",
+        "container",
+        "role",
+        "key",
+        "size",
+        "checksum",
+        "asset-tags",
+        "missing",
+        "leftover",
+    ],
+)
+def test_invalid_permanent_tree_before_plan(permanent, change):
+    from recorder.src.gdrive.permanent import encode_marker
+
+    fake, path, run, record = permanent
+    props = fake.nodes["folder"]["appProperties"]
+    if change == "pending":
+        record["state"] = "pending"
+        fake.nodes["folder"]["appProperties"] = encode_marker(props, record)
+    elif change == "partial":
+        del props["keep_00"]
+    elif change == "malformed":
+        props["keep_00"] = "SECRET_BAD_JSON"
+    elif change == "no-marker":
+        fake.nodes["folder"]["appProperties"] = {
+            k: v for k, v in props.items() if not k.startswith("keep_")
+        }
+    elif change in ("root", "container"):
+        fake.nodes[change]["appProperties"] = {}
+    elif change == "role":
+        props["role"] = "asset"
+    elif change == "key":
+        props["archive_key"] = "invalid"
+    elif change == "name":
+        fake.nodes["folder"]["name"] = "wrong"
+    elif change == "missing":
+        del fake.nodes["file"]
+    elif change == "leftover":
+        fake.nodes["leftover"] = dict(
+            fake.nodes["file"], id="leftover", name=".yt_done"
+        )
+    elif change == "asset-tags":
+        fake.nodes["file"]["appProperties"] = {}
+    else:
+        fake.nodes["file"][{"size": "size", "checksum": "md5Checksum"}[change]] = "0"
+    with pytest.raises(m.SafetyError) as error:
+        run()
+    assert "SECRET_BAD_JSON" not in str(error.value)
+    assert not fake.writes
+    assert not path.exists()
+
+
+@pytest.mark.parametrize(
+    "properties",
+    [None, [], {"a": 1}, {"": "x"}, {"a": "長" * 42}, {str(i): "x" for i in range(31)}],
+)
+def test_invalid_properties(setup, properties):
+    fake, _, run = setup
+    fake.nodes["file"]["appProperties"] = properties
+    with pytest.raises(m.SafetyError):
+        run()
+    assert not fake.writes
+
+
+@pytest.mark.parametrize("corruption", ["version", "missing"])
+def test_old_or_incomplete_checkpoint_refused(setup, corruption):
+    fake, path, run = setup
+    run()
+    state = json.loads(path.read_text())
+    if corruption == "version":
+        state["plan"]["version"] = 1
+    else:
+        del state["plan"]["items"]["file"]["appProperties"]
+    state["seal"] = m.digest(state["plan"])
+    path.write_text(json.dumps(state))
+    before = path.read_bytes()
+    with pytest.raises(m.SafetyError, match="fresh plan"):
+        run("propose", True)
+    assert not fake.writes
+    assert path.read_bytes() == before
 
 
 def test_protocol_preview_resume_and_verify(setup):

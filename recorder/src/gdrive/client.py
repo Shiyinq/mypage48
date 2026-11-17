@@ -368,12 +368,11 @@ class DriveClient:
         validate_filename(name)
         tags = self._archive_tags(archive_key)
         root = self.ensure_root()
-        matches = self._list(
-            f"'{_quote(root['id'])}' in parents and " + self._tag_query(tags)
-        )
+        matches = self._list(self._tag_query(tags))
         if len(matches) > 1:
             raise DriveSafetyError("Multiple folders for archive key")
         if matches:
+            # A migrated identity must never be recreated or writable via this API.
             return self._validate_archive(matches[0]["id"], archive_key)
         result = (
             self.service.files()
@@ -594,3 +593,199 @@ class DriveClient:
         """
         self._validate_archive(archive_id, archive_key)
         self.service.files().delete(fileId=archive_id).execute(num_retries=3)
+
+    def _private_folder(self, folder, parent, tags):
+        if (
+            folder.get("mimeType") != FOLDER_MIME
+            or folder.get("parents") != [parent]
+            or folder.get("trashed", False)
+            or folder.get("shared") is not False
+            or folder.get("ownedByMe") is not True
+            or folder.get("driveId")
+            or any(folder.get("appProperties", {}).get(k) != v for k, v in tags.items())
+        ):
+            raise DriveSafetyError("Unsafe permanent folder identity")
+        return folder
+
+    def _permanent_folder(self, create=False):
+        root = self.ensure_root()
+        tags = {"app": "mypage48", "role": "permanent"}
+        matches = [
+            f
+            for f in self.list_children(root["id"])
+            if f.get("name") == "permanent"
+            or all(f.get("appProperties", {}).get(k) == v for k, v in tags.items())
+        ]
+        if len(matches) > 1:
+            raise DriveSafetyError("Ambiguous permanent folder")
+        if not matches:
+            if not create:
+                return None
+            matches = [
+                self.service.files()
+                .create(
+                    body={
+                        "name": "permanent",
+                        "mimeType": FOLDER_MIME,
+                        "parents": [root["id"]],
+                        "appProperties": tags,
+                    },
+                    fields=FILE_FIELDS,
+                )
+                .execute()
+            ]
+        folder = self.get_file(matches[0]["id"])
+        if folder.get("name") != "permanent":
+            raise DriveSafetyError("Permanent folder name mismatch")
+        return self._private_folder(folder, root["id"], tags)
+
+    @_serialized
+    def list_permanent_archives(self):
+        folder = self._permanent_folder()
+        return self.list_children(folder["id"]) if folder else []
+
+    @_serialized
+    def finalize_permanent(self, archive_id, key, record=None):
+        """Narrow recovery capability; generic archive writes remain root-only."""
+        from .permanent import decode_marker, encode_marker
+
+        root = self.ensure_root()
+        archive = self.get_file(archive_id)
+        permanent = self._permanent_folder()
+        parent = archive.get("parents")
+        if parent != [root["id"]] and (not permanent or parent != [permanent["id"]]):
+            raise DriveSafetyError("Unexpected permanent archive parent")
+        tags = self._archive_tags(key)
+        self._private_folder(archive, parent[0], tags)
+        stored = decode_marker(archive.get("appProperties", {}))
+        if stored is not None:
+            record = stored
+            if stored["state"] == "finalized":
+                if (
+                    not permanent
+                    or parent != [permanent["id"]]
+                    or archive.get("name") != stored["name"]
+                ):
+                    raise DriveSafetyError("Invalid finalized archive location/name")
+                # Finalized markers are the durable completion authority. Polling
+                # must not audit children or enumerate all permanent siblings.
+                return stored["receipt"]
+        elif record is None or parent != [root["id"]]:
+            raise DriveSafetyError("Permanent archive has no recovery marker")
+        properties = encode_marker(archive["appProperties"], record)
+        record = decode_marker(properties)
+        assets = {a["id"]: a for a in record["assets"]}
+
+        def verify_children(*, require_all=False, videos_only=False):
+            children = [self.get_file(c["id"]) for c in self.list_children(archive_id)]
+            found = set()
+            for child in children:
+                asset = assets.get(child["id"])
+                if videos_only and (
+                    not asset or not asset["name"].lower().endswith(".mp4")
+                ):
+                    raise DriveSafetyError(
+                        "Permanent archive still contains nonvideo assets"
+                    )
+                name = child.get("name")
+                expected = {**tags, "role": "asset", "file_key": name}
+                if (
+                    not asset
+                    or asset["name"] != name
+                    or child.get("parents") != [archive_id]
+                    or child.get("ownedByMe") is not True
+                    or child.get("shared") is not False
+                    or child.get("trashed", False)
+                    or child.get("driveId")
+                    or child.get("mimeType", "").startswith(
+                        "application/vnd.google-apps."
+                    )
+                    or any(
+                        child.get("appProperties", {}).get(k) != v
+                        for k, v in expected.items()
+                    )
+                ):
+                    raise DriveSafetyError("Unexpected permanent archive child")
+                if name.lower().endswith(".mp4") or (
+                    require_all
+                    and name
+                    not in {"archive_manifest.json", ".drive_ready", ".yt_done"}
+                ):
+                    if (
+                        int(child.get("size", -1)) != asset.get("size")
+                        or child.get("md5Checksum", "").lower()
+                        != asset.get("md5Checksum", "").lower()
+                        or not asset.get("md5Checksum")
+                    ):
+                        raise DriveSafetyError("Permanent asset integrity mismatch")
+                found.add(child["id"])
+            if any(
+                (a["name"].lower().endswith(".mp4") or require_all)
+                and a["id"] not in found
+                for a in assets.values()
+            ):
+                raise DriveSafetyError("Permanent asset missing")
+            return children
+
+        def verify_archive(expected_parent, expected_name, expected_record):
+            current = self.get_file(archive_id)
+            self._private_folder(current, expected_parent, tags)
+            if (
+                current.get("id") != archive_id
+                or current.get("name") != expected_name
+                or decode_marker(current.get("appProperties", {})) != expected_record
+            ):
+                raise DriveSafetyError("Permanent archive transition was not persisted")
+            return current
+
+        children = verify_children(require_all=stored is None)
+        if stored is None:
+            self.service.files().update(
+                fileId=archive_id,
+                body={
+                    "appProperties": properties,
+                },
+                fields=FILE_FIELDS,
+            ).execute()
+        verify_archive(parent[0], archive["name"], record)
+        permanent = self._permanent_folder(create=True)
+        collisions = [
+            c
+            for c in self.list_children(permanent["id"])
+            if c["id"] != archive_id
+            and (
+                c.get("name") == record["name"]
+                or c.get("appProperties", {}).get("archive_key") == key
+            )
+        ]
+        if collisions:
+            raise DriveSafetyError("Permanent archive collision")
+        if parent == [root["id"]]:
+            self.service.files().update(
+                fileId=archive_id,
+                addParents=permanent["id"],
+                removeParents=root["id"],
+                body={"name": record["name"]},
+                fields=FILE_FIELDS,
+            ).execute()
+        verify_archive(permanent["id"], record["name"], record)
+        for child in sorted(children, key=lambda c: c["name"] == ".yt_done"):
+            if child["name"].lower().endswith(".mp4"):
+                continue
+            try:
+                self.service.files().delete(fileId=child["id"]).execute(num_retries=3)
+            except HttpError as exc:
+                if exc.resp.status != 404:
+                    raise
+        verify_children(videos_only=True)
+        verify_archive(permanent["id"], record["name"], record)
+        record = {**record, "state": "finalized"}
+        self.service.files().update(
+            fileId=archive_id,
+            body={
+                "appProperties": encode_marker(properties, record),
+            },
+            fields=FILE_FIELDS,
+        ).execute()
+        verify_archive(permanent["id"], record["name"], record)
+        return record["receipt"]

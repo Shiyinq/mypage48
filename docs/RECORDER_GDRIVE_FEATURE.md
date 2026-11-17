@@ -276,7 +276,7 @@ Both timing files contain only a numeric timestamp, not JSON. The normal delay f
 
 A receipt records the archive key, live ID, Drive archive ID, verification time, manifest/file identities, sizes/checksums, and the original local source snapshot. It is saved outside the recording folder **before** deleting that source folder. If cleanup is interrupted and a source remains, the worker uses the receipt to verify that the source still matches the original baseline rather than deleting newly changed/reconnected data.
 
-A backup receipt means **backup verification**, not YouTube completion. The YouTube completion marker is `.yt_done` inside the Drive archive. A receipt can remain locally even after YouTube processing and remote archive deletion; there is currently no automatic retention period for this directory.
+A backup receipt means **backup verification**, not YouTube completion. YouTube completion is recorded by `.yt_done` inside a root-level Drive archive, or by the durable folder properties of a permanent kept archive described below. A receipt can remain locally even after YouTube processing and remote archive deletion; there is currently no automatic retention period for this directory.
 
 ### Recording claims: gdrive-claims
 
@@ -309,7 +309,7 @@ Automatic garbage collection for old receipts/claim files is **not implemented**
 
 ## Completion markers and retained archives
 
-The current local marker name is `.yt_done`. The new workflow also creates a file with that exact name **inside the Drive archive folder**.
+The current local marker name is `.yt_done`. The Drive workflow initially creates a file with that exact name **inside the Drive archive folder**. All kept archives subsequently replace the sidecar with durable Drive folder properties before moving and pruning; their finalized folders contain MP4 files only.
 
 Its content records the YouTube video ID, archive identity, completion time, and the retention decision (`keep` or `delete`) with its reason. The retention decision is evaluated when YouTube finalization completes. The worker excludes completed archives from future upload candidates, including after restarting the server or rebuilding its local queue.
 
@@ -323,19 +323,50 @@ The YouTube ID is checkpointed before follow-up operations. A failed backend upd
 
 | Delete-after-upload setting | Nickname in keep list | Result |
 |---|---|---|
-| `false` | Either | Keep the folder with `.yt_done` |
-| `true` | Yes | Keep the folder with `.yt_done` |
+| Either | Yes | Move to `JKT48Live/permanent/`, rename, retain MP4 files only |
+| `false` | No | Move to `JKT48Live/permanent/`, rename, retain MP4 files only |
 | `true` | No | Create/verify `.yt_done`, then permanently delete the archive |
 
 A marker is created before deletion even for disposable archives. If deletion fails, the remaining folder is already marked complete and can be retried for **cleanup only**, not uploaded again.
 
-Deletion is **permanent**, not a move to Trash. It removes the managed archive folder and its contents, not the `JKT48Live` root. Retention exceptions preserve the whole archive, not just the video.
+Deletion is **permanent**, not a move to Trash. For disposable archives it removes the managed archive folder and its contents, not the `JKT48Live` root. Retention preserves the MP4 files, not the full set of sidecars: verified non-MP4 assets are permanently removed during permanent-folder finalization.
 
-**Retention is non-retroactive: an archive retained at completion stays retained.** If Erine was exempt when 20 archives completed, removing Erine from `.env` and restarting the worker will not delete those 20 folders. Their `.yt_done` receipts retain the `keep` decision, and they remain excluded from YouTube uploads. Only future completions use the changed configuration. Similarly, enabling deletion later does not remove archives previously kept while deletion was disabled.
+**Retention is non-retroactive: an archive retained at completion stays retained.** If Erine was exempt when 20 archives completed, removing Erine from `.env` and restarting the worker will not delete those 20 folders. Their persisted receipts (inside `.yt_done` or permanent folder properties) retain the `keep` decision, and they remain excluded from YouTube uploads. Only future completions use the changed configuration. Similarly, enabling deletion later does not remove archives previously kept while deletion was disabled.
 
-Cleanup retries are allowed only for archives explicitly marked `delete`. If current configuration now protects a pending-deletion archive, the worker records a permanent `keep` decision instead. Receipts with missing or invalid retention decisions are preserved for review, not deleted. Removing previously retained archives requires an explicit manual action outside automatic cleanup.
+Whole-archive deletion retries are allowed only for archives explicitly marked `delete`. Kept-archive permanent-folder moves and non-MP4 pruning have a separate completion-only recovery path. If current configuration now protects a pending-deletion archive, the worker records a permanent `keep` decision instead. Receipts with missing or invalid retention decisions are preserved for review, not deleted. Removing previously retained archives requires an explicit manual action outside automatic cleanup.
 
 Changing privacy or retention settings does not re-upload completed videos. Deleting a video manually on YouTube does not automatically clear the Drive completion receipt or trigger re-upload.
+
+### Permanent retained archives
+
+No additional configuration is required. A completed archive is retained either because its nickname is in `REC_GDRIVE_KEEP_MEMBERS` or because `REC_GDRIVE_DELETE_AFTER_YOUTUBE_UPLOAD=false`. Both reasons use the same permanent-folder workflow. After confirmed YouTube upload, backend finalization and notifications, the worker organizes these completed archives as follows:
+
+```text
+JKT48Live/
+├── permanent/
+│   └── erine 13 Agustus 2026 20:15 WIB/
+│       └── <original-video-name>.mp4
+├── <pending-archive-1>/
+└── <pending-archive-2>/
+```
+
+The display name uses the lowercase nickname and the live's `start_at` converted to WIB, with Indonesian month names and a 24-hour clock. It does not use upload/completion time. The folder and MP4 IDs are preserved; the MP4 itself is not renamed. The time colon is a Drive display-name character, not a local staging-path component.
+
+Existing completed archives whose `.yt_done` records `retention=keep` with reason `member_exception` or `deletion_disabled` are automatically migrated during scans after restart, and new retained completions follow the same path. Both `REC_BACKUP_TO_GDRIVE` and `REC_GDRIVE_TO_YOUTUBE` must remain enabled for the consumer scan. Completion maintenance runs before YouTube cooldown checks. Previously frozen keep decisions stay retained even if the configuration changes. Unfinished archives stay directly under `JKT48Live/*`.
+
+**Setting whole-archive deletion to `false` protects the videos, not the sidecars.** Once completion is confirmed, these archives still move to `permanent` and their verified non-MP4 assets are permanently removed.
+
+Safety and recovery:
+
+- Verify the manifest-backed assets and naming metadata before writing a bounded, versioned completion/recovery record into the archive's private `appProperties`. This record preserves archive identity, the completion receipt, target name and asset identities/integrity values. It is private metadata, not a visible file; it remains after `.yt_done` is removed.
+- Persist and read back the record **before** moving or deleting anything. Move and rename by ID, verify the new location, then delete verified non-MP4 assets, with `.yt_done` last. Verify the remaining MP4 IDs, sizes and checksums before confirming finalization.
+- Finalized folders contain **MP4 files only**: no thumbnail, metadata JSON, manifest, `.drive_ready` or `.yt_done`. This removal is permanent; do not enable this workflow if you need those sidecars retained in Drive.
+- Permanent-container discovery or per-archive maintenance failures are logged separately so unrelated pending archives can continue; invalid Drive authorization and unsafe pending/root identities still fail closed. Backup discovery distinguishes the permanent container from pending archive folders.
+- Archives under the managed `permanent` container are recovery-only and never admitted as upload candidates, even if their marker is malformed. Interrupted cleanup resumes from the folder record instead of uploading to YouTube again. Finalized polling validates the folder marker/location without repeating destructive work or a full asset audit.
+- Missing/invalid dates, changed assets, oversized recovery records, unexpected children, unsafe permissions, name/key collisions or ambiguous containers stop that archive's finalization for review rather than guessing, merging folders or deleting unverified content. A same-nickname/same-minute collision therefore remains pending for attention.
+- Do not manually create/rename the managed `permanent` container, strip its folder properties, copy completed folders into the pending root, or delete recovery records. The backup path also rejects keys already present in permanent storage instead of creating another pending archive.
+
+This path is covered by offline crash/recovery tests but has not been validated against a live Drive account. Review the first migrated archive before leaving a large backlog unattended.
 
 ## Failure behavior
 

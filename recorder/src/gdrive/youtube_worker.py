@@ -189,6 +189,15 @@ class YouTubeWorker:
             return None
         if verified["id"] != folder["id"]:
             raise DriveSafetyError("Archive identity mismatch")
+        from .permanent import decode_marker
+
+        marker = decode_marker(verified.get("appProperties", {}))
+        if marker is not None:
+            receipt = await self._call(
+                self.client.finalize_permanent, folder["id"], key
+            )
+            self._record_completion(receipt)
+            return None
         children = await self._children(folder)
         # Check completion before readiness, so malformed receipts never trigger upload.
         if DONE_NAME in children:
@@ -248,6 +257,62 @@ class YouTubeWorker:
         path = self._job_path(key)
         if path.exists():
             path.unlink()
+        if receipt["retention"] == "keep":
+            await self._keep_permanent(folder, receipt)
+
+    async def _keep_permanent(self, folder, receipt):
+        from .permanent import display_name
+
+        children = await self._children(folder)
+        if MANIFEST_NAME not in children:
+            raise DriveSafetyError("Missing manifest for permanent migration")
+        manifest = validate_manifest(
+            await self._call(self.client.get_json, children[MANIFEST_NAME]["id"])
+        )
+        if (
+            manifest["archive_key"] != receipt["archive_key"]
+            or manifest["live_id"] != receipt["live_id"]
+            or manifest["member_nickname"].casefold()
+            != receipt["member_nickname"].casefold()
+        ):
+            raise DriveSafetyError("Permanent receipt/manifest mismatch")
+        # Completion receipts bypass the upload manifest checks. Establish the
+        # original integrity baseline before trusting metadata for the name.
+        for asset in manifest["files"]:
+            remote = children.get(asset["name"], {})
+            if (
+                remote.get("id") != asset["id"]
+                or int(remote.get("size", -1)) != asset["size"]
+                or remote.get("md5Checksum", "").lower() != asset["md5Checksum"].lower()
+            ):
+                raise DriveSafetyError("Permanent asset differs from manifest")
+        metadata = children.get(manifest["metadata_filename"])
+        if metadata is None:
+            raise DriveSafetyError("Missing permanent recording metadata")
+        meta = await self._call(self.client.get_json, metadata["id"])
+        if (
+            meta.get("live_id") != manifest["live_id"]
+            or meta.get("status") != "completed"
+            or not isinstance(meta.get("member_nickname"), str)
+            or meta["member_nickname"].strip().casefold()
+            != manifest["member_nickname"].strip().casefold()
+        ):
+            raise DriveSafetyError("Invalid permanent recording metadata")
+        name = display_name(meta, receipt["member_nickname"])
+        assets = [dict(a) for a in manifest["files"]]
+        for reserved in (MANIFEST_NAME, READY_NAME, DONE_NAME):
+            if reserved in children:
+                assets.append({"id": children[reserved]["id"], "name": reserved})
+        record = {
+            "version": 1,
+            "state": "pending",
+            "name": name,
+            "receipt": receipt,
+            "assets": assets,
+        }
+        await self._call(
+            self.client.finalize_permanent, folder["id"], receipt["archive_key"], record
+        )
 
     def _remove_staging(self, key):
         # key has been validated as a SHA-256 archive identity by the caller.
@@ -270,6 +335,47 @@ class YouTubeWorker:
                     if re.fullmatch(r"[0-9a-f]{64}", stale.name):
                         self._remove_staging(stale.name)
             self._recovered_staging = True
+        # Permanent children are recovery-only, including malformed markers.
+        # They must never enter the upload candidate path.
+        if hasattr(self.client, "list_permanent_archives"):
+            try:
+                permanent_archives = await self._call(
+                    self.client.list_permanent_archives
+                )
+            except DriveAuthorizationError:
+                return
+            except Exception as exc:
+                # Container maintenance is independent of the pending queue.
+                # list_archives/get_archive still validate the managed root.
+                log.error(
+                    "Permanent Drive discovery needs attention (%s)",
+                    type(exc).__name__,
+                )
+                permanent_archives = []
+            for folder in permanent_archives:
+                try:
+                    key = folder.get("appProperties", {}).get("archive_key")
+                    receipt = await self._call(
+                        self.client.finalize_permanent, folder["id"], key
+                    )
+                    from .permanent import decode_marker
+
+                    marker = decode_marker(folder.get("appProperties", {}))
+                    # Completion was recorded before the durable finalized marker.
+                    # Do not rescan history/rewrite timing for every retained video.
+                    if marker is None or marker["state"] != "finalized":
+                        self._record_completion(receipt)
+                    if key not in self._active:
+                        self._remove_staging(key)
+                        self._job_path(key).unlink(missing_ok=True)
+                except DriveAuthorizationError:
+                    return
+                except Exception as exc:
+                    log.error(
+                        "Permanent Drive archive %s needs attention (%s)",
+                        folder.get("id"),
+                        type(exc).__name__,
+                    )
         candidates = []
         for folder in await self._call(self.client.list_archives):
             key = folder.get("appProperties", {}).get("archive_key")

@@ -217,6 +217,7 @@ def test_service_stop_propagates_to_real_workers_and_blocks_new_admission(
         "live_id": "pending",
         "files": [{"role": "video", "size": 5}],
     }
+    h.client.list_permanent_archives.return_value = []
     h.client.list_archives.return_value = [
         {"id": "archive", "appProperties": {"archive_key": manifest["archive_key"]}}
     ]
