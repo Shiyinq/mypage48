@@ -103,11 +103,56 @@ On a large channel, edits to older known videos may not be noticed until their r
 
 Both platforms share the default **80 update attempts/day**, **5 attempts/scan**, **30-second spacing**, and **5,000 estimated units/day**. Reads reserve one unit per list request/page/batch; status updates reserve 50 units. All budgeted requests reserve durably **before dispatch**, including failed calls, initial discovery, pagination, rotating refreshes, fresh pre-update checks, reconciliation reads, and dry-run reads. SDK request retries and automatic 401 replay are disabled to avoid unmetered attempts.
 
-Dry-run sends no privacy updates and creates no new publication-intent/success receipts for candidates. It still writes catalog/quota state, spends read quota, and can reconcile an existing ambiguous receipt by reads. It is read-only with respect to remote privacy, not a zero-network or zero-local-write mode.
+Dry-run sends no privacy updates and does not create or modify publication receipts, including existing ambiguous receipts. It still writes catalog/quota state and spends read quota. It is read-only with respect to remote privacy, not a zero-network or zero-local-write mode.
 
 The durable ledger counts failures and ambiguous attempts conservatively; reservations can exceed actual billed usage. It is **worker-local accounting**, not remaining Google project quota and not a quota reservation against other clients. Uploader thumbnail/playlist calls and other applications still share project capacity; compare with Google Cloud Console during rollout. Read-heavy scans can allow fewer than 80 updates.
 
 Quota days reset at **midnight Pacific**, using `America/Los_Angeles` calendar boundaries including DST (not server midnight, a fixed UTC offset, or always 24 hours). Daily caps/budget exhaustion wait for the next reset; actual API `quotaExceeded`/`dailyLimitExceeded` persists a worker-specific pause until reset. Remaining candidates stay private and are revalidated later. Restart does not reset limits or spacing. A static 200-video backlog needs at least three quota days at the default cap, and may take longer due to reads, failures or new arrivals.
+
+### Rough example: 20 members live in one day
+
+Assume each member produces one uploaded video: 20 thumbnails, 20 playlist-item inserts, and one playlist-list request per upload. Actual calls may differ because of pagination, retries, existing playlists, and recording splits. The daily publication backlog is independent of today's uploads: the worker may publish older eligible recordings.
+
+| Operation | Estimated units | Counted in the ytpublic ledger? |
+|---|---:|---|
+| 20 thumbnail updates × 50 | 1,000 | No |
+| 20 playlist-item inserts × 50 | 1,000 | No |
+| 20 playlist-list requests × 1 | 20 | No |
+| 80 ytpublic privacy updates × 50 | 4,000 | Yes |
+| Subtotal before ytpublic reads, playlist creation and video-upload requests | **6,020** | Only the 4,000 publication units |
+| Optional: 20 new playlists × 50 | **+1,000** | No |
+
+If these operations draw from a **10,000-unit daily allocation**, the subtotal leaves approximately **3,980 units**, or **2,980 units** when all 20 uploads require new playlists, before ytpublic reads and other activity. If ytpublic consumes its entire **5,000-unit worker budget** instead of just 4,000 update units, the corresponding headroom becomes **2,980** or **1,980 units**.
+
+These are planning estimates, not a guarantee of available quota. Video-upload requests are **not included in these totals**; verify their applicable quota allocation/cost and the project's actual limits in Google Cloud Console. Other clients and failed requests can also consume capacity. The local worker ledger does not measure any uploader usage.
+
+For comparison, publishing only **20 eligible videos** costs **1,000 update units plus reads**; 80 is a cap, not a daily target. Raising the cap to **90** permits up to **4,500 update units**, leaving at most **500 units for worker reads** with the unchanged 5,000-unit budget. The worker can stop below either cap if its read costs consume the remaining budget.
+
+### Why the default limit is 80, and the risk of increasing it
+
+**80 attempts/day is an operator-selected safety cap, not a YouTube-imposed publication limit.** At 50 units per privacy update, 80 attempts reserve up to **4,000 units**. The separate **5,000-unit worker budget** leaves approximately **1,000 units for discovery and status checks** if all 80 updates are attempted. This limits backlog processing while preserving some shared project capacity for uploader thumbnails, playlist operations, and other activity. It does not guarantee that enough project quota remains: ytpublic cannot see or reserve the units spent by other clients.
+
+Every additional **10 attempted publications requires up to 500 more update units**, before any additional reads:
+
+| Daily attempt cap | Update units at the cap | Room for reads within an unchanged 5,000-unit worker budget | Worker budget to retain approximately 1,000 units for reads |
+|---|---:|---:|---:|
+| 80 (default) | 4,000 | 1,000 | 5,000 |
+| 90 | 4,500 | 500 | 5,500 |
+| 100 | 5,000 | 0; reads prevent reaching the cap | 6,000 |
+| 110 | 5,500 | Insufficient even before reads | 6,500 |
+
+**Raising the attempt cap does not require raising the worker budget**, but the worker may stop before reaching the new cap. Raising both allows more project quota to be consumed; it does not create extra Google quota. Failed dispatched updates remain counted as attempts and reserved units.
+
+For the illustrative **10,000-unit shared allocation** and **20-video day with 20 new playlists** above, uploader thumbnail/playlist operations alone account for approximately **3,020 units**, excluding video-upload requests. If the worker uses its full budget, the estimated headroom before uploads and all other activity is:
+
+| Worker budget | Estimated headroom after those uploader operations |
+|---|---:|
+| 5,000 | 1,980 |
+| 5,500 | 1,480 |
+| 6,000 | 980 |
+| 6,500 | 480 |
+
+**Increasing limits in steps of 10 can exhaust the shared daily allocation.** More recordings, split videos, new playlists, retries, uploads, or other applications may consume the remaining headroom. These examples are not safe-limit guarantees; check the actual allocations and usage in Google Cloud Console before increasing limits. If Google rejects requests because the shared quota is exhausted, ytpublic pauses until its next Pacific reset, and uploader operations using the exhausted allocation may also fail. Reaching only ytpublic's local budget pauses this worker, not the uploader.
 
 ## Durable state and reconciliation
 
