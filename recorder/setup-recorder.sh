@@ -139,6 +139,11 @@ Wants=network-online.target
 Type=simple
 User=$SERVICE_USER
 WorkingDirectory=$HOME/mypage48
+# append output can create a root-owned log before Python's FileHandler opens it.
+# Only these preparation commands run as root; the worker keeps User= above.
+ExecStartPre=+/usr/bin/touch $RECORDER_DIR/logs/ytpublic.log
+ExecStartPre=+/usr/bin/chown $SERVICE_USER $RECORDER_DIR/logs/ytpublic.log
+ExecStartPre=+/usr/bin/chmod 0600 $RECORDER_DIR/logs/ytpublic.log
 ExecStart=$RECORDER_DIR/.venv/bin/python3 -m recorder.main --mode ytpublic
 # TimeoutStopSec=30min
 Restart=always
