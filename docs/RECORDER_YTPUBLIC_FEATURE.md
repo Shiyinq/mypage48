@@ -99,6 +99,25 @@ For the table, setting names have prefix `REC_YTPUBLIC_`. Increasing the buffer 
 
 On a large channel, edits to older known videos may not be noticed until their rotating refresh reaches them. This can delay detection of newly eligible edits. A stale eligible cache entry cannot alone authorize an update: **cached/pending retries always need fresh validation**. Dry-run previews use cached decisions and do not perform the per-candidate pre-update fetch, so they are not a guarantee of current live status for every old video.
 
+### Observed uploads-playlist discovery discrepancy
+
+During a production investigation on 17 November 2026, **14 known channel videos were absent from uploads-playlist enumeration**, although a direct `videos.list(part="snippet,status", id=...)` lookup using the same OAuth credentials returned **all 14 resources**, with their owning channel matching the authorized channel.
+
+A separate full enumeration followed `nextPageToken` through **50 pages** until the API returned no continuation token. It yielded **2,370 unique video IDs**, matching the catalog's known-ID count, but still found **0 of the 14 target IDs**. This establishes a discrepancy between the observed uploads-playlist results and direct video lookup; it does **not** establish the underlying cause or confirm a YouTube API bug. The observation is not known to be limited to any particular video category, age, or visibility. Other videos could also be absent; 14 is the number verified in this investigation, not a proven total of all missing videos.
+
+Operational implications:
+
+- `full_scan_complete=true` means the observed pagination token chain ended, **not that the inventory was independently verified against every channel video**. Summary counts cover cached resources only.
+- An ID absent from both `known_ids` and `videos` is undiscovered, not necessarily deleted or inaccessible. A direct ID lookup may still return its details.
+- Routine head discovery and rotating status refreshes cannot reliably recover older IDs that were never recorded in `known_ids`. The current implementation has no periodic full rescan or additional-playlist discovery setting. Even a full rescan cannot guarantee recovery when the API continues omitting those IDs.
+- Distinguish this from IDs present in `known_ids` but missing resource details. Those can include deleted videos and require separate investigation; an omitted resource alone does not prove deletion.
+- When investigating a mismatch, preserve the catalog, receipts and quota ledger; compare exact video IDs, verify ownership through direct lookup, and independently enumerate the uploads playlist. Diagnostic API reads still consume quota. Do not reset the quota ledger to repeat scans.
+- Discovery and publication eligibility are separate: discovering an additional video does not bypass the existing privacy, title, schedule, exclusion or receipt checks.
+
+**There is currently no ideal, verified solution for this discovery discrepancy.** Repeating uploads-playlist enumeration did not recover the 14 verified missing IDs. Direct lookup works for already-known IDs but cannot discover unknown missing videos by itself. Additional playlists could improve coverage, but depend on their membership and have not been verified as a complete channel-inventory solution.
+
+No video IDs, private titles, channel identifiers or credentials from the investigation are included here. Additional discovery sources are a possible follow-up, **not an implemented workaround or a guarantee of complete inventory**.
+
 ## Quota, caps and backlogs
 
 Both platforms share the default **80 update attempts/day**, **5 attempts/scan**, **30-second spacing**, and **5,000 estimated units/day**. Reads reserve one unit per list request/page/batch; status updates reserve 50 units. All budgeted requests reserve durably **before dispatch**, including failed calls, initial discovery, pagination, rotating refreshes, fresh pre-update checks, reconciliation reads, and dry-run reads. SDK request retries and automatic 401 replay are disabled to avoid unmetered attempts.
