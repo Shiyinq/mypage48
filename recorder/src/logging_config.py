@@ -20,6 +20,7 @@ def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger, Logger]:
     theater = logging.getLogger("theater")
     heartbeat = logging.getLogger("heartbeat")
     gdrive = logging.getLogger("gdrive")
+    ytpublic = logging.getLogger("ytpublic")
 
     rec.setLevel(config.log_level.upper())
     upl.setLevel(config.log_level.upper())
@@ -27,6 +28,7 @@ def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger, Logger]:
     theater.setLevel(config.log_level.upper())
     heartbeat.setLevel(config.log_level.upper())
     gdrive.setLevel(config.log_level.upper())
+    ytpublic.setLevel(config.log_level.upper())
 
     _add_handler(
         rec, formatter, config.log_mode, os.path.join(config.logs_dir, "recorder.log")
@@ -55,6 +57,13 @@ def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger, Logger]:
         formatter,
         config.log_mode,
         os.path.join(config.logs_dir, "gdrive.log"),
+    )
+
+    _add_handler(
+        ytpublic,
+        formatter,
+        config.log_mode,
+        os.path.join(config.logs_dir, "ytpublic.log"),
     )
 
     return rec, upl, theater

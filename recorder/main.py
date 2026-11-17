@@ -23,9 +23,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=["record", "upload", "theater", "gdrive", "all"],
+        choices=["record", "upload", "theater", "gdrive", "ytpublic", "all"],
         default="all",
-        help="Run mode: record, upload, theater, gdrive, or all (default)",
+        help="Run mode: record, upload, theater, gdrive, ytpublic, or all (default)",
     )
     parser.add_argument(
         "--status",
@@ -144,7 +144,7 @@ async def main(args):
     tasks = []
 
     # The backend heartbeat contract covers only the existing roles.
-    if args.mode != "gdrive":
+    if args.mode not in ("gdrive", "ytpublic"):
         tasks.append(asyncio.create_task(run_heartbeat(config, args.mode, stop_event)))
 
     if args.mode in ("all", "record"):
@@ -165,6 +165,12 @@ async def main(args):
         logging.getLogger("gdrive").info("Mode: %s", args.mode)
         gdrive_service = GDriveService(config)
         tasks.append(asyncio.create_task(gdrive_service.run(stop_event)))
+
+    if args.mode == "ytpublic":
+        from .src.ytpublic.service import YTPublicService
+
+        logging.getLogger("ytpublic").info("Mode: %s", args.mode)
+        tasks.append(asyncio.create_task(YTPublicService(config).run(stop_event)))
 
     if args.mode in ("all", "theater"):
         log_th.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)

@@ -2,6 +2,8 @@ import asyncio
 import json
 import logging
 import os
+import re
+import unicodedata
 from datetime import datetime, timedelta, timezone
 
 from google.auth.transport.requests import Request
@@ -58,6 +60,34 @@ def _parse_wib_datetime(start_at: str) -> tuple[str, str]:
         return "", ""
 
 
+def _clean_live_plus_event(title: object, date_str: str) -> str:
+    if not isinstance(title, str):
+        return ""
+    event = title.strip()
+    # Require a separate delimiter; never consume an event's internal hyphens.
+    match = re.search(
+        r"(?:^|\s+[-–—|]\s+)([0-9]{4})([/\-])([0-9]{2})\2([0-9]{2})$",
+        event,
+    )
+    if match:
+        try:
+            date = datetime(int(match[1]), int(match[3]), int(match[4]))
+            suffix_date = (
+                f"{_DAYS_ID[date.weekday()]}, {date.day} "
+                f"{_MONTHS_ID[date.month]} {date.year}"
+            )
+            if suffix_date == date_str:
+                event = event[: match.start()]
+        except ValueError:
+            pass
+    event = "".join(
+        " " if unicodedata.category(char).startswith("C") else char
+        for char in event
+        if char not in "<>"
+    )
+    return " ".join(event.split())
+
+
 def _format_title(meta: dict) -> str:
     platform = (meta.get("platform") or "live").upper()
     nickname = meta.get("member_nickname") or meta.get("member_name") or "Unknown"
@@ -65,9 +95,18 @@ def _format_title(meta: dict) -> str:
 
     member_title = "JKT48" if nickname.upper() == "JKT48" else f"{nickname} JKT48"
 
-    if date_str and time_str:
-        return f"LIVE {platform} {member_title} | {date_str} {time_str} WIB"
-    return f"LIVE {platform} {member_title}"
+    prefix = f"LIVE {platform} {member_title}"
+    suffix = f" | {date_str} {time_str} WIB" if date_str and time_str else ""
+    if (
+        platform == "IDN"
+        and meta.get("live_type") == "idnliveplus"
+        and is_official_jkt48(meta)
+    ):
+        event = _clean_live_plus_event(meta.get("title"), date_str)
+        event = event[: max(0, 100 - len(prefix) - len(suffix) - 1)].rstrip()
+        if event:
+            return f"{prefix} {event}{suffix}"
+    return f"{prefix}{suffix}"
 
 
 def _format_description(meta: dict) -> str:

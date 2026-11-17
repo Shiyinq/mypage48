@@ -14,6 +14,10 @@ async def run_heartbeat(config, mode: str, stop_event: asyncio.Event):
         logger.info("Skipping GDrive heartbeat: backend role is not supported.")
         return
 
+    if mode == "ytpublic":
+        logger.info("Skipping ytpublic heartbeat: backend role is not supported.")
+        return
+
     api_url = f"{config.api_base_url}/health/recorder"
 
     headers = {}

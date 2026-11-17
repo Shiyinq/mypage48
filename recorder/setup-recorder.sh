@@ -129,10 +129,31 @@ StandardError=append:$RECORDER_DIR/logs/gdrive.log
 WantedBy=multi-user.target
 EOF
 
+sudo tee /etc/systemd/system/mypage48-ytpublic.service > /dev/null << EOF
+[Unit]
+Description=MyPage48 Live Recorder — YouTube Publication
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=$SERVICE_USER
+WorkingDirectory=$HOME/mypage48
+ExecStart=$RECORDER_DIR/.venv/bin/python3 -m recorder.main --mode ytpublic
+# TimeoutStopSec=30min
+Restart=always
+RestartSec=10
+StandardOutput=append:$RECORDER_DIR/logs/ytpublic.log
+StandardError=append:$RECORDER_DIR/logs/ytpublic.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # Step 5: Enable & Start
 echo "[5/5] Enabling & starting services..."
 sudo systemctl daemon-reload
-sudo systemctl enable --now mypage48-record mypage48-upload mypage48-theater mypage48-gdrive
+sudo systemctl enable --now mypage48-record mypage48-upload mypage48-theater mypage48-gdrive mypage48-ytpublic
 
 echo ""
 echo "✅ Done!"
@@ -142,7 +163,13 @@ echo "  sudo systemctl status mypage48-record"
 echo "  sudo systemctl status mypage48-upload"
 echo "  sudo systemctl status mypage48-theater"
 echo "  sudo systemctl status mypage48-gdrive"
+echo "  sudo systemctl status mypage48-ytpublic"
+echo "ytpublic stays idle with REC_YTPUBLIC_ENABLED=false (default)."
+echo "Configure REC_YTPUBLIC_* in $RECORDER_DIR/.env, then restart mypage48-ytpublic."
+echo "Keep REC_YTPUBLIC_DRY_RUN=true for initial review."
 echo ""
 echo "Live logs:"
 echo "  sudo journalctl -u mypage48-theater -f"
 echo "  sudo journalctl -u mypage48-gdrive -f"
+echo "  sudo journalctl -u mypage48-ytpublic -f"
+echo "  tail -f $RECORDER_DIR/logs/ytpublic.log"

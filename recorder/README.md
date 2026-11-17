@@ -175,6 +175,11 @@ recorder/
 │   ├── recorder.log
 │   ├── uploader.log
 │   ├── gdrive.log
+│   ├── ytpublic.log             # Dedicated publication log (file mode / service output)
+│   ├── ytpublic/                # Durable safety state; do not delete while active
+│   │   ├── catalog.json         # Cached channel videos, pagination and rotation cursor
+│   │   ├── quota.json           # Pacific-day quota/attempt ledger and spacing
+│   │   └── receipts/            # Per-video publication intent and outcome
 │   ├── gdrive-backups/           # Persistent verified backup receipts; no auto-pruning
 │   ├── gdrive-claims/            # Persistent OS lock files; presence does not mean locked
 │   ├── gdrive-jobs/              # YouTube checkpoints and retention decisions
@@ -206,6 +211,12 @@ recorder/
     │   ├── youtube_worker.py     # Priority downloads; calls shared YouTube uploader
     │   ├── state.py              # Durable checkpoints
     │   └── service.py            # Config gates and worker lifecycle
+    ├── ytpublic/                # Explicit-only title-based YouTube publication worker
+    │   ├── __init__.py
+    │   ├── policy.py             # Fail-closed classification and IDN timing
+    │   ├── client.py             # Metered YouTube reads and status updates
+    │   ├── state.py              # Durable catalog, quota ledger and receipts
+    │   └── service.py            # Scan loop, gates, pause and reconciliation
     ├── theater/
     │   ├── __init__.py
     │   ├── news_checker.py       # Check for new JKT48 news and announcements
@@ -244,7 +255,7 @@ You can pass several arguments to `recorder/main.py` for advanced control:
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `--mode {record,upload,theater,gdrive,all}` | Run a specific loop or `all` (default). `theater` runs the independent background checkers; `gdrive` runs config-gated backup and optional Drive-to-YouTube workers. | `python -m recorder.main --mode theater` |
+| `--mode {record,upload,theater,gdrive,ytpublic,all}` | Run a specific loop or `all` (default). `theater` runs the independent background checkers; `gdrive` runs config-gated backup and optional Drive-to-YouTube workers. `ytpublic` is explicit-only and is **not included in `all`**. | `python -m recorder.main --mode ytpublic` |
 | `--status [folder]` | Check status of all recordings or a specific folder. | `python -m recorder.main --status` |
 | `--remux [folder]` | Force remux interrupted/stuck `.mkv` files to `.mp4`. | `python -m recorder.main --remux all` |
 | `--delete [folder]` | Delete all recording folders or a specific one. | `python -m recorder.main --delete oline_1782911092` |
@@ -576,4 +587,60 @@ REC_PAGE48_ENABLED=true
 REC_PAGE48_API_KEY=ffk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # Optional: only needed if Page48 lives on a different backend than REC_API_BASE_URL
 # REC_PAGE48_BASE_URL=https://mypage48.com/api
+```
+
+## Standalone YouTube publication (`ytpublic`)
+
+See the [ytpublic operational guide](../docs/RECORDER_YTPUBLIC_FEATURE.md) for all configuration fields, quota/state details, rollout, credentials and manual reconciliation. The implementation has **not been runtime-verified against the live YouTube API**.
+
+Run from the repository root with the existing virtualenv active:
+
+```bash
+python -m recorder.main --mode ytpublic
+```
+
+This explicit mode (or `mypage48-ytpublic.service`) is the only way to start the worker. **`all` is unchanged and does not include ytpublic.** The setup script installs/enables the dedicated unit alongside the other services; review its broader effects before rerunning it. Disabled by default, the worker stays alive and idle without YouTube calls. Restart only ytpublic after changing configuration:
+
+```bash
+sudo systemctl status mypage48-ytpublic.service
+sudo systemctl restart mypage48-ytpublic.service
+sudo systemctl stop mypage48-ytpublic.service
+```
+
+### Publication rules and safety
+
+- Uses only YouTube titles/current status and independent safety state, not recorder metadata, backend history, Drive manifests, staging or upload history. No uploads, source deletion, or changes to other workers/cooldowns.
+- Member IDN titles must match the complete Indonesian weekday/date/time format ending in `WIB`. Eligibility is **title start + 72 hours + 8-hour buffer** (80 hours by default). **Actual live end is not known**: the buffer assumes the live ends within eight hours; longer lives are not guaranteed 72 hours after their actual end. This is an operator-selected approximation, not verified policy compliance.
+- Private titles with standalone `SHOWROOM` anywhere are immediately eligible without date parsing (`MYSHOWROOM` does not match), **subject to all caps, spacing and budget limits**. Mixed standalone IDN/SHOWROOM titles fail closed.
+- Unlisted/public/unknown status, existing publication schedules, exclusions and successful receipts are skipped. Unsupported or malformed IDN titles fail closed.
+- Initial discovery scans the full uploads playlist in pages/batches. Subsequent scans inspect the head for new uploads and refresh a rotating batch of up to **50 known statuses per scan** to limit reads. Older edits on large channels may wait for rotation, but **every real candidate gets a fresh title/status check after spacing and before updating**. Cached pending retries never authorize updates from stale status alone. Dry-run previews may use cached data.
+- Defaults: **80 attempted updates/day**, **5/scan**, **30 seconds between attempts**, **5,000 estimated units/day** for all worker Data API reads and updates, including dry-run, pagination, reconciliation and pre-update checks. Failed/ambiguous attempts count conservatively. Pacific midnight resets use `America/Los_Angeles` with DST, independently of server timezone. Local accounting is not the project's remaining Google quota.
+
+Start with `REC_YTPUBLIC_ENABLED=true` and **`REC_YTPUBLIC_DRY_RUN=true`**, review the completed initial scan and intentionally private exceptions, and compare usage with Google Cloud Console. Only then disable dry-run and restart for an approved safe-to-publish candidate. Dry-run does no privacy updates, but still spends read quota and persists local state. Stopping/disabling does not revert public videos.
+
+Reuse `REC_GOOGLE_CLIENT_ID`, `REC_GOOGLE_CLIENT_SECRET` and `REC_YOUTUBE_REFRESH_TOKEN`; **no new auth script or scope is needed** with the existing YouTube authorization. Invalid authorization emits a CRITICAL message and pauses until credentials are corrected and this service is restarted. State/safety errors also require manual review; an active process does not imply a healthy scan loop.
+
+`REC_LOG_MODE=file` writes `<REC_LOGS_DIR>/ytpublic.log`; `stdout` writes to stdout, which the installed systemd unit redirects to its configured ytpublic log file. Unit redirection does not automatically follow a changed `REC_LOGS_DIR`. Inspect logs for `SCAN`, `WAIT`, `SKIP`, `DRY-RUN`, `PUBLIC`, `SUMMARY`, quota pauses and reconciliation warnings.
+
+Durable `<REC_LOGS_DIR>/ytpublic/` contains `catalog.json`, `quota.json`, `.lock` and `receipts/<video_id>.json` regardless of log mode. **Do not delete, move or edit state/locks while active**, or treat them as disposable logs. Preserve across deployments: receipts prevent republication after a manual return to private, and the ledger preserves limits across restart. Ambiguous `publishing`/`needs_reconciliation` outcomes are checked by reads; public confirms success, otherwise no blind retry occurs. Stop the worker, back up state and follow the guide's manual review procedure; never reset the whole ledger/receipt folder to force retries.
+
+### Separate standalone flow (not part of `all`)
+
+The existing loop diagrams above remain unchanged. This additional worker is independent:
+
+```mermaid
+flowchart TD
+    A[Explicit ytpublic mode or service] --> B{Enabled?}
+    B -->|No| C[Stay idle without API calls]
+    B -->|Yes| D[Discover authorized channel and load durable state]
+    D --> E[Initial full scan or head discovery plus rotating 50 statuses]
+    E --> F[Evaluate title policy and receipts]
+    F --> G{Dry-run?}
+    G -->|Yes| H[Log preview and read usage only]
+    G -->|No| I[Apply caps and spacing then fresh-check each candidate]
+    I --> J[Reserve quota and save publication intent]
+    J --> K[Update privacy and confirm receipt or reconcile ambiguity]
+    H --> L[Wait for next scan or Pacific reset]
+    K --> L
+    L --> E
 ```

@@ -1,6 +1,8 @@
 import os
+import re
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
@@ -46,6 +48,32 @@ class RecorderConfig(BaseSettings):
     enable_upload_queue: bool = True
     youtube_upload_delay_minutes: int = 30
     youtube_upload_priority: str = ""
+
+    ytpublic_enabled: bool = False
+    ytpublic_dry_run: bool = True
+    ytpublic_poll_interval: int = Field(default=900, ge=60)
+    ytpublic_base_delay_hours: int = Field(default=72, ge=72)
+    ytpublic_buffer_hours: int = Field(default=8, ge=0)
+    ytpublic_exclude_video_ids: str = ""
+    ytpublic_max_updates_per_day: int = Field(default=80, gt=0)
+    ytpublic_max_updates_per_scan: int = Field(default=5, gt=0)
+    ytpublic_update_interval_seconds: int = Field(default=30, ge=0)
+    ytpublic_daily_quota_budget: int = Field(default=5000, ge=51)
+
+    @property
+    def ytpublic_excluded_video_ids(self) -> set[str]:
+        video_ids = {
+            value.strip()
+            for value in self.ytpublic_exclude_video_ids.split(",")
+            if value.strip()
+        }
+        if any(
+            re.fullmatch(r"[A-Za-z0-9_-]{11}", value) is None for value in video_ids
+        ):
+            raise ValueError(
+                "ytpublic excluded video IDs must be 11-character YouTube IDs"
+            )
+        return video_ids
 
     @property
     def gdrive_keep_members_normalized(self) -> set[str]:
