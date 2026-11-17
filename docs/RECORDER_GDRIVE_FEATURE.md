@@ -368,6 +368,12 @@ Safety and recovery:
 
 This path is covered by offline crash/recovery tests but has not been validated against a live Drive account. Review the first migrated archive before leaving a large backlog unattended.
 
+### Stale R2 jobs and leftover local folders
+
+Queued R2 work can become stale while waiting for admission. In Drive-buffered mode, the uploader and Drive's final source cleanup now share recording ownership; admission rechecks `.r2_done` and source existence after waiting. Missing or changed metadata after an awaited R2/recap operation stops marker creation instead of continuing into a late writer. Direct YouTube uploads do not hold this Drive-cleanup lock over long network calls.
+
+A previously verified backup can still have a historical leftover source containing only `.r2_done` and a recap web PNG. Such a folder has no recording JSON, so automatic backup retries fail safely rather than infer a new source baseline or delete unknown files. The remote receipt/ready archive does not authorize arbitrary local deletion. Compare the external backup receipt, remote manifest/assets and remaining local contents before recovery; keep receipts and recovery files. If verified as an orphan, stop the affected writers and move the leftover folder outside the recordings scan into a private recovery location rather than deleting it blindly. The current worker does not automatically reconcile historical leftovers, and a source folder that still exists can block Drive-to-YouTube consumption.
+
 ## Failure behavior
 
 | Failure | Intended behavior |

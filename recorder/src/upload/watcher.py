@@ -5,12 +5,13 @@ import logging
 import os
 import shutil
 import time
+from contextlib import nullcontext
 from datetime import datetime, timezone
 
 from ..config import RecorderConfig
 from ..models import RecordingSession
 from ..notify import notifier
-from ..process_lock import process_lock
+from ..process_lock import async_recording_lock, process_lock
 from . import r2_uploader
 from .policy import replay_notification_eligible, youtube_queue_key
 from .thumbnail_generator import generate_youtube_thumbnail
@@ -261,11 +262,26 @@ class Watcher:
     ):
         semaphore = self._r2_semaphore if is_r2 else self._yt_semaphore
         async with semaphore:
-            await self._process_folder(folder_path, live_id)
+            await self._process_folder(folder_path, live_id, is_r2=is_r2)
 
-    async def _process_folder(self, folder_path: str, live_id: str):
+    async def _process_folder(
+        self, folder_path: str, live_id: str, *, is_r2: bool | None = None
+    ):
         try:
-            if not self._stopping:
+            # Only Drive handoff needs ownership across awaits. Direct YouTube
+            # uploads must not hold up recorder reconnects during network I/O.
+            ownership = (
+                async_recording_lock(self.config.logs_dir, live_id)
+                if self.config.backup_to_gdrive
+                else nullcontext()
+            )
+            async with ownership:
+                if self._stopping or not os.path.isdir(folder_path):
+                    return
+                if is_r2 is True and os.path.exists(
+                    os.path.join(folder_path, ".r2_done")
+                ):
+                    return
                 await self._process_folder_inner(folder_path, live_id)
         finally:
             self._processing.pop(live_id, None)
@@ -277,8 +293,19 @@ class Watcher:
         )
 
     async def _process_folder_inner(self, folder_path: str, live_id: str):
+        if not os.path.isdir(folder_path):
+            return
+        if self.config.backup_to_gdrive and os.path.exists(
+            os.path.join(folder_path, ".r2_done")
+        ):
+            return
         meta, session = self._build_session(folder_path, live_id)
-        if not meta or not session:
+        if (
+            not meta
+            or not session
+            or meta.get("status") != "completed"
+            or meta.get("live_id") != live_id
+        ):
             return
 
         title_log = _format_title(meta)
@@ -311,22 +338,9 @@ class Watcher:
                 self.log_upl.warning("R2 upload failed for %s, will retry", title_log)
                 return
 
-            # 2.5 Re-check metadata status before writing done marker (Fake End Protection)
-            try:
-                with open(session.json_path, "r") as f:
-                    current_meta = json.load(f)
-                if current_meta.get("status") != "completed":
-                    self.log_upl.warning(
-                        "Live status changed to '%s' during R2 upload for %s. "
-                        "Aborting recap and .r2_done (fake end).",
-                        current_meta.get("status"),
-                        title_log,
-                    )
-                    return
-            except Exception as e:
-                self.log_upl.error(
-                    "Failed to re-read meta.json for %s: %s", title_log, e
-                )
+            # Awaited writers may outlive their source; never recreate it.
+            if not self._r2_source_pending(session):
+                return
 
             # 3. Send Recap Notification
             self._processing[live_id]["phase"] = "sending notification"
@@ -334,8 +348,10 @@ class Watcher:
                 live_id, self.config, folder_path
             )
 
-            # 4. Create marker
-            with open(r2_done_path, "w") as f:
+            # 4. Revalidate after the notification await; preserve existing markers.
+            if not self._r2_source_pending(session):
+                return
+            with open(r2_done_path, "x") as f:
                 f.write("done")
 
             # 5. Yield or finish
@@ -515,6 +531,29 @@ class Watcher:
         except Exception as e:
             self.log_upl.error("YouTube upload failed for %s: %s", title_log, e)
             return
+
+    def _r2_source_pending(self, session: RecordingSession) -> bool:
+        if not os.path.isdir(session.live_folder) or os.path.exists(
+            os.path.join(session.live_folder, ".r2_done")
+        ):
+            return False
+        try:
+            with open(session.json_path) as stream:
+                meta = json.load(stream)
+            if (
+                meta.get("status") == "completed"
+                and meta.get("live_id") == session.live_id
+            ):
+                return True
+            self.log_upl.warning(
+                "Source metadata changed for %s; aborting recap and .r2_done",
+                session.live_id,
+            )
+        except Exception as exc:
+            self.log_upl.error(
+                "Failed to re-read meta.json for %s: %s", session.live_id, exc
+            )
+        return False
 
     def _read_history(self) -> set[str]:
         path = self.config.uploads_history_path
