@@ -256,6 +256,104 @@ Idle timestamps in message text use UTC explicitly. IDLE is reported only after 
 
 These are transition/job-start logs, not periodic health checks. A historical IDLE line does not by itself prove the service is still alive; use `systemctl status mypage48-gdrive` to verify current process health. Logs preserve prior transitions, but in-memory last-idle tracking resets on service restart.
 
+## Inspecting server logs and diagnosing failures
+
+The commands below assume the standard deployment at `/home/mypage48/mypage48`. Adjust the path for a different installation. They inspect state; they do not upload, delete, clear cooldowns or restart services.
+
+### 1. Confirm service health and deployed code
+
+```sh
+sudo systemctl status mypage48-upload mypage48-gdrive --no-pager
+sudo systemctl show mypage48-gdrive \
+  -p ActiveState -p SubState -p NRestarts -p ExecMainStartTimestamp
+sudo systemctl show mypage48-upload \
+  -p ActiveState -p SubState -p NRestarts -p ExecMainStartTimestamp
+git -C /home/mypage48/mypage48 --no-pager log -1 --oneline
+```
+
+`active/running` confirms a process exists, not that every job succeeds. A growing restart count suggests startup/runtime failure. A `disabled` unit can run now but will not start automatically at boot. Compare log timestamps with `ExecMainStartTimestamp`: errors retained from before a restart do not prove the current process is failing. Updating code requires restarting the affected service to load it; inspecting status does not restart it.
+
+### 2. Read recent output before filtering
+
+```sh
+tail -n 100 /home/mypage48/mypage48/recorder/logs/gdrive.log
+tail -n 100 /home/mypage48/mypage48/recorder/logs/uploader.log
+tail -n 100 /home/mypage48/mypage48/recorder/logs/notify.log
+
+# Follow new Drive output; Ctrl+C stops following, not the service.
+tail -f /home/mypage48/mypage48/recorder/logs/gdrive.log
+```
+
+Application logger destinations depend on `REC_LOG_MODE`. With `file`, application logs go directly to their files; with `stdout`, systemd's configured `StandardOutput=append:...` captures output in its unit file. The upload unit's stdout file is normally `upload.log`, whereas its Python file logger uses **`uploader.log`**. Notification events normally use `notify.log` in file mode. Inspect `sudo systemctl cat mypage48-upload mypage48-gdrive` for the actual destinations, especially if a file appears stale.
+
+Use the journal for service lifecycle and startup failures; it may not contain application output redirected to files:
+
+```sh
+sudo journalctl -u mypage48-gdrive -u mypage48-upload \
+  --since '30 minutes ago' --no-pager -n 100
+```
+
+Append logs retain historical errors. Do not truncate logs or delete state to make an error disappear. Server log timestamps use the host's logging timezone; check `timedatectl` or `date` before comparing with Telegram. On a UTC server, add seven hours for WIB and account for date rollover. Telegram normally displays the viewing device's local time and may show only minute precision.
+
+### 3. Filter errors, backup transitions and upload completion
+
+```sh
+# Recent matching errors, warnings and safety failures.
+grep -nE 'ERROR|CRITICAL|WARNING|Traceback|PermissionError|DriveSafetyError|needs attention|scan failed|authorization' \
+  /home/mypage48/mypage48/recorder/logs/gdrive.log | tail -n 80
+
+# Backup progress and independent Drive-to-YouTube waits/completions.
+grep -nE 'Drive backup (IDLE|START|WAIT)|Verified Drive backup|Drive-to-YouTube complete|YouTube.*(delay|cooldown|quota)|Permanent Drive|Permanently deleted' \
+  /home/mypage48/mypage48/recorder/logs/gdrive.log | tail -n 80
+```
+
+| Message | Interpretation / next check |
+|---|---|
+| `Verified Drive backup ...; local source removed` | Backup verified and local cleanup succeeded at that time; not evidence of a YouTube upload |
+| `Drive backup IDLE` | No eligible local backup work; the remote YouTube backlog may still exist |
+| `Drive backup WAIT` | Pending work needs retry/recovery; inspect adjacent errors |
+| `Drive backup/cleanup failed (DriveSafetyError)` | Source validation or cleanup refused; inspect the source and external receipt before changing anything. This message currently omits the specific exception reason |
+| `Drive-to-YouTube complete` | The consumer completed the upload/finalization lifecycle; existing completed archives can also undergo maintenance without a new upload |
+| `YouTube quota cooldown active` | Drive-to-YouTube downloads/uploads wait; local-to-Drive backups can continue |
+| `YouTube upload delay active` | Normal spacing after successful completion, not an upload failure |
+| `Permanent Drive ... needs attention` | Permanent-container/archive recovery refused; preserve marker properties and investigate |
+| `Drive archive ... needs attention` | Inspect the stated safety reason, ownership, identity or manifest integrity; do not bypass validation |
+| Authorization invalid/missing | Correct credentials securely and restart the affected service; repeated restarts do not fix invalid tokens |
+| `PermissionError` opening a log | Check owner/permissions and unit output configuration; do not run the worker as root or use `chmod 777` |
+
+A filter returning no lines is not proof of successful work. Read the unfiltered latest log and check the service is using the expected destination/code. No eligible work or a wait can also produce little output.
+
+### 4. Trace one recording across pipelines
+
+Replace `LIVE_ID` and `ARCHIVE_FOLDER_NAME` with the exact values from your own logs. Use fixed-string matching for identifiers rather than interpreting them as regular expressions:
+
+```sh
+grep -n -F -C 4 'LIVE_ID' \
+  /home/mypage48/mypage48/recorder/logs/uploader.log | tail -n 100
+grep -n -F -C 4 'LIVE_ID' \
+  /home/mypage48/mypage48/recorder/logs/notify.log | tail -n 100
+grep -n -F -C 4 'ARCHIVE_FOLDER_NAME' \
+  /home/mypage48/mypage48/recorder/logs/gdrive.log | tail -n 100
+```
+
+An archive key in a verified-backup message is a hash, not necessarily the live ID or folder name. Correlate through the matching external receipt under `logs/gdrive-backups/` rather than expecting every message to include the same identifier.
+
+`Upload progress ... | sending notification | 1m...` reports the phase label plus **elapsed time since the job started**, not a Telegram-only timer. Notification fan-out awaits Telegram first, then Page48 if enabled. Telegram can already display the message while Page48 is still working. Check `notify.log` for per-channel success/failure; `Phase 1 complete` follows completion of the awaited notification fan-out and marker handling, not necessarily success of every channel.
+
+### 5. Check local leftovers and permanent moves safely
+
+For a selected local folder, use `ls -la` to include hidden markers. The presence of `.drive_ready` in Drive is not interchangeable with `.yt_done`: the former is verified-backup readiness; the latter is YouTube completion evidence. Confirm marker contents/receipt identity when troubleshooting; filename presence alone is not proof of valid state.
+
+If a source has only `.r2_done` and a recap PNG but no recording JSON/MP4, compare its external backup receipt and remote assets before cleanup. The stale-job fix prevents the known late-writer path but does not automatically reconcile historical leftovers. Do not delete the remote archive or backup receipt, manufacture metadata or create `.yt_done` manually.
+
+For a permanent move, record the archive's Drive folder ID before processing and reopen the same URL afterward. Verify its parent is `JKT48Live/permanent`, its display name contains the correct live-start WIB time, and only MP4 files remain. The move preserves IDs. A moved folder with sidecars still present can be mid-cleanup or require recovery. Completion evidence is now in private folder properties rather than a visible `.yt_done` file. There is currently **no dedicated per-archive START/DONE progress log for legacy permanent migration**; absence of such a message does not mean the scan is idle. A large backlog is processed progressively and requires metadata/control calls, but no video reupload/download for the move itself.
+
+Do not casually delete `.youtube_cooldown`, `.gdrive_youtube_delay`, journals, claims, receipts, manifests or completion properties. A restart does not safely reset ambiguous uploads. Never unlink active claim files. Stop affected writers and reconcile evidence before manual recovery.
+
+### Sharing diagnostics
+
+Logs, receipts and migration checkpoints can contain private live/video/folder identifiers, names, timestamps and account metadata. Share only the relevant recent lines, redact identifiers as needed, and never paste `.env`, refresh tokens, client secrets, cookies or token-bearing URLs. The commands above do not require displaying credentials. These diagnostics do not establish complete Drive/YouTube inventory or guarantee that all remote operations succeeded.
+
 ## Local folders, state files, and cleanup
 
 These directories are local control/staging data, not the archive folders stored under `JKT48Live` in Google Drive. The defaults below are relative to the repository root. State directories follow `REC_LOGS_DIR`; staging is a sibling of the configured recordings directory.

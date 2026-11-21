@@ -242,6 +242,88 @@ Look for `SCAN`, `WAIT`, `SKIP`, `DRY-RUN`, `PUBLIC`, `SUMMARY` and `IDLE`, with
 - Temporary network/token or API failures: exponential backoff with jitter (up to roughly 900 seconds plus jitter); permission errors are not assumed successes. Ambiguous dispatched updates are protected by receipts.
 - Daily API quota error: durable pause to Pacific reset, independent of upload/Drive timing files.
 
+### Server troubleshooting: inspect before taking action
+
+The examples below assume the standard server checkout at `/home/mypage48/mypage48`. Adjust paths to the installed unit, not to a personal workstation. These are read-only inspections; do not launch another worker to diagnose the running service.
+
+#### 1. Establish service state, start time and deployed version
+
+```bash
+sudo systemctl status mypage48-ytpublic.service --no-pager -l
+sudo systemctl show mypage48-ytpublic.service --property=ActiveState --property=SubState --property=NRestarts --property=ExecMainStartTimestamp
+sudo systemctl cat mypage48-ytpublic.service --no-pager
+git -C /home/mypage48/mypage48 --no-pager log -5 --format='%h %cI %s'
+```
+
+`ActiveState=active` and `SubState=running` confirm a process, not successful publication. `NRestarts` helps identify automatic restart activity; correlate it with `ExecMainStartTimestamp` and recent messages. Git history identifies the checkout revision, not proof that the running process loaded it: compare deployment/start times too.
+
+#### 2. Read the application file, then follow new messages
+
+```bash
+sudo tail -n80 /home/mypage48/mypage48/recorder/logs/ytpublic.log
+sudo tail -f /home/mypage48/mypage48/recorder/logs/ytpublic.log
+```
+
+In the `tail -f` terminal, **Ctrl+C stops only log following, not the service**. The file may contain messages from several runs because output is appended. Compare an error's timestamp with `ExecMainStartTimestamp` before treating it as a current failure; a historical authorization error followed by a later successful run is not evidence that the current process is paused.
+
+With `REC_LOG_MODE=stdout`, Python sends application messages to stdout; the installed unit's `StandardOutput=append:...` and `StandardError=append:...` route them into the file above. With `REC_LOG_MODE=file`, the dedicated logger writes `<REC_LOGS_DIR>/ytpublic.log` directly. Inspect the unit's actual paths if settings or installation paths differ. The journal is mostly useful for systemd lifecycle messages and startup/service errors under this append configuration, not as the primary application log:
+
+```bash
+sudo journalctl -u mypage48-ytpublic.service -n80 --no-pager
+```
+
+Do not truncate or delete logs to get a clean view, and never clear the quota ledger or checkpoints to retry work. Use timestamps and bounded reads instead.
+
+#### 3. Filter for progress and actual failure messages
+
+```bash
+sudo grep -nE 'SUMMARY|PUBLIC:|DRY-RUN:|WAIT:|IDLE:|authorization invalid|state/safety error|scan failed|daily API quota exhausted|update unconfirmed|prior update outcome ambiguous' /home/mypage48/mypage48/recorder/logs/ytpublic.log | tail -n80
+```
+
+Line numbers locate matching entries in the current file; they are not timestamps or counts of publications. Filtering can hide context, so return to the surrounding unfiltered log when diagnosing a failure.
+
+| Message / field | Interpretation and next check |
+|---|---|
+| `DRY-RUN: would publish` | A cached eligible preview, **not an actual update or successful receipt**. Dry-run still consumes reads and writes catalog/quota checkpoints. `DRY-RUN: pending receipt ... reconciliation skipped` does not resolve an earlier attempt. |
+| `PUBLIC:` | The worker saved a successful `published` receipt after a confirmed public response **or reconciliation of an already-public result**. It is not necessarily a new update dispatched at that instant. |
+| `SUMMARY` | Counts describe cached videos classified in this scan, not a complete channel inventory. Classification happens **before the current scan's updates**; eligible counts are not decremented as those updates succeed. `published` counts confirmed updates in this scan's candidate loop, not reconciliation successes. |
+| `already_published` | Cached videos skipped because successful receipts already exist, accumulated across earlier work. It is not today's successful-publication count; receipt-backed skips can persist even after someone manually makes a video private again. |
+| `attempted_this_scan`, `updates=.../80` | The first is the scan-local update counter; the latter is the durable day's reserved `update_attempts` versus the configured cap (80 by default). Failed/ambiguous reservations still count toward the daily cap, so neither field promises 80 successful publications per day. A thrown failure can interrupt the scan before any summary is emitted. |
+| `WAIT: quota_budget` | Local estimated-unit budget prevents further work, including reads. Wait for the logged Pacific reset; this is not proof the entire Google project quota is exhausted. |
+| `WAIT: update_attempts` | Daily attempt cap reached. Remaining candidates stay private until a later quota day; do not restart to bypass it. |
+| `WAIT: quota_pause` / `daily API quota exhausted` | Persisted API-quota pause until reset. Restarting does not replenish project quota or clear safe accounting. |
+| `WAIT:` with `eligible_at`, `before next privacy update`, or `update spacing until` | Normal embargo/spacing wait, not a crash. Compare the deadline and current time before intervening. |
+| `authorization invalid` | Processing is paused although the process can remain active. Correct credentials/authorization privately, then restart only ytpublic as described above; it does not hot-reload credentials. |
+| `state/safety error` | Manual-review pause, not ordinary idle. Preserve state and investigate the specific safety error before restart. |
+| `scan failed` | Retry/backoff is scheduled. Inspect the error detail and later progress; do not assume the interrupted scan finished or blindly repeat an ambiguous update. |
+| `update unconfirmed` / `prior update outcome ambiguous` | Preserve the receipt and follow the manual reconciliation procedure; no blind retry or receipt deletion as routine troubleshooting. |
+| `IDLE: worker disabled` | Startup configuration disabled the worker; it waits without scanning. Changing configuration requires a deliberate restart to load it. |
+| `IDLE: no eligible private videos` | No eligible candidates in that scan's cache, not an authorization pause or proof that every channel video was discovered. See the existing [discovery discrepancy](#observed-uploads-playlist-discovery-discrepancy). |
+
+A quiet log can also mean the normal poll interval, a wait, or deduplication of unchanged decisions. Check the latest summary/wait and start time together rather than restarting simply because no new per-video lines appeared.
+
+#### 4. Check time, switches and quota without exposing private state
+
+Deadline/reset values emitted by the worker use aware UTC timestamps (`+00:00`); **WIB = UTC+7**. The bracketed log prefix uses the process's local timezone and has no offset, while systemd/journal timestamps can use the server's timezone. Do not assume these displays share a timezone. The quota day resets at midnight `America/Los_Angeles`: **07:00 UTC / 14:00 WIB during PDT**, or **08:00 UTC / 15:00 WIB during PST**, following Pacific DST rather than a fixed WIB midnight.
+
+Inspect only the two non-secret switches, not the whole environment file:
+
+```bash
+sudo grep -nE '^[[:space:]]*REC_YTPUBLIC_(ENABLED|DRY_RUN)[[:space:]]*=' /home/mypage48/mypage48/recorder/.env /home/mypage48/mypage48/recorder/src/.env
+```
+
+One of those files may not exist. File values alone do not prove the running configuration: process environment can override them and changes made after startup are not loaded automatically. Do not dump `.env`, systemd environment values, OAuth tokens or secrets into a support report.
+
+Read only the quota ledger using the server's existing recorder Python (adjust if the installed unit uses a different interpreter):
+
+```bash
+sudo /home/mypage48/mypage48/recorder/.venv/bin/python3 -m json.tool /home/mypage48/mypage48/recorder/logs/ytpublic/quota.json
+```
+
+Compare its `update_attempts`, `used_units`, spacing and quota-pause fields with the latest log and Pacific day. This command only formats the file; do not redirect output back into it, edit it, or delete it to reset counters. A checkpoint may advance while being inspected.
+
+Do not dump `catalog.json` or receipt contents into shared output: they can contain private titles and video/channel identifiers. Logs and checkpoints may also expose identifiers; redact them and any sensitive error details before sharing a minimal timestamped excerpt. Preserve original evidence privately. No summary, idle message or completed pagination flag guarantees complete inventory; retain the limitations documented in the discovery discrepancy above.
+
 ## Safe rollout
 
 1. Deploy disabled (`ENABLED=false`, `DRY_RUN=true`); keep existing services unchanged.
